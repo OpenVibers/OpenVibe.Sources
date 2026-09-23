@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Widget Pro</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "BreadcrumbList", "itemListElement": [] },
+    {
+      "@type": "Product",
+      "@id": "https://shop.example.com/p/widget-pro#product",
+      "name": "Widget Pro",
+      "sku": "WP-100",
+      "gtin13": "0012345678905",
+      "brand": { "@type": "Brand", "name": "Example Co" },
+      "description": "A <b>very</b> good widget.",
+      "image": ["https://shop.example.com/img/wp.jpg"],
+      "offers": [
+        { "@type": "Offer", "price": "19.99", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "priceValidUntil": "2026-12-31", "url": "https://shop.example.com/p/widget-pro", "seller": { "@type": "Organization", "name": "Example Shop" } },
+        { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/OutOfStock" }
+      ],
+      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.4", "reviewCount": "89" },
+      "review": [
+        { "@type": "Review", "author": { "@type": "Person", "name": "Sam" }, "reviewRating": { "@type": "Rating", "ratingValue": 5, "bestRating": 5 }, "datePublished": "2026-08-01", "reviewBody": "Long text that we do not keep." }
+      ]
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">{ "@context": "https://schema.org", "@type": "Organization", "name": "Example Shop" }</script>
+</head><body>Widget</body></html>

@@ -1,0 +1,7 @@
+{
+  "deals": [
+    { "dealID": "d-1", "title": "Game One", "salePrice": "4.99", "normalPrice": "19.99", "storeID": "1", "releaseDate": 1726790400, "link": "https://deals.example.com/d/1" },
+    { "dealID": "d-2", "title": "Game Two", "salePrice": null, "normalPrice": "9.99", "storeID": "2" },
+    { "title": "No identity, skipped" }
+  ]
+}

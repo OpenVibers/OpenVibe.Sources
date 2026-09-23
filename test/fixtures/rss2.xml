@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Observatory News</title>
+    <link>https://news.example.org/</link>
+    <description>Fixture feed</description>
+    <item>
+      <title>Telescope sees first light</title>
+      <link>https://news.example.org/2026/09/first-light?utm_source=rss&amp;id=7#top</link>
+      <guid isPermaLink="false">news-0001</guid>
+      <pubDate>Mon, 21 Sep 2026 14:30:00 +0000</pubDate>
+      <dc:creator>Ada Example</dc:creator>
+      <category>Astronomy</category>
+      <category>Instruments</category>
+      <description><![CDATA[<p>The <b>new</b> telescope &amp; its camera saw <a href="x">first light</a>.</p><script>alert(1)</script>]]></description>
+      <enclosure url="https://news.example.org/img/first-light.jpg" type="image/jpeg" length="12345"/>
+    </item>
+    <item>
+      <title>Undated item keeps no date</title>
+      <link>https://news.example.org/2026/09/undated</link>
+      <description>Plain text description.</description>
+    </item>
+    <item>
+      <description>An item with neither guid nor link is skipped.</description>
+    </item>
+    <item>
+      <title>Duplicate guid</title>
+      <link>https://news.example.org/dup</link>
+      <guid isPermaLink="false">news-0001</guid>
+    </item>
+  </channel>
+</rss>

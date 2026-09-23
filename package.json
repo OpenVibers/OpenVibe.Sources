@@ -1,0 +1,39 @@
+{
+  "name": "openvibe-sources",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenVibe.Sources: the source registry and the ingestion workers (RSS/Atom, sitemaps, JSON-LD, official APIs) that record provenance, retrieval time, content hashes and explicit failure states, never invented content.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "NODE_ENV=development node server/index.js",
+    "test": "node test/run.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": [
+    "openvibe",
+    "sources",
+    "rss",
+    "atom",
+    "sitemap",
+    "json-ld",
+    "ingestion"
+  ],
+  "author": "OpenVibers",
+  "license": "AGPL-3.0-only",
+  "repository": "github:OpenVibers/OpenVibe.Sources",
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fast-xml-parser": "^4.5.3",
+    "openvibe-contracts": "https://codeload.github.com/OpenVibers/OpenVibe.Contracts/tar.gz/refs/tags/v0.7.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

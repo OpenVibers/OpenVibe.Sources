@@ -1,0 +1,113 @@
+{
+  "_about": "One real source per category, all DISABLED. Robots notes were checked by hand on 2026-09-22; terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
+  "sources": [
+    {
+      "key": "nasa-news-releases",
+      "name": "NASA news releases",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.nasa.gov/",
+      "endpoints": ["https://www.nasa.gov/news-release/feed/"],
+      "robots_note": "robots.txt checked 2026-09-22: User-agent * Allow /. The fetcher re-checks it on every run.",
+      "terms_note": "NASA's media usage guidelines say NASA material is generally not subject to copyright in the US; logos, insignia and third-party material are excluded. Store titles, links and short summaries; link back. Re-verify before enabling.",
+      "license_note": "US federal government work in general; per-item credits may restrict reuse.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 1800,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "nodejs-blog",
+      "name": "Node.js blog",
+      "type": "rss",
+      "category": "blog",
+      "homepage_url": "https://nodejs.org/en/blog",
+      "endpoints": ["https://nodejs.org/en/feed/blog.xml"],
+      "robots_note": "robots.txt checked 2026-09-22: only /dist/ and /docs/ are disallowed; the feed path is allowed.",
+      "terms_note": "Content of the OpenJS Foundation and contributors; read the site's terms before enabling. Titles, links and short summaries only.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-portal-2",
+      "name": "Steam user review signals: Portal 2 (app 620)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/620/",
+      "endpoints": [{
+        "url": "https://store.steampowered.com/appreviews/620?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+        "format": "json",
+        "items_path": "reviews",
+        "item_kind": "review_signal",
+        "fields": { "identity": "recommendationid", "published_at_epoch": "timestamp_created", "updated_at_epoch": "timestamp_updated" },
+        "extra": {
+          "voted_up": "voted_up", "votes_up": "votes_up", "votes_funny": "votes_funny", "weighted_vote_score": "weighted_vote_score",
+          "playtime_at_review_min": "author.playtime_at_review", "language": "language", "steam_purchase": "steam_purchase",
+          "received_for_free": "received_for_free", "written_during_early_access": "written_during_early_access"
+        }
+      }],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "dealnews-daily",
+      "name": "DealNews daily deals",
+      "type": "rss",
+      "category": "deals",
+      "homepage_url": "https://www.dealnews.com/",
+      "endpoints": ["https://www.dealnews.com/?rss=1"],
+      "robots_note": "robots.txt checked 2026-09-22: Crawl-delay 2 (honoured); the feed URL is not disallowed.",
+      "terms_note": "Copyright DealNews, all rights reserved (feed <copyright>). Headlines, prices exactly as stated and links only; a price is an observation at retrieval time, never a current price. Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "staff-coupon-codes",
+      "name": "Coupon codes published by merchants, entered by staff",
+      "type": "manual",
+      "category": "coupons",
+      "terms_note": "Only codes a merchant published itself, entered with the URL of that page as evidence. Validity and expiry stay unknown unless the merchant states them; no code is 'working' because it was entered.",
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "sec-xbrl-filings",
+      "name": "SEC EDGAR: latest XBRL filings",
+      "type": "rss",
+      "category": "trade",
+      "homepage_url": "https://www.sec.gov/structureddata/rss-feeds",
+      "endpoints": ["https://www.sec.gov/Archives/edgar/xbrlrss.all.xml"],
+      "robots_note": "robots.txt checked 2026-09-22: /Archives/edgar is allowed; /cgi-bin is disallowed, so the EDGAR 'getcurrent' Atom feed is deliberately not used.",
+      "terms_note": "Public EDGAR data. SEC fair-access policy: a User-Agent that names the requester and a contact (ours does) and at most 10 requests per second. Informational context only — no advice, no execution.",
+      "min_interval_ms": 10000,
+      "poll_interval_sec": 900,
+      "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
+    }
+  ]
+}

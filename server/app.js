@@ -87,7 +87,8 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
     // fetcher (worker running, queue keeping up) are optional and degrade it (see observability.js).
     const readiness = createSourcesReadiness({ db, keys, config, registry, ingest, scheduler, outbox, relay, now, release: release.release });
     app.get('/api/ready', readiness.handler);
-    app.get('/release.json', release.handler);
+    // GET /release.json (ADR-016) and POST /release-metrics (open tabs' update reports into /metrics).
+    release.mount(app, { registry: metrics.registry });
 
     app.use(sourcesRouter({ db, registry, ingest, auth }));
     app.use(itemsRouter({ db, registry, items, auth, relay, now }));

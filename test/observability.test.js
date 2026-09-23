@@ -77,6 +77,14 @@ t('/metrics: 404 through a proxy; route templates and Sources gauges direct', as
     assert.ok(/\nsources_outbox_pending \d+\n/.test(text));
 });
 
+t('/release.json: a registry.release-manifest@1 that names where tabs report updates', async () => {
+    const r = await request(svc.base, 'GET', '/release.json');
+    assert.strictEqual(r.status, 200, r.text);
+    assert.strictEqual(r.body.service, 'sources');
+    assert.deepStrictEqual(require('openvibe-contracts').validate('registry.release-manifest@1', r.body).errors, []);
+    assert.strictEqual(r.body.metrics_url, '/release-metrics');
+});
+
 t('a broken database makes the service unready (503); /metrics still answers', async () => {
     svc.db.close();
     const r = await request(svc.base, 'GET', '/api/ready');

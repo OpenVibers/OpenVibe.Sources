@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openvibe.network/contracts/sources/item.v1.json",
+  "title": "SourceItem",
+  "description": "One thing a source said, with its provenance: source, canonical URL, retrieval time, content hash, raw-body hash, parser version and the terms it was ingested under. A field the source did not state is null — never guessed. Items change only through successful fetches (a new revision per content change) or an explicit, audited removal.",
+  "type": "object",
+  "required": ["id", "source_key", "category", "kind", "identity", "canonical_url", "title", "summary", "authors", "published_at", "source_updated_at", "fields", "revision", "provenance", "removed"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^itm_[0-9A-HJKMNP-TV-Z]{26}$" },
+    "source_key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
+    "category": { "enum": ["news", "blog", "reviews", "deals", "coupons", "trade"] },
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,39}$", "description": "article | url | sitemap | product | offer | review | review_signal | record | coupon …" },
+    "identity": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The source's own id (guid, @id, API id) or the canonical URL." },
+    "canonical_url": { "type": ["string", "null"], "format": "uri" },
+    "title": { "type": ["string", "null"] },
+    "summary": { "type": ["string", "null"], "maxLength": 1000, "description": "Plain text, capped. Sources keeps metadata and short descriptions, not republishable full text." },
+    "authors": { "type": "array", "items": { "type": "string" } },
+    "published_at": { "type": ["string", "null"], "format": "date-time" },
+    "source_updated_at": { "type": ["string", "null"], "format": "date-time" },
+    "fields": { "type": "object", "description": "Adapter-specific parsed fields (offers, ratings, prices as stated, API extras)." },
+    "revision": { "type": "integer", "minimum": 1 },
+    "provenance": {
+      "type": "object",
+      "required": ["retrieved_at", "first_seen_at", "content_hash", "raw_body_hash", "parser_version", "fetch_run_id", "license_note", "terms_note", "entered_by"],
+      "additionalProperties": false,
+      "properties": {
+        "retrieved_at": { "type": "string", "format": "date-time", "description": "Last successful fetch that contained this item (observation time)." },
+        "first_seen_at": { "type": "string", "format": "date-time" },
+        "content_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "raw_body_hash": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "parser_version": { "type": "string", "pattern": "^[a-z]+@\\d+$" },
+        "fetch_run_id": { "type": ["string", "null"], "pattern": "^frn_[0-9A-HJKMNP-TV-Z]{26}$" },
+        "license_note": { "type": ["string", "null"] },
+        "terms_note": { "type": ["string", "null"] },
+        "entered_by": { "type": ["string", "null"], "description": "Principal that entered a manual item." }
+      }
+    },
+    "removed": {
+      "type": ["object", "null"], "additionalProperties": false, "required": ["at", "reason"],
+      "properties": { "at": { "type": "string", "format": "date-time" }, "reason": { "type": "string" } }
+    },
+    "change_seq": { "type": "integer", "minimum": 1 },
+    "revisions": { "type": "array" }
+  }
+}

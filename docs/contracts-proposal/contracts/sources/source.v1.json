@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openvibe.network/contracts/sources/source.v1.json",
+  "title": "Source",
+  "description": "A registered source (roadmap §4.2 B, Wave 14): where it is fetched from and on what terms. Credentials are referenced by environment-variable NAME only. A source's existence is never permission to fetch: robots and terms are verified before it is enabled, and the fetcher re-checks robots.txt on every run.",
+  "type": "object",
+  "required": ["key", "name", "type", "category", "endpoints", "auth", "min_interval_ms", "poll_interval_sec", "stale_after_sec", "max_items", "enabled", "review_required", "sensitivity", "default_indexability"],
+  "additionalProperties": false,
+  "properties": {
+    "key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "type": { "enum": ["rss", "atom", "sitemap", "jsonld", "api", "manual"] },
+    "category": { "enum": ["news", "blog", "reviews", "deals", "coupons", "trade"] },
+    "homepage_url": { "type": ["string", "null"], "format": "uri" },
+    "endpoints": {
+      "type": "array", "maxItems": 20,
+      "items": {
+        "type": "object", "required": ["url"], "additionalProperties": false,
+        "properties": {
+          "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+          "format": { "enum": ["json", "xml"] },
+          "items_path": { "type": "string" },
+          "item_kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,39}$" },
+          "fields": { "type": "object", "additionalProperties": { "type": "string" } },
+          "extra": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      }
+    },
+    "auth": {
+      "type": "object", "required": ["mode"], "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["none", "header", "bearer", "query"] },
+        "env": { "type": "string", "pattern": "^SOURCES_CRED_[A-Z0-9_]{2,60}$", "description": "Name of the environment variable holding the credential. Never a value." },
+        "header": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9-]{0,63}$" },
+        "param": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,64}$" }
+      }
+    },
+    "robots_note": { "type": ["string", "null"], "maxLength": 2000 },
+    "terms_note": { "type": ["string", "null"], "maxLength": 2000 },
+    "license_note": { "type": ["string", "null"], "maxLength": 2000 },
+    "min_interval_ms": { "type": "integer", "minimum": 0, "description": "Rate limit: the least time between two requests to this source (the per-host floor and robots Crawl-delay may raise it)." },
+    "poll_interval_sec": { "type": "integer", "minimum": 1 },
+    "stale_after_sec": { "type": "integer", "minimum": 1 },
+    "max_items": { "type": "integer", "minimum": 1 },
+    "enabled": { "type": "boolean" },
+    "review_required": { "type": "boolean", "description": "Products must review what they derive from this source before it can be indexable." },
+    "sensitivity": { "enum": ["none", "financial", "health", "political", "legal", "adult"] },
+    "default_indexability": { "enum": ["index", "noindex"], "description": "What a product's indexability gate starts from for content derived from this source." },
+    "search_visibility": { "type": ["string", "null"], "enum": ["members", null], "description": "members = raw items are indexed in OpenVibe.Search for staff only (never indexable)." },
+    "health": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["healthy", "stale", "failing", "never_fetched", "disabled", "manual"] },
+        "stale": { "type": "boolean" },
+        "last_success_at": { "type": ["string", "null"], "format": "date-time" },
+        "last_run_at": { "type": ["string", "null"], "format": "date-time" },
+        "last_state": { "type": ["string", "null"] },
+        "consecutive_failures": { "type": "integer", "minimum": 0 },
+        "next_due_at": { "type": ["string", "null"], "format": "date-time" },
+        "stale_after_sec": { "type": "integer" }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "contractRanges": {
+    "openvibe-contracts": ">=0.7.0 <1.0.0"
+  },
+  "id": "sources",
+  "name": "OpenVibe.Sources",
+  "status": "alpha",
+  "repository": "OpenVibers/OpenVibe.Sources",
+  "domains": [
+    "sources.openvibe.network"
+  ],
+  "publicOrigin": "https://sources.openvibe.network",
+  "health": "/api/health",
+  "ready": "/api/ready",
+  "capabilities": [
+    "sources.source.read",
+    "sources.item.read",
+    "sources.source.manage"
+  ],
+  "eventsProduced": [
+    "sources.item.created",
+    "sources.item.updated",
+    "sources.item.removed",
+    "sources.fetch.failed",
+    "sources.index_document.upserted",
+    "sources.index_document.deleted"
+  ],
+  "eventsConsumed": [],
+  "namespacesOwned": [],
+  "notes": "Source registry and ingestion workers (RSS/Atom, sitemaps, JSON-LD, mapped official APIs, manual). Every item carries provenance; every fetch is a recorded run with an explicit state; failures never create or modify items."
+}

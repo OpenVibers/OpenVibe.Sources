@@ -1,0 +1,32 @@
+[Unit]
+Description=OpenVibe.Sources — source registry and ingestion workers (RSS/Atom, sitemaps, JSON-LD, APIs)
+# Network (openvibe-network) signs the tokens this service verifies. Sources starts without it
+# and keeps retrying the JWKS fetch; /api/ready stays 503 until the key has loaded.
+After=network.target
+Wants=openvibe-network.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/openvibe.sources
+EnvironmentFile=/etc/openvibe/sources.env
+Environment=NODE_ENV=production
+Environment=PORT=4720
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/env node /opt/openvibe.sources/server/index.js
+Restart=always
+RestartSec=5
+# SIGTERM: the scheduler stops starting runs; runs in flight finish (each is bounded by the fetch timeout).
+KillSignal=SIGTERM
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# The code tree stays read-only; the registry and items live in /var/lib/openvibe-sources.
+StateDirectory=openvibe-sources
+Environment=SOURCES_DB_PATH=/var/lib/openvibe-sources/sources.db
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+{
+  "id": "sources.source.read",
+  "version": "1.0",
+  "owner": "sources",
+  "status": "active",
+  "visibility": "first-party",
+  "description": "List registered sources with health and staleness, their fetch runs (every attempt with an explicit state) and the health summary. Credential values are never part of any response; only the variable name is.",
+  "outputSchema": "sources.source@1",
+  "permissions": [
+    "sources:read"
+  ],
+  "resourceConstraints": [
+    "none"
+  ],
+  "quotaClass": "sources-read",
+  "events": [],
+  "implementedBy": [
+    "GET /api/v1/sources",
+    "GET /api/v1/sources/:key",
+    "GET /api/v1/sources/:key/runs",
+    "GET /api/v1/runs",
+    "GET /api/v1/health"
+  ]
+}

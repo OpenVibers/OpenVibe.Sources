@@ -1,0 +1,4 @@
+[
+  { "id": "sources.source", "version": "1.0.0", "owner": "sources", "schema": "sources/source.v1.json", "visibility": "first-party", "compatibility": "backward", "status": "active" },
+  { "id": "sources.item", "version": "1.0.0", "owner": "sources", "schema": "sources/item.v1.json", "visibility": "first-party", "compatibility": "backward", "status": "active" }
+]

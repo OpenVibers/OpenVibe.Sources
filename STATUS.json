@@ -1,0 +1,19 @@
+{
+  "repository": "OpenVibers/OpenVibe.Sources",
+  "stage": "alpha",
+  "code": true,
+  "wave": "W14",
+  "plan": "OpenVibe End-to-End Realignment & Implementation Plan, revision 3 (20 Sep 2026)",
+  "runtime": "node 22, express, better-sqlite3, fast-xml-parser",
+  "port": 4720,
+  "domain": "sources.openvibe.network",
+  "contracts": "openvibe-contracts v0.7.0",
+  "capabilities": ["sources.source.read", "sources.item.read", "sources.source.manage"],
+  "capabilitiesRegistered": false,
+  "contractsProposed": ["sources.source@1", "sources.item@1"],
+  "adapters": ["rss", "atom", "sitemap", "jsonld", "api", "manual"],
+  "seededSources": 6,
+  "enabledSources": 0,
+  "deployed": false,
+  "updated": "2026-09-22"
+}

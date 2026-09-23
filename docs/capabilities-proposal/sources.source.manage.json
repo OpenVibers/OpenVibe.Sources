@@ -1,0 +1,28 @@
+{
+  "id": "sources.source.manage",
+  "version": "1.0",
+  "owner": "sources",
+  "status": "active",
+  "visibility": "first-party",
+  "description": "Create, change, enable or disable and delete (only while it has no items) sources; trigger a fetch; add items to manual sources with an evidence URL; remove an item with a reason (sticky). Enabling needs a terms note, and a robots note for fetched sources.",
+  "permissions": [
+    "sources:admin"
+  ],
+  "resourceConstraints": [
+    "none"
+  ],
+  "quotaClass": "sources-admin",
+  "events": [
+    "sources.item.created",
+    "sources.item.updated",
+    "sources.item.removed",
+    "sources.fetch.failed"
+  ],
+  "implementedBy": [
+    "POST /api/v1/sources",
+    "PATCH|DELETE /api/v1/sources/:key",
+    "POST /api/v1/sources/:key/fetch",
+    "POST /api/v1/sources/:key/items",
+    "DELETE /api/v1/items/:id"
+  ]
+}

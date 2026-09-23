@@ -1,0 +1,21 @@
+{
+  "id": "sources.item.read",
+  "version": "1.0",
+  "owner": "sources",
+  "status": "active",
+  "visibility": "first-party",
+  "description": "Read source items with provenance (source, canonical URL, retrieval time, content and raw-body hashes, parser version, terms) in change order, and one item with its revisions. Each page states the staleness of the sources it contains.",
+  "outputSchema": "sources.item@1",
+  "permissions": [
+    "sources:read"
+  ],
+  "resourceConstraints": [
+    "none"
+  ],
+  "quotaClass": "sources-read",
+  "events": [],
+  "implementedBy": [
+    "GET /api/v1/items",
+    "GET /api/v1/items/:id"
+  ]
+}

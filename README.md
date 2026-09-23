@@ -7,8 +7,9 @@
 **Status:** alpha (roadmap Wave 14). Deployed internally, not launched: it runs on the production host
 (127.0.0.1:4720 only, since 2026-09-23) with the six seeded sources **disabled**, so it has made 0 fetch
 runs and holds 0 items.  
-**Domain:** `sources.openvibe.network` (health only on the public vhost; the API is host-local). The
-vhost is not installed yet: the name currently falls through to the admin.openvibe.network placeholder.  
+**Domain:** `sources.openvibe.network` (a short "internal service" page and health on the public
+vhost; the API is loopback-only). The vhost is not installed yet: until it is, the name falls through
+to the admin.openvibe.network placeholder. Install steps: [Public host](#public-host).  
 **Plan:** OpenVibe End-to-End Realignment & Implementation Plan, revision 3 — roadmap §4.2 B, §15.12, §29, anti-goals 13, 26, 27.  
 **License:** AGPL-3.0.
 
@@ -188,6 +189,8 @@ the terms.
 - parsers against fixtures (`test/adapters.test.js`); API, registry rules, paging, manual items,
   removal (`test/api.test.js`); scheduler, backoff, relay to Events (`test/scheduler-events.test.js`);
   proposals and seeds (`test/proposals.test.js`)
+- the public host shows only an honest "internal service" page, and the vhost keeps the API
+  loopback-only (`test/public-host.test.js`)
 
 Not yet demonstrated: a run against a real source from the deployed service (every seed is disabled
 until a person verifies its terms), and a consuming product using real items. News and Reviews run
@@ -200,11 +203,40 @@ readiness, row counts; see OpenVibe.Host `docs/restore-drills.md`).
 
 ## Launch rule
 
-The domain keeps its placeholder page on [OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites)
-until the plan's launch rule holds (owning runtime with health/readiness, identity and service
-principals, real persistence and workflows, capabilities and events registered in
-OpenVibe.Contracts, a security review, acceptance tests). Sources has no public pages by design;
-its public vhost answers health and a `Disallow: /` robots.txt.
+Sources has no public pages by design, so it never "launches" as a site. The domain is not in
+[OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); this repository's own
+vhost serves it once installed.
+
+## Public host
+
+`sources.openvibe.network` resolves through Cloudflare, but until this vhost is installed nginx
+answers it with its default site (the admin placeholder). The vhost
+([deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf)) uses
+the Network wildcard certificate and answers only:
+
+| Path | Answer |
+|---|---|
+| `/` | a short page: an internal ingestion service, nothing to browse (HTML for browsers, the text route index otherwise; noindex, no-store) |
+| `/api/health`, `/api/ready`, `/release.json` | proxied |
+| `/robots.txt` | `Disallow: /` |
+| `/metrics` | 404 (Prometheus scrapes `127.0.0.1:4720/metrics` directly) |
+| `/api/v1/*` | loopback only (`allow 127.0.0.1; allow ::1; deny all`); services call `127.0.0.1:4720` |
+| anything else | a JSON 404 that says what the host is |
+
+Client-address headers come from `$remote_addr` only. Install on the host, after the service runs
+a release with the new `/` page (`ovhost deploy sources`):
+
+```bash
+sudo install -m 0644 /opt/openvibe.sources/deploy/nginx/sources.openvibe.network.conf /etc/nginx/sites-available/sources.openvibe.network.conf
+sudo ln -sf /etc/nginx/sites-available/sources.openvibe.network.conf /etc/nginx/sites-enabled/sources.openvibe.network.conf
+sudo nginx -t && sudo systemctl reload nginx
+# check
+curl -sS -H 'Accept: text/html' https://sources.openvibe.network/ | grep -o '<title>[^<]*'   # OpenVibe.Sources
+curl -sS https://sources.openvibe.network/api/health
+curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/api/v1/sources    # 403
+curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/metrics           # 404
+curl -sS https://sources.openvibe.network/admin                                               # JSON 404
+```
 
 ---
 

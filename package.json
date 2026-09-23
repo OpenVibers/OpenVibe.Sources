@@ -27,7 +27,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fast-xml-parser": "^4.5.3",
-    "openvibe-contracts": "https://codeload.github.com/OpenVibers/OpenVibe.Contracts/tar.gz/refs/tags/v0.7.0"
+    "openvibe-contracts": "https://codeload.github.com/OpenVibers/OpenVibe.Contracts/tar.gz/refs/tags/v0.13.0"
   },
   "engines": {
     "node": ">=22.0.0"

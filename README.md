@@ -33,9 +33,14 @@ Node 22 in production (`fnm exec --using=22.22.1 npm test`). Production: `/opt/o
 env `/etc/openvibe/sources.env`, unit [deploy/systemd/openvibe-sources.service](deploy/systemd/openvibe-sources.service),
 store `/var/lib/openvibe-sources/sources.db`, nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf).
 
-`GET /api/health` is liveness. `GET /api/ready` is 200 when the database answers, the Network key
-has loaded and the scheduler runs; it reports source counts by health status, runs in flight and
-the outbox backlog.
+`GET /api/health` is liveness. `GET /api/ready` (openvibe-shared/ready) is 503 only when the
+database fails; a Network key that has not loaded and a fetcher that is off, stopped or behind (a
+source due for more than 15 minutes) degrade it. It reports source counts by health status, runs in
+flight and the outbox backlog. `GET /metrics` (openvibe-shared/metrics) answers direct loopback
+callers only: golden signals by route template, `sources_sources{status}`, `sources_items{state}`,
+the fetch queue (`sources_fetch_due`, `sources_fetch_oldest_wait_seconds`,
+`sources_fetch_in_flight`), `sources_last_fetch_timestamp_seconds` and
+`sources_last_success_timestamp_seconds`.
 
 ## The registry
 

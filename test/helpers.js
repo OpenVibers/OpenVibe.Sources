@@ -40,7 +40,7 @@ function tmpDir() {
 }
 
 /** Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs. */
-async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient } = {}) {
+async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now } = {}) {
     const dir = tmpDir();
     const config = load({
         NODE_ENV: 'test',
@@ -54,7 +54,7 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient } = {}) 
         SOURCES_TICK_MS: '50',
         ...env,
     });
-    const h = await start({ config, log: silent, lookupImpl, tokenClient });
+    const h = await start({ config, log: silent, lookupImpl, tokenClient, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
     return { ...h, base, dir, async stop() { await h.close(); } };
 }

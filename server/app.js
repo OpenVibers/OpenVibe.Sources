@@ -1,7 +1,11 @@
 'use strict';
-/** Express app: request context, the v1 API, health/readiness. */
+/** Express app: request context, the v1 API, health/readiness, metrics. */
+const path = require('path');
 const express = require('express');
 const { http } = require('openvibe-contracts');
+const { instrument } = require('openvibe-shared/metrics');
+const { createRelease } = require('openvibe-shared/release');
+const { createSourcesReadiness, registerSourcesGauges } = require('./observability');
 const { sourcesRouter } = require('./api/sources');
 const { itemsRouter } = require('./api/items');
 const pkg = require('../package.json');
@@ -10,6 +14,11 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
+    const release = createRelease({ service: 'sources', root: path.join(__dirname, '..') });
+    // HTTP golden signals by route template, process metrics, release_info and the Sources gauges;
+    // GET /metrics answers direct loopback callers only (Track O).
+    const metrics = instrument(app, { service: 'sources', release: release.release });
+    registerSourcesGauges(metrics.registry, { db, sources: registry, ingest, outbox, now });
     app.use(http.middleware());
     app.use((req, res, next) => {
         res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -22,27 +31,11 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
         res.json({ status: 'ok', service: 'openvibe-sources', version: pkg.version });
     });
 
-    app.get('/api/ready', (_req, res) => {
-        let dbOk = false;
-        try { dbOk = db.prepare('SELECT 1 AS ok').get().ok === 1; } catch { dbOk = false; }
-        const checks = { db: dbOk, key: keys.loaded(), worker: !config.worker.enabled || scheduler.running() };
-        const ready = Object.values(checks).every(Boolean);
-        let sources = null;
-        if (dbOk) {
-            sources = {};
-            for (const r of registry.all()) {
-                const s = registry.health(r).status;
-                sources[s] = (sources[s] || 0) + 1;
-            }
-        }
-        res.status(ready ? 200 : 503).json({
-            status: ready ? 'ready' : 'not_ready',
-            checks,
-            sources,
-            runs_in_flight: ingest.inflight().length,
-            outbox: dbOk ? { pending: outbox.pending(), rejected: outbox.rejected(), relay: config.events.url ? (relay.running() ? 'running' : 'stopped') : 'off (EVENTS_URL unset)' } : null,
-        });
-    });
+    // Readiness (openvibe-shared/ready): 503 only when the database fails; the Network key and the
+    // fetcher (worker running, queue keeping up) are optional and degrade it (see observability.js).
+    const readiness = createSourcesReadiness({ db, keys, config, registry, ingest, scheduler, outbox, relay, now, release: release.release });
+    app.get('/api/ready', readiness.handler);
+    app.get('/release.json', release.handler);
 
     app.use(sourcesRouter({ db, registry, ingest, auth }));
     app.use(itemsRouter({ db, registry, items, auth, relay, now }));
@@ -56,7 +49,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
             'GET  /api/v1/sources, /api/v1/sources/:key, /api/v1/sources/:key/runs, /api/v1/runs, /api/v1/health   (sources.source.read)',
             'GET  /api/v1/items?source=&category=&after=, /api/v1/items/:id                                          (sources.item.read)',
             'POST/PATCH/DELETE /api/v1/sources[/:key], POST /api/v1/sources/:key/fetch, /items, DELETE /api/v1/items/:id (sources.source.manage)',
-            'GET  /api/health, /api/ready',
+            'GET  /api/health, /api/ready, /release.json',
             '',
             'Source: https://github.com/OpenVibers/OpenVibe.Sources',
             '',
@@ -74,6 +67,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
         return http.sendProblem(res, 500, 'sources.internal', { detail: 'internal error', ctx: req.ov });
     });
 
+    app.locals.metrics = metrics;
     return app;
 }
 

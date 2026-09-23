@@ -147,7 +147,7 @@ t('health lists what needs attention', async () => {
     assert.ok(h.body.attention.some(a => a.key === 'never' && a.status === 'never_fetched'));
     const ready = await api('GET', '/api/ready');
     assert.strictEqual(ready.status, 200);
-    assert.strictEqual(ready.body.checks.db, true);
+    assert.strictEqual(ready.body.checks.db.status, 'ok');
 });
 
 t('done', async () => { await web.close(); await svc.stop(); });

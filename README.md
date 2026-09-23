@@ -126,7 +126,7 @@ Callers use an OpenVibe.Network client-credentials token for audience `openvibe.
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
 removals); resume from `next_after`. Every page carries the status and staleness of the sources
 it contains. The capability ids (first proposed in [docs/capabilities-proposal/](docs/capabilities-proposal/))
-are released in `openvibe-contracts` v0.12.0 (this repo pins v0.32.0); [server/auth.js](server/auth.js)
+are released in `openvibe-contracts` v0.12.0 (this repo pins v0.33.0); [server/auth.js](server/auth.js)
 decides them with the contracts grant rule.
 
 ## Events (transactional outbox → OpenVibe.Events when `EVENTS_URL` is set)

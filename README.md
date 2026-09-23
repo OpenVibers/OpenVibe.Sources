@@ -4,8 +4,11 @@
 > carries where it came from, when it was retrieved and on what terms, and a failed fetch is a
 > recorded failure — never replaced by invented content.
 
-**Status:** alpha (roadmap Wave 14). Runs and is tested against stub sites; not deployed; the six seeded sources are **disabled**.  
-**Domain:** `sources.openvibe.network` (health only on the public vhost; the API is host-local)  
+**Status:** alpha (roadmap Wave 14). Deployed internally, not launched: it runs on the production host
+(127.0.0.1:4720 only, since 2026-09-23) with the six seeded sources **disabled**, so it has made 0 fetch
+runs and holds 0 items.  
+**Domain:** `sources.openvibe.network` (health only on the public vhost; the API is host-local). The
+vhost is not installed yet: the name currently falls through to the admin.openvibe.network placeholder.  
 **Plan:** OpenVibe End-to-End Realignment & Implementation Plan, revision 3 — roadmap §4.2 B, §15.12, §29, anti-goals 13, 26, 27.  
 **License:** AGPL-3.0.
 
@@ -46,7 +49,7 @@ secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_inte
 
 A source cannot be enabled without a terms note (and a robots note if it is fetched): an adapter
 existing is not permission to ingest (anti-goal 26). A source with items cannot be deleted —
-disable it — so provenance stays resolvable. Proposed contract: [`sources.source@1`](docs/contracts-proposal/).
+disable it — so provenance stays resolvable. Contract: [`sources.source@1`](docs/contracts-proposal/), released in openvibe-contracts v0.12.0.
 
 ## Ingestion
 
@@ -101,7 +104,7 @@ fragments removed), `title`, `summary`, `authors`, `published_at`, `source_updat
 `revision`, and `provenance` (`retrieved_at`, `first_seen_at`, `content_hash`, `raw_body_hash`,
 `parser_version`, `fetch_run_id`, `license_note`, `terms_note`, `entered_by`). Earlier revisions
 are kept in `item_revisions`. Removal (takedown, licence) is explicit, needs a reason, and is
-sticky: a later fetch that still lists the item does not bring it back. Proposed contract:
+sticky: a later fetch that still lists the item does not bring it back. Contract (released in openvibe-contracts v0.12.0):
 [`sources.item@1`](docs/contracts-proposal/).
 
 ## API (service tokens, one capability per route)
@@ -116,9 +119,9 @@ Callers use an OpenVibe.Network client-credentials token for audience `openvibe.
 
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
 removals); resume from `next_after`. Every page carries the status and staleness of the sources
-it contains. The capability ids are proposed in [docs/capabilities-proposal/](docs/capabilities-proposal/)
-and not in `openvibe-contracts` v0.7.0; [server/auth.js](server/auth.js) decides them with the
-contracts grant rule until a release defines them.
+it contains. The capability ids (first proposed in [docs/capabilities-proposal/](docs/capabilities-proposal/))
+are released in `openvibe-contracts` v0.12.0 (this repo pins v0.13.0); [server/auth.js](server/auth.js)
+decides them with the contracts grant rule.
 
 ## Events (transactional outbox → OpenVibe.Events when `EVENTS_URL` is set)
 
@@ -182,8 +185,13 @@ the terms.
   proposals and seeds (`test/proposals.test.js`)
 
 Not yet demonstrated: a run against a real source from the deployed service (every seed is disabled
-until a person verifies its terms), and a consuming product (News/Reviews/Deals/Coupons/Trade do
-not exist yet).
+until a person verifies its terms), and a consuming product using real items. News and Reviews run
+loopback-only on the host and are subscribed to `sources.item.*` through Events (Deals, Coupons and
+Trade also run loopback-only and have Sources import clients), but with no enabled source none of them has
+received an item.
+
+Restore drill: `ovhost drill sources` passed on the production host on 2026-09-23 (integrity check,
+readiness, row counts; see OpenVibe.Host `docs/restore-drills.md`).
 
 ## Launch rule
 

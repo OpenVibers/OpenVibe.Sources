@@ -6,14 +6,15 @@
   "plan": "OpenVibe End-to-End Realignment & Implementation Plan, revision 3 (20 Sep 2026)",
   "runtime": "node 22, express, better-sqlite3, fast-xml-parser",
   "port": 4720,
-  "domain": "sources.openvibe.network",
-  "contracts": "openvibe-contracts v0.7.0",
+  "domain": "sources.openvibe.network (no vhost installed: the name falls through to the admin.openvibe.network placeholder; the service is reachable on the host only)",
+  "contracts": "openvibe-contracts v0.13.0",
   "capabilities": ["sources.source.read", "sources.item.read", "sources.source.manage"],
-  "capabilitiesRegistered": false,
-  "contractsProposed": ["sources.source@1", "sources.item@1"],
+  "capabilitiesRegistered": true,
+  "contractsProposed": ["sources.source@1 (released in openvibe-contracts v0.12.0)", "sources.item@1 (released in openvibe-contracts v0.12.0)"],
   "adapters": ["rss", "atom", "sitemap", "jsonld", "api", "manual"],
   "seededSources": 6,
   "enabledSources": 0,
-  "deployed": false,
-  "updated": "2026-09-22"
+  "deployed": true,
+  "deployment": "Deployed internally, not launched: /opt/openvibe.sources at f727a40 since 2026-09-23 (origin 60a920d adds only an nginx file), unit openvibe-sources, 127.0.0.1:4720 only, principal sources. All 6 seeds disabled; 0 fetch runs and 0 items in production. Restore drill passed 2026-09-23.",
+  "updated": "2026-09-23"
 }

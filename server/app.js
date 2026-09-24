@@ -72,6 +72,8 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
     const metrics = instrument(app, { service: 'sources', release: release.release });
     registerSourcesGauges(metrics.registry, { db, sources: registry, ingest, outbox, now });
     app.use(http.middleware());
+    // One W3C trace across services (openvibe-shared/trace): calls made while serving a request carry its traceparent.
+    require('openvibe-shared/trace').install(app);
     app.use((req, res, next) => {
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader('Cache-Control', 'no-store');

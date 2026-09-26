@@ -10,6 +10,7 @@
  */
 const dns = require('dns');
 const net = require('net');
+const sharedEgress = require('openvibe-shared/egress');
 
 const blocked = new net.BlockList();
 for (const [addr, prefix] of [
@@ -58,16 +59,21 @@ function expandV6(ip) {
     return parts.map(x => x.padStart(4, '0'));
 }
 
-/** Is this IP address public unicast? */
+/**
+ * Is this IP address public unicast? It must pass this file's list AND the platform's rule
+ * (openvibe-shared/egress, which Live, Events, Chat and Tools use): the list here had drifted and
+ * let IPv4-compatible IPv6 (::127.0.0.1, ::7f00:1) and the local-use NAT64 prefix (64:ff9b:1::/48)
+ * through. test/security-ssrf.test.js holds the two rules equal.
+ */
 function isPublicAddress(ip) {
     const family = net.isIP(ip);
-    if (family === 4) return !blocked.check(ip, 'ipv4');
-    if (family === 6) {
+    let ok = false;
+    if (family === 4) ok = !blocked.check(ip, 'ipv4');
+    else if (family === 6) {
         const v4 = embeddedV4(ip);
-        if (v4) return !blocked.check(v4, 'ipv4');
-        return !blocked.check(ip, 'ipv6');
+        ok = v4 ? !blocked.check(v4, 'ipv4') : !blocked.check(ip, 'ipv6');
     }
-    return false;
+    return ok && sharedEgress.isPublicAddress(ip);
 }
 
 function createGuard({ allowPrivateHosts = [], allowedPorts = [80, 443], lookupImpl = dns.lookup } = {}) {

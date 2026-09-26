@@ -102,7 +102,10 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         res.setHeader('Vary', 'Accept');
         if (/\btext\/html\b/.test(String(req.get('accept') || ''))) {
-            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'");
+            // The page runs no script of its own. Cloudflare Web Analytics: Cloudflare injects its beacon at the
+            // edge and the privacy text says it may measure performance; script-src loads it, connect-src is
+            // where it reports.
+            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; script-src https://static.cloudflareinsights.com; connect-src https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
             return res.type('html').send(HOME_HTML);
         }
         return res.type('text/plain').send(TEXT_INDEX);

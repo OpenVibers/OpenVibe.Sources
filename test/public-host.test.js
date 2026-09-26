@@ -25,6 +25,8 @@ t('browsers get a short honest HTML page: internal service, nothing to browse, n
     assert.strictEqual(r.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.strictEqual(r.headers.get('cache-control'), 'no-store');
     assert.match(r.headers.get('content-security-policy'), /default-src 'none'/);
+    // No script of its own; only Cloudflare Web Analytics, which Cloudflare injects at the edge, may load and report.
+    assert.match(r.headers.get('content-security-policy'), /script-src https:\/\/static\.cloudflareinsights\.com; connect-src https:\/\/cloudflareinsights\.com;/);
     assert.ok(!/<script/i.test(r.text));
     assert.ok(!/admin/i.test(r.text));
 });

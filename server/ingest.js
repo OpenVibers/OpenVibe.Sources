@@ -61,12 +61,23 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
         };
     }
 
+    // An endpoint may carry a provider credential in its query string (?api_key=…). Events travel to
+    // other services and their logs, so the event names the endpoint with such values redacted.
+    const SECRET_PARAM = /^(api[_-]?key|apikey|key|token|access[_-]?token|auth|secret|client[_-]?secret|password|passwd|sig|signature)$/i;
+    function redactedUrl(u) {
+        try {
+            const url = new URL(u);
+            for (const k of [...url.searchParams.keys()]) if (SECRET_PARAM.test(k)) url.searchParams.set(k, 'redacted');
+            return url.href;
+        } catch { return null; }
+    }
+
     function failedEvent(source, run, failures) {
         outbox.enqueue({
             event_type: 'sources.fetch.failed',
             subject: { type: 'source', id: source.key },
             payload: {
-                source_key: source.key, category: source.category, run_id: run.id, endpoint_url: run.endpoint_url,
+                source_key: source.key, category: source.category, run_id: run.id, endpoint_url: redactedUrl(run.endpoint_url),
                 state: run.state, error_code: run.error_code, http_status: run.http_status, consecutive_failures: failures,
             },
         });

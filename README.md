@@ -158,6 +158,21 @@ downloaded once by hand and parsed offline with these adapters (NASA 10 items, N
 Steam 20, DealNews 50, SEC 200); that check is not part of the test suite and proves nothing about
 the terms.
 
+## Processing jobs: who does what (roadmap WS-O task 7, decided 2026-09-26)
+
+| Job | Where | How |
+|---|---|---|
+| **Dedupe within a source** | Sources | an item's `identity` (feed guid/id, else canonical URL) and `content_hash`: a refetch updates the item and keeps a revision, never a second item |
+| **Dedupe across sources** (one story from several outlets) | the product | News groups items into a story before `news.summarize_story`; Deals and Coupons match on merchant and code. Sources does not decide two outlets' items are "the same". |
+| **Classify** | Sources, coarsely; the product, finely | every source has one `category` (news, reviews, deals, coupons, trade…) and its items inherit it. Topic, entity or instrument classification is the product's, with its own review. |
+| **Summarise** | the product, through OpenVibe.AI | products call AI's seeded workflows (`news.summarize_story`, `reviews.summarize_entity`, `deals.enrich_deal`, `coupons.extract_coupon`, `trade.summarize_market_context`), passing Sources items as numbered `sources` with their provenance. The result is a draft/evidence package with citations and gaps, never published by AI or Sources. |
+| **Quality check** | the product | the publishing packages' indexability gate and each product's review queue decide what is shown; Sources records fetch failures as failures and never fills a gap with invented content |
+
+**The AI ↔ Sources client:** there is none. Sources never calls AI, and AI never fetches from Sources.
+The product is the only client of both: it reads items from Sources (`sources.items.read`) and sends
+them to AI as run input (`ai.run.create`). Provenance then travels with the draft, and no service
+publishes another's output.
+
 ## Owns
 
 - the source registry (`sources`, `endpoint_state`, `robots_cache`) and the source/item contracts

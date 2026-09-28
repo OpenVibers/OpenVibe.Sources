@@ -7,9 +7,8 @@
 **Status:** alpha (roadmap Wave 14). Deployed internally, not launched: it runs on the production host
 (127.0.0.1:4720 only, since 2026-09-23) with the six seeded sources **disabled**, so it has made 0 fetch
 runs and holds 0 items.  
-**Domain:** `sources.openvibe.network` (a short "internal service" page and health on the public
-vhost; the API is loopback-only). The vhost is not installed yet: until it is, the name falls through
-to the admin.openvibe.network placeholder. Install steps: [Public host](#public-host).  
+**Domain:** `sources.openvibe.network` (a short "internal service" page and health on this
+repository's vhost; the API is loopback-only). Install steps: [Public host](#public-host).  
 **Plan:** OpenVibe End-to-End Realignment & Implementation Plan, revision 3 — roadmap §4.2 B, §15.12, §29, anti-goals 13, 26, 27.  
 **License:** AGPL-3.0.
 
@@ -126,7 +125,7 @@ Callers use an OpenVibe.Network client-credentials token for audience `openvibe.
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
 removals); resume from `next_after`. Every page carries the status and staleness of the sources
 it contains. The capability ids (first proposed in [docs/capabilities-proposal/](docs/capabilities-proposal/))
-are released in `openvibe-contracts` v0.12.0 (this repo pins v0.33.0); [server/auth.js](server/auth.js)
+are released in `openvibe-contracts` v0.12.0 (this repo pins v0.49.0); [server/auth.js](server/auth.js)
 decides them with the contracts grant rule.
 
 ### Per-actor limits
@@ -189,7 +188,7 @@ the terms.
 | **Quality check** | the product | the publishing packages' indexability gate and each product's review queue decide what is shown; Sources records fetch failures as failures and never fills a gap with invented content |
 
 **The AI ↔ Sources client:** there is none. Sources never calls AI, and AI never fetches from Sources.
-The product is the only client of both: it reads items from Sources (`sources.items.read`) and sends
+The product is the only client of both: it reads items from Sources (`sources.item.read`) and sends
 them to AI as run input (`ai.run.create`). Provenance then travels with the draft, and no service
 publishes another's output.
 
@@ -211,6 +210,21 @@ publishes another's output.
 - OpenVibe.Contracts (service tokens, problem details, ids, the event envelope)
 - OpenVibe.Network (signing key; service principal `sources`)
 - OpenVibe.Events (outbound events)
+
+## Capabilities
+
+Implemented here (the service manifest's `capabilities`; routes in [API](#api-service-tokens-one-capability-per-route)):
+`sources.source.read`, `sources.item.read` and `sources.source.manage`, each checked by
+[server/auth.js](server/auth.js) with the contracts grant rule for audience `openvibe.sources`.
+
+Called elsewhere, as the service principal `sources` (client credentials from OpenVibe.Network):
+
+| Service | Grant | Why |
+|---|---|---|
+| OpenVibe.Events | `events.event.publish` (audience `openvibe.events`) | the outbox relays `sources.item.*`, `sources.fetch.failed` and `sources.index_document.*` |
+
+Sources calls no other OpenVibe service: it never calls AI, and Search receives its index documents
+through Events.
 
 ## Acceptance (tests)
 
@@ -236,16 +250,45 @@ received an item.
 Restore drill: `ovhost drill sources` passed on the production host on 2026-09-23 (integrity check,
 readiness, row counts; see OpenVibe.Host `docs/restore-drills.md`).
 
-## Launch rule
+## Security
 
-Sources has no public pages by design, so it never "launches" as a site. The domain is not in
-[OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); this repository's own
-vhost serves it once installed.
+Reporting: [SECURITY.md](SECURITY.md). The rules the code keeps:
 
-## Public host
+- **Auth.** Every `/api/v1` route needs an OpenVibe.Network service token for audience
+  `openvibe.sources` with that route's capability, then passes the per-actor limits. There are no user
+  sessions and no public API: the vhost keeps `/api/v1/*` loopback-only.
+- **Egress.** Sources fetches outside URLs by design, only through its guard: http(s) on ports 80/443,
+  every resolved address public at connect time (no DNS rebinding), each redirect re-checked, robots.txt
+  obeyed, per-host spacing, one deadline and a byte cap per response (`test/robots-ssrf.test.js`,
+  `test/security-ssrf.test.js`). XML entity declarations are refused.
+- **Secrets.** A source's credential is the **name** of a `SOURCES_CRED_*` variable, read at fetch time,
+  sent only to the configured origin, never stored or logged (`test/security-secrets.test.js`).
+  `OV_OAUTH_CLIENT_SECRET` and the source credentials live in `/etc/openvibe/sources.env` (0600).
+- **Data.** A failed fetch never creates or changes an item; items keep their provenance and terms;
+  raw items reach Search only for staff (`acl.groups`), always `noindex`.
 
-`sources.openvibe.network` resolves through Cloudflare, but until this vhost is installed nginx
-answers it with its default site (the admin placeholder). The vhost
+## Deploy
+
+Production deploys with `sudo ovhost deploy sources` on the host (strategy `git-checkout`: fetch,
+fast-forward `/opt/openvibe.sources`, install on a lockfile change, restart, wait for `/api/ready`).
+
+| | |
+|---|---|
+| Checkout | `/opt/openvibe.sources` |
+| Unit | `openvibe-sources.service` ([deploy/systemd/](deploy/systemd/openvibe-sources.service)) |
+| Port | `127.0.0.1:4720` |
+| Env file | `/etc/openvibe/sources.env` |
+| Data | `/var/lib/openvibe-sources/sources.db` |
+| Public host | nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf) (below) |
+
+Rollback: ovhost puts the previous sha back by itself when `/api/ready` does not answer 2xx after the
+restart; afterwards `sudo ovhost rollback sources --to <sha>`. Nothing blocks a rollback: the schema
+code only adds tables and columns.
+
+### Public host
+
+`sources.openvibe.network` resolves through Cloudflare; without this vhost nginx answers it with
+its default site (the admin placeholder). The vhost
 ([deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf)) uses
 the Network wildcard certificate and answers only:
 
@@ -272,6 +315,13 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/api/v
 curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/metrics           # 404
 curl -sS https://sources.openvibe.network/admin                                               # JSON 404
 ```
+
+
+## Launch rule
+
+Sources has no public pages by design, so it never "launches" as a site. The domain is not in
+[OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); this repository's own
+vhost serves it.
 
 ---
 

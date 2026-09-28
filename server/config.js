@@ -33,6 +33,12 @@ function load(env = process.env) {
         issuer: strip(env.OV_NETWORK_ISSUER || env.OV_NETWORK_URL || 'https://openvibe.network'),
         networkPublicKey: env.OV_NETWORK_PUBLIC_KEY ? env.OV_NETWORK_PUBLIC_KEY.replace(/\\n/g, '\n') : null,
         audience: 'openvibe.sources',
+        // Per-actor limits (server/api/actor-limits.js, roadmap WS-R task 4): the API reads one app or
+        // module may make per minute and per hour. Writes set their own numbers there.
+        limits: {
+            minute: Math.max(1, int(env.SOURCES_LIMITS_MINUTE, 120)),
+            hour: Math.max(1, int(env.SOURCES_LIMITS_HOUR, 3000)),
+        },
         oauth: {
             clientId: env.OV_OAUTH_CLIENT_ID || 'sources',
             clientSecret: env.OV_OAUTH_CLIENT_SECRET || '',

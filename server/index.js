@@ -21,7 +21,7 @@ const { createOutbox, createRelay } = require('./events/outbox');
 const { createKeyStore, createAuth } = require('./auth');
 const { createApp } = require('./app');
 
-async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fetch, tokenClient, lookupImpl, log = console, listen = true } = {}) {
+async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fetch, tokenClient, lookupImpl, log = console, listen = true, limitsNow = null } = {}) {
     config = config || load();
     const db = openDb(config.dbPath);
     const outbox = createOutbox(db, { source: config.serviceId, now });
@@ -43,7 +43,7 @@ async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fe
     const scheduler = createScheduler({ db, ingest, config, now, log });
     const keys = createKeyStore({ urls: [config.networkInternalUrl, config.networkUrl], pem: config.networkPublicKey, fetchImpl, log });
     const auth = createAuth({ config, keys });
-    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log });
+    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log, limitsNow });
 
     const keyLoaded = keys.start().catch(() => null);
     relay.start();

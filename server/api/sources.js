@@ -32,10 +32,12 @@ function runView(r) {
     };
 }
 
-function sourcesRouter({ db, registry, ingest, auth }) {
+function sourcesRouter({ db, registry, ingest, auth, limits }) {
     const router = express.Router();
-    const read = auth.requireCap(CAPS.read);
-    const manage = auth.requireCap(CAPS.manage);
+    // Each guard, then the principal's per-actor limit (api/actor-limits.js), before any work.
+    const read = [auth.requireCap(CAPS.read), limits.reads('sources.read')];
+    const manage = [auth.requireCap(CAPS.manage), limits.budget('sources.source.manage')];
+    const fetchNow = [auth.requireCap(CAPS.manage), limits.budget('sources.source.fetch')];
 
     const fail = (res, req, err) => {
         if (err instanceof RegistryError) {
@@ -112,7 +114,7 @@ function sourcesRouter({ db, registry, ingest, auth }) {
         } catch (err) { fail(res, req, err); }
     });
 
-    router.post('/api/v1/sources/:key/fetch', manage, async (req, res, next) => {
+    router.post('/api/v1/sources/:key/fetch', fetchNow, async (req, res, next) => {
         try {
             const out = await ingest.run(req.params.key, { trigger: 'manual' });
             if (!out) return notFound(res, req);

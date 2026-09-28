@@ -39,8 +39,11 @@ function tmpDir() {
     return d;
 }
 
-/** Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs. */
-async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now } = {}) {
+/**
+ * Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs.
+ * log: Sources' logger (default silent); limitsNow: the per-actor limiter's clock (default the wall clock).
+ */
+async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, log = silent, limitsNow = null } = {}) {
     const dir = tmpDir();
     const config = load({
         NODE_ENV: 'test',
@@ -54,7 +57,7 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now } =
         SOURCES_TICK_MS: '50',
         ...env,
     });
-    const h = await start({ config, log: silent, lookupImpl, tokenClient, ...(now ? { now } : {}) });
+    const h = await start({ config, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
     return { ...h, base, dir, async stop() { await h.close(); } };
 }

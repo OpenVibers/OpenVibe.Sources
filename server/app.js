@@ -8,6 +8,7 @@ const { createRelease } = require('openvibe-shared/release');
 const { createSourcesReadiness, registerSourcesGauges } = require('./observability');
 const { sourcesRouter } = require('./api/sources');
 const { itemsRouter } = require('./api/items');
+const { createActorLimits } = require('./api/actor-limits');
 const pkg = require('../package.json');
 
 const TEXT_INDEX = [
@@ -62,7 +63,7 @@ Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers
 </html>
 `;
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log = console }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log = console, limitsNow = null }) {
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
@@ -92,8 +93,11 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
     // GET /release.json (ADR-016) and POST /release-metrics (open tabs' update reports into /metrics).
     release.mount(app, { registry: metrics.registry });
 
-    app.use(sourcesRouter({ db, registry, ingest, auth }));
-    app.use(itemsRouter({ db, registry, items, auth, relay, now }));
+    // Per-actor limits (api/actor-limits.js), counted by the principal once a route's capability guard
+    // passed. limitsNow: the limiter's clock (tests; default the wall clock, not the ingest clock).
+    const limits = createActorLimits({ config, now: limitsNow || (() => Date.now()), registry: metrics.registry, log });
+    app.use(sourcesRouter({ db, registry, ingest, auth, limits }));
+    app.use(itemsRouter({ db, registry, items, auth, relay, now, limits }));
 
     // The public host (sources.openvibe.network) shows only this page, health, readiness and
     // /release.json: Sources is internal. Browsers get a short honest HTML page, other clients the

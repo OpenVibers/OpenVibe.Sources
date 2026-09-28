@@ -129,6 +129,26 @@ it contains. The capability ids (first proposed in [docs/capabilities-proposal/]
 are released in `openvibe-contracts` v0.12.0 (this repo pins v0.33.0); [server/auth.js](server/auth.js)
 decides them with the contracts grant rule.
 
+### Per-actor limits
+
+Every API route also limits the principal that passed its capability guard, before any work:
+`server/api/actor-limits.js`, openvibe-sdk/limits, roadmap WS-R task 4. Past a limit: `429`
+problem+json `rate_limited` with `Retry-After`, one `[limits]` log line and
+`sources_rate_limited_total{limit,window}`.
+
+| Routes | Per principal, a minute / an hour |
+|---|---|
+| Reads (`sources.source.read`, `sources.item.read`) by an app or module (`app:…`, `mod:…`) | `SOURCES_LIMITS_MINUTE` / `SOURCES_LIMITS_HOUR` (120 / 3000) |
+| `POST`, `PATCH`, `DELETE /api/v1/sources[/:key]` | 30 / 300 |
+| `POST /api/v1/sources/:key/fetch` | 10 / 100 |
+| `POST /api/v1/sources/:key/items` (manual) | 60 / 1200 |
+| `DELETE /api/v1/items/:id` (a takedown may cover many items) | 120 / 3000 |
+
+A first-party service (`svc:…`) is not counted on reads: News, Reviews and Trade pull cursor pages
+for all their readers, and Wiki asks about every item its editors cite. Sources' own workers (the
+scheduler, fetches, the outbox relay) run in-process and never pass through HTTP. Never limited:
+`/api/health`, `/api/ready`, `/release.json`, `/metrics` and the home page. `test/actor-limits.test.js`.
+
 ## Events (transactional outbox → OpenVibe.Events when `EVENTS_URL` is set)
 
 - `sources.item.created`, `sources.item.updated` (with the previous content hash), `sources.item.removed` (with the reason)

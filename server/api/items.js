@@ -47,10 +47,12 @@ function manualItem(body) {
     };
 }
 
-function itemsRouter({ db, registry, items, auth, relay, now }) {
+function itemsRouter({ db, registry, items, auth, relay, now, limits }) {
     const router = express.Router();
-    const read = auth.requireCap(CAPS.items);
-    const manage = auth.requireCap(CAPS.manage);
+    // Each guard, then the principal's per-actor limit (api/actor-limits.js), before any work.
+    const read = [auth.requireCap(CAPS.items), limits.reads('sources.read')];
+    const create = [auth.requireCap(CAPS.manage), limits.budget('sources.item.create')];
+    const remove = [auth.requireCap(CAPS.manage), limits.budget('sources.item.remove')];
 
     router.get('/api/v1/items', read, (req, res) => {
         const source = req.query.source ? String(req.query.source) : null;
@@ -79,7 +81,7 @@ function itemsRouter({ db, registry, items, auth, relay, now }) {
         res.json({ item, source: h ? { key: item.source_key, status: h.status, stale: h.stale, last_success_at: h.last_success_at } : null });
     });
 
-    router.post('/api/v1/sources/:key/items', manage, (req, res) => {
+    router.post('/api/v1/sources/:key/items', create, (req, res) => {
         const row = registry.get(req.params.key);
         if (!row) return http.sendProblem(res, 404, 'sources.not_found', { detail: 'no such source', ctx: req.ov });
         if (row.type !== 'manual') return http.sendProblem(res, 409, 'sources.not_manual', { detail: 'items of fetched sources come from their fetches only', ctx: req.ov });
@@ -96,7 +98,7 @@ function itemsRouter({ db, registry, items, auth, relay, now }) {
         res.status(counts.created ? 201 : 200).json({ outcome, item: items.get(saved.id) });
     });
 
-    router.delete('/api/v1/items/:id', manage, (req, res) => {
+    router.delete('/api/v1/items/:id', remove, (req, res) => {
         const reason = toText(req.body && req.body.reason, 300);
         if (!reason) return http.sendProblem(res, 422, 'sources.reason_required', { detail: 'a removal needs a reason (takedown, licence, error…)', ctx: req.ov });
         const found = items.get(String(req.params.id));

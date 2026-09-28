@@ -10,10 +10,10 @@ function createScheduler({ db, ingest, config, now = () => Date.now(), log = con
     let timer = null;
     const running = new Set();
 
-    function tick() {
+    async function tick() {
         const free = config.worker.maxConcurrent - running.size;
         if (free <= 0) return [];
-        const keys = due.all({ now: now(), limit: free + running.size }).map(r => r.key).filter(k => !running.has(k)).slice(0, free);
+        const keys = (await due.all({ now: now(), limit: free + running.size })).map(r => r.key).filter(k => !running.has(k)).slice(0, free);
         for (const key of keys) {
             running.add(key);
             ingest.run(key, { trigger: 'schedule' })
@@ -25,7 +25,7 @@ function createScheduler({ db, ingest, config, now = () => Date.now(), log = con
 
     function start() {
         if (timer) return;
-        timer = setInterval(() => { try { tick(); } catch (err) { log.error(`[scheduler] tick: ${err.message}`); } }, config.worker.tickMs);
+        timer = setInterval(async () => { try { await tick(); } catch (err) { log.error(`[scheduler] tick: ${err.message}`); } }, config.worker.tickMs);
         timer.unref?.();
     }
 

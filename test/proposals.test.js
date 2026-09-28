@@ -41,7 +41,7 @@ t('the service manifest proposal is a valid registry.service-manifest@1', () => 
     assert.deepStrictEqual([...m.capabilities].sort(), Object.values(CAPS).sort());
 });
 
-t('seeds: one real source per category, all disabled, all valid, notes recorded', () => {
+t('seeds: one real source per category, all disabled, all valid, notes recorded', async () => {
     const seeds = require('../seeds/sources.json').sources;
     assert.deepStrictEqual(seeds.map(s => s.category).sort(), [...CATEGORIES].sort());
     for (const s of seeds) {
@@ -53,12 +53,12 @@ t('seeds: one real source per category, all disabled, all valid, notes recorded'
         for (const ep of rec.endpoints) assert.ok(ep.url.startsWith('https://'), ep.url);
         assert.ok(sourceSchema(rec), JSON.stringify(sourceSchema.errors));
     }
-    const { openDb } = require('../server/db');
-    const db = openDb(':memory:');
-    assert.strictEqual(seed(db).created.length, seeds.length);
-    assert.deepStrictEqual(seed(db).created, [], 'never overwrites');
-    assert.strictEqual(db.prepare('SELECT COUNT(*) AS n FROM sources WHERE enabled = 1').get().n, 0);
-    db.close();
+    const fresh = await require('./db').testDb();
+    const db = fresh.db;
+    assert.strictEqual((await seed(db)).created.length, seeds.length);
+    assert.deepStrictEqual((await seed(db)).created, [], 'never overwrites');
+    assert.strictEqual((await db.prepare('SELECT COUNT(*) AS n FROM sources WHERE enabled = 1').get()).n, 0);
+    await fresh.close();
 });
 
 t('API views match sources.source@1 and sources.item@1', async () => {

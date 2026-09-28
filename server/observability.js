@@ -22,20 +22,20 @@ const STATUSES = ['healthy', 'stale', 'failing', 'never_fetched', 'disabled', 'm
 function readers(db, { startedAt }) {
     // A source waits from when it became due, when it was last changed (a new or re-enabled source
     // is due at once, from next_due_at 0) or when this process started, whichever is latest.
-    const due = db.prepare(`SELECT COUNT(*) AS n, MIN(MAX(next_due_at, not_before, updated_at)) AS oldest FROM sources
+    const due = db.prepare(`SELECT COUNT(*) AS n, MIN(GREATEST(next_due_at, not_before, updated_at)) AS oldest FROM sources
         WHERE enabled = 1 AND type != 'manual' AND next_due_at <= @now AND not_before <= @now`);
     const lastRun = db.prepare('SELECT finished_at FROM fetch_runs ORDER BY rid DESC LIMIT 1');
     const lastSuccess = db.prepare('SELECT MAX(last_success_at) AS t FROM sources');
     const items = db.prepare('SELECT COUNT(*) AS n, COUNT(removed_at) AS removed FROM items');
     return {
         /** Enabled fetched sources whose turn has come, and how long the oldest has waited. */
-        queue(t) {
-            const r = due.get({ now: t });
+        async queue(t) {
+            const r = await due.get({ now: t });
             return { due: r.n, oldest_wait_ms: r.n ? Math.max(0, t - Math.max(r.oldest, startedAt)) : 0 };
         },
-        lastFetchAt: () => { const r = lastRun.get(); return r ? r.finished_at : null; },
-        lastSuccessAt: () => lastSuccess.get().t,
-        items: () => { const r = items.get(); return { current: r.n - r.removed, removed: r.removed }; },
+        lastFetchAt: async () => { const r = await lastRun.get(); return r ? r.finished_at : null; },
+        lastSuccessAt: async () => (await lastSuccess.get()).t,
+        items: async () => { const r = await items.get(); return { current: r.n - r.removed, removed: r.removed }; },
     };
 }
 
@@ -46,16 +46,17 @@ function createSourcesReadiness({ db, keys, config, registry, ingest, scheduler,
         service: 'sources',
         release,
         checks: [
-            { name: 'db', required: true, check: () => { db.prepare('SELECT COUNT(*) AS n FROM sources').get(); return true; } },
+            // A real round trip that names the store (postgresql / pglite), and the schema present.
+            { name: 'db', required: true, check: async () => { const r = await db.ready(); if (!r.ok) return r.error; await db.prepare('SELECT COUNT(*) AS n FROM sources').get(); return { ok: true, detail: r.detail }; } },
             { name: 'network_jwks', required: false, check: () => keys.loaded() || 'Network signing key not loaded yet: no service token can be verified' },
             {
                 name: 'fetcher', required: false,
-                check: () => {
-                    const q = read.queue(now());
+                check: async () => {
+                    const q = await read.queue(now());
                     const detail = {
                         enabled: config.worker.enabled, running: scheduler.running(), in_flight: ingest.inflight().length,
                         max_concurrent: config.worker.maxConcurrent, due: q.due, oldest_wait_ms: q.oldest_wait_ms,
-                        last_fetch_at: iso(read.lastFetchAt()),
+                        last_fetch_at: iso(await read.lastFetchAt()),
                     };
                     if (!config.worker.enabled) return { ok: false, error: 'the ingestion worker is off (SOURCES_WORKER=off): nothing is fetched', detail };
                     if (!scheduler.running()) return { ok: false, error: 'the ingestion worker is not running', detail };
@@ -64,12 +65,12 @@ function createSourcesReadiness({ db, keys, config, registry, ingest, scheduler,
                 },
             },
         ],
-        details: (body) => {
+        details: async (body) => {
             const dbOk = body.checks.db.status === 'ok';
             let sources = null;
             if (dbOk) {
                 sources = {};
-                for (const r of registry.all()) {
+                for (const r of await registry.all()) {
                     const s = registry.health(r).status;
                     sources[s] = (sources[s] || 0) + 1;
                 }
@@ -77,7 +78,7 @@ function createSourcesReadiness({ db, keys, config, registry, ingest, scheduler,
             return {
                 sources,
                 runs_in_flight: ingest.inflight().length,
-                outbox: dbOk ? { pending: outbox.pending(), rejected: outbox.rejected(), relay: config.events.url ? (relay.running() ? 'running' : 'stopped') : 'off (EVENTS_URL unset)' } : null,
+                outbox: dbOk ? { pending: await outbox.pending(), rejected: await outbox.rejected(), relay: config.events.url ? (relay.running() ? 'running' : 'stopped') : 'off (EVENTS_URL unset)' } : null,
             };
         },
     });
@@ -89,23 +90,23 @@ function registerSourcesGauges(registry, { db, sources, ingest, outbox, now }) {
     const seconds = (ms) => (ms == null ? null : ms / 1000);
     registry.gauge({
         name: 'sources_sources', help: 'Registered sources by health status', labelNames: ['status'],
-        collect: () => {
+        collect: async () => {
             const n = Object.fromEntries(STATUSES.map((s) => [s, 0]));
-            for (const r of sources.all()) { const s = sources.health(r).status; n[s] = (n[s] || 0) + 1; }
+            for (const r of await sources.all()) { const s = sources.health(r).status; n[s] = (n[s] || 0) + 1; }
             return Object.entries(n).map(([status, value]) => ({ labels: { status }, value }));
         },
     });
     registry.gauge({
         name: 'sources_items', help: 'Items held, current and removed', labelNames: ['state'],
-        collect: () => Object.entries(read.items()).map(([state, value]) => ({ labels: { state }, value })),
+        collect: async () => Object.entries(await read.items()).map(([state, value]) => ({ labels: { state }, value })),
     });
-    registry.gauge({ name: 'sources_fetch_due', help: 'Enabled sources whose next fetch is due now (the fetch queue)', collect: () => read.queue(now()).due });
-    registry.gauge({ name: 'sources_fetch_oldest_wait_seconds', help: 'How long the longest-waiting due source has waited', collect: () => read.queue(now()).oldest_wait_ms / 1000 });
+    registry.gauge({ name: 'sources_fetch_due', help: 'Enabled sources whose next fetch is due now (the fetch queue)', collect: async () => (await read.queue(now())).due });
+    registry.gauge({ name: 'sources_fetch_oldest_wait_seconds', help: 'How long the longest-waiting due source has waited', collect: async () => (await read.queue(now())).oldest_wait_ms / 1000 });
     registry.gauge({ name: 'sources_fetch_in_flight', help: 'Fetch runs in progress', collect: () => ingest.inflight().length });
     // Left out until there is a fetch: a timestamp of 0 would read as "1970", not "never".
-    registry.gauge({ name: 'sources_last_fetch_timestamp_seconds', help: 'When the last fetch run finished (any outcome), Unix seconds', collect: () => seconds(read.lastFetchAt()) });
-    registry.gauge({ name: 'sources_last_success_timestamp_seconds', help: 'When a source was last fetched successfully, Unix seconds', collect: () => seconds(read.lastSuccessAt()) });
-    registry.gauge({ name: 'sources_outbox_pending', help: 'Events waiting in the outbox', collect: () => outbox.pending() });
+    registry.gauge({ name: 'sources_last_fetch_timestamp_seconds', help: 'When the last fetch run finished (any outcome), Unix seconds', collect: async () => seconds(await read.lastFetchAt()) });
+    registry.gauge({ name: 'sources_last_success_timestamp_seconds', help: 'When a source was last fetched successfully, Unix seconds', collect: async () => seconds(await read.lastSuccessAt()) });
+    registry.gauge({ name: 'sources_outbox_pending', help: 'Events waiting in the outbox', collect: async () => await outbox.pending() });
 }
 
 module.exports = { createSourcesReadiness, registerSourcesGauges, OVERDUE_MS };

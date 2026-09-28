@@ -116,12 +116,12 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
         // An unreachable robots.txt is retried sooner than a parsed one.
         const ttl = row.outcome === 'unreachable' ? Math.min(ttlMs, 15 * 60 * 1000) : ttlMs;
         const full = { origin, fetched_at: t, expires_at: t + ttl, ...row };
-        put.run(full);
+        await put.run(full);
         return full;
     }
 
     async function entry(origin) {
-        const cached = get.get(origin);
+        const cached = await get.get(origin);
         if (cached && cached.expires_at > now()) return { row: cached, source: 'cache' };
         if (!inflight.has(origin)) inflight.set(origin, load(origin).finally(() => inflight.delete(origin)));
         return { row: await inflight.get(origin), source: 'fetched' };
@@ -141,7 +141,7 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
         return { allowed, reason: allowed ? null : `disallowed by ${url.origin}/robots.txt`, crawlDelaySec: row.crawl_delay_sec, source };
     }
 
-    return { check, forget: (origin) => db.prepare('DELETE FROM robots_cache WHERE origin = ?').run(origin) };
+    return { check, forget: async (origin) => await db.prepare('DELETE FROM robots_cache WHERE origin = ?').run(origin) };
 }
 
 module.exports = { parseRobots, isAllowed, createRobots };

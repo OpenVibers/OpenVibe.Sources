@@ -51,16 +51,16 @@ t('boot', async () => {
 });
 
 t('a disallowed endpoint is robots_denied and never requested', async () => {
-    svc.registry.create(sourceDef({ key: 'denied', endpoints: [`${web.origin}/private/feed.xml`, `${web.origin}/public/feed.xml`] }), 'test');
+    await svc.registry.create(sourceDef({ key: 'denied', endpoints: [`${web.origin}/private/feed.xml`, `${web.origin}/public/feed.xml`] }), 'test');
     const out = await svc.ingest.run('denied', { trigger: 'manual' });
     assert.deepStrictEqual(out.runs.map(r => r.state), ['robots_denied', 'ok']);
     assert.strictEqual(web.hits('/private/feed.xml').length, 0);
     assert.strictEqual(web.hits('/robots.txt').length, 1, 'robots.txt is cached per origin');
-    assert.ok(svc.outbox.all().some(e => e.event_type === 'sources.fetch.failed' && e.payload.state === 'robots_denied'));
+    assert.ok((await svc.outbox.all()).some(e => e.event_type === 'sources.fetch.failed' && e.payload.state === 'robots_denied'));
 });
 
 t('a redirect into a disallowed path is refused before it is followed', async () => {
-    svc.registry.create(sourceDef({ key: 'hop', endpoints: [`${web.origin}/public/moved`] }), 'test');
+    await svc.registry.create(sourceDef({ key: 'hop', endpoints: [`${web.origin}/public/moved`] }), 'test');
     const out = await svc.ingest.run('hop', { trigger: 'manual' });
     assert.deepStrictEqual([out.runs[0].state, out.runs[0].error_code], ['robots_denied', 'hop_refused']);
     assert.strictEqual(web.hits('/private/feed.xml').length, 0);
@@ -70,8 +70,8 @@ t('robots.txt 5xx or unreachable means complete disallow; 404 means allowed', as
     const down = await site({ '/robots.txt': () => ({ status: 503 }), '/feed.xml': () => ({ body: FEED }) });
     const none = await site({ '/robots.txt': () => ({ status: 404 }), '/feed.xml': () => ({ body: FEED }) });
     try {
-        svc.registry.create(sourceDef({ key: 'robots-down', endpoints: [`${down.origin}/feed.xml`] }), 'test');
-        svc.registry.create(sourceDef({ key: 'robots-none', endpoints: [`${none.origin}/feed.xml`] }), 'test');
+        await svc.registry.create(sourceDef({ key: 'robots-down', endpoints: [`${down.origin}/feed.xml`] }), 'test');
+        await svc.registry.create(sourceDef({ key: 'robots-none', endpoints: [`${none.origin}/feed.xml`] }), 'test');
         assert.strictEqual((await svc.ingest.run('robots-down', { trigger: 'manual' })).runs[0].state, 'robots_denied');
         assert.strictEqual(down.hits('/feed.xml').length, 0);
         assert.strictEqual((await svc.ingest.run('robots-none', { trigger: 'manual' })).runs[0].state, 'ok');
@@ -81,7 +81,7 @@ t('robots.txt 5xx or unreachable means complete disallow; 404 means allowed', as
 t('Crawl-delay spaces requests to the host', async () => {
     const s = await site({ '/robots.txt': () => ({ body: 'User-agent: *\nCrawl-delay: 1\n' }), '/a': () => ({ body: FEED }), '/b': () => ({ body: FEED }) });
     try {
-        svc.registry.create(sourceDef({ key: 'crawl-delay', endpoints: [`${s.origin}/a`, `${s.origin}/b`] }), 'test');
+        await svc.registry.create(sourceDef({ key: 'crawl-delay', endpoints: [`${s.origin}/a`, `${s.origin}/b`] }), 'test');
         await svc.ingest.run('crawl-delay', { trigger: 'manual' });
         const gap = s.hits('/b')[0].at - s.hits('/a')[0].at;
         assert.ok(gap >= 950, `gap ${gap} ms`);
@@ -91,12 +91,12 @@ t('Crawl-delay spaces requests to the host', async () => {
 t('loopback and private addresses are refused unless explicitly allowlisted', async () => {
     const strict = await boot({ env: { SOURCES_ALLOW_PRIVATE_HOSTS: '' } });
     try {
-        strict.registry.create(sourceDef({ key: 'loop', endpoints: [`${web.origin}/public/feed.xml`] }), 'test');
+        await strict.registry.create(sourceDef({ key: 'loop', endpoints: [`${web.origin}/public/feed.xml`] }), 'test');
         const out = await strict.ingest.run('loop', { trigger: 'manual' });
         assert.strictEqual(out.runs[0].state, 'http_error');
         assert.ok(['address_refused', 'port_refused'].includes(out.runs[0].error_code), out.runs[0].error_code);
         const n = web.requests.length;
-        strict.registry.create(sourceDef({ key: 'meta', endpoints: ['http://169.254.169.254/latest/meta-data/'] }), 'test');
+        await strict.registry.create(sourceDef({ key: 'meta', endpoints: ['http://169.254.169.254/latest/meta-data/'] }), 'test');
         const meta = await strict.ingest.run('meta', { trigger: 'manual' });
         assert.deepStrictEqual([meta.runs[0].state, meta.runs[0].error_code], ['http_error', 'address_refused']);
         assert.strictEqual(web.requests.length, n);
@@ -109,19 +109,19 @@ t('a public-looking name that resolves to a private address is refused at connec
     const strict = await boot({ env: { SOURCES_ALLOW_PRIVATE_HOSTS: '', SOURCES_ALLOWED_PORTS: `80,443,${new URL(web.origin).port}` }, lookupImpl });
     try {
         const port = new URL(web.origin).port;
-        strict.registry.create(sourceDef({ key: 'rebind', endpoints: [`http://feeds.example.com:${port}/public/feed.xml`] }), 'test');
+        await strict.registry.create(sourceDef({ key: 'rebind', endpoints: [`http://feeds.example.com:${port}/public/feed.xml`] }), 'test');
         const n = web.requests.length;
         const out = await strict.ingest.run('rebind', { trigger: 'manual' });
         assert.deepStrictEqual([out.runs[0].state, out.runs[0].error_code], ['http_error', 'address_refused']);
         assert.strictEqual(web.requests.length, n, 'no connection was made');
-        assert.strictEqual(strict.db.prepare('SELECT COUNT(*) AS n FROM items').get().n, 0);
+        assert.strictEqual((await strict.db.prepare('SELECT COUNT(*) AS n FROM items').get()).n, 0);
     } finally { await strict.stop(); }
 });
 
 t('redirects to an internal address are refused', async () => {
     const s = await site({ '/robots.txt': () => ({ status: 404 }), '/r': () => ({ status: 302, headers: { Location: 'http://10.0.0.5/admin' } }) });
     try {
-        svc.registry.create(sourceDef({ key: 'redir-internal', endpoints: [`${s.origin}/r`] }), 'test');
+        await svc.registry.create(sourceDef({ key: 'redir-internal', endpoints: [`${s.origin}/r`] }), 'test');
         const out = await svc.ingest.run('redir-internal', { trigger: 'manual' });
         assert.deepStrictEqual([out.runs[0].state, out.runs[0].error_code], ['http_error', 'address_refused']);
     } finally { await s.close(); }

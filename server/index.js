@@ -21,9 +21,10 @@ const { createOutbox, createRelay } = require('./events/outbox');
 const { createKeyStore, createAuth } = require('./auth');
 const { createApp } = require('./app');
 
-async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fetch, tokenClient, lookupImpl, log = console, listen = true, limitsNow = null } = {}) {
+async function start({ config, db: givenDb = null, now = () => Date.now(), fetchImpl = globalThis.fetch, tokenClient, lookupImpl, log = console, listen = true, limitsNow = null } = {}) {
     config = config || load();
-    const db = openDb(config.dbPath);
+    // PostgreSQL (ADR-035): opened and migrated here unless the caller (a test) hands in a migrated handle.
+    const db = givenDb || await openDb(config, { log });
     const outbox = createOutbox(db, { source: config.serviceId, now });
     const relay = createRelay({
         db, outbox, eventsUrl: config.events.url, intervalMs: config.events.relayIntervalMs, fetchImpl, log, now,
@@ -48,7 +49,7 @@ async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fe
     const keyLoaded = keys.start().catch(() => null);
     relay.start();
     if (config.worker.enabled) scheduler.start();
-    const pruneTimer = setInterval(() => { try { outbox.prune(); } catch (err) { log.error(`[outbox] prune: ${err.message}`); } }, 6 * 3600 * 1000);
+    const pruneTimer = setInterval(async () => { try { await outbox.prune(); } catch (err) { log.error(`[outbox] prune: ${err.message}`); } }, 6 * 3600 * 1000);
     pruneTimer.unref?.();
 
     let server = null;
@@ -69,7 +70,7 @@ async function start({ config, now = () => Date.now(), fetchImpl = globalThis.fe
             server.closeAllConnections?.();
             await new Promise(resolve => server.close(() => resolve()));
         }
-        db.close();
+        if (!givenDb) await db.close();
     }
 
     return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, outbox, relay, keys, keyLoaded, auth, app, server, close };

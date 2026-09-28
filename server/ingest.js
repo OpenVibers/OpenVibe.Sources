@@ -72,8 +72,8 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
         } catch { return null; }
     }
 
-    function failedEvent(source, run, failures) {
-        outbox.enqueue({
+    async function failedEvent(source, run, failures) {
+        await outbox.enqueue({
             event_type: 'sources.fetch.failed',
             subject: { type: 'source', id: source.key },
             payload: {
@@ -84,12 +84,12 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
     }
 
     /** Record a run that changed no item (every non-ok outcome, and 304). */
-    function recordNoItems(source, run, { countsAsFailure, failures }) {
-        db.transaction(() => {
-            st.insertRun.run(run);
-            if (run.endpoint_url && run.http_status != null) st.touchEndpoint.run({ k: source.key, u: run.endpoint_url, status: run.http_status, at: run.finished_at });
-            if (countsAsFailure) failedEvent(source, run, failures);
-        })();
+    async function recordNoItems(source, run, { countsAsFailure, failures }) {
+        await db.tx(async () => {
+            await st.insertRun.run(run);
+            if (run.endpoint_url && run.http_status != null) await st.touchEndpoint.run({ k: source.key, u: run.endpoint_url, status: run.http_status, at: run.finished_at });
+            if (countsAsFailure) await failedEvent(source, run, failures);
+        });
         return run;
     }
 
@@ -126,9 +126,9 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
             return { run, failed: true };
         }
 
-        const validators = st.endpoint.get(source.key, endpoint.url) || {};
+        const validators = await st.endpoint.get(source.key, endpoint.url) || {};
         await space(host, source.min_interval_ms);
-        st.requested.run(now(), source.key);
+        await st.requested.run(now(), source.key);
         let res;
         try {
             res = await fetcher.fetchUrl(requestUrl.toString(), {
@@ -185,20 +185,20 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
         }
 
         // The only path that touches items: the run row, items, validators and events commit together.
-        db.transaction(() => {
-            const counts = items.ingest(source, parsed.items, {
+        await db.tx(async () => {
+            const counts = await items.ingest(source, parsed.items, {
                 runId: run.id, rawBodyHash: run.raw_body_hash, parserVersion: adapter.version, retrievedAt: run.finished_at,
             });
             Object.assign(run, {
                 state: 'ok', items_seen: parsed.items.length, items_created: counts.created, items_updated: counts.updated,
                 items_unchanged: counts.unchanged, items_skipped: parsed.skipped + counts.skipped,
             });
-            st.insertRun.run(run);
-            st.saveValidators.run({
+            await st.insertRun.run(run);
+            await st.saveValidators.run({
                 k: source.key, u: endpoint.url, etag: res.headers.etag || null, lm: res.headers['last-modified'] || null,
                 status: res.status, at: run.finished_at,
             });
-        })();
+        });
         return { run, failed: false, success: true, recorded: true };
     }
 
@@ -208,7 +208,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
      * run(key, { trigger }) → { runs: [...] } | { busy: true } | { manual: true } | null (unknown)
      */
     async function run(key, { trigger = 'schedule' } = {}) {
-        const row = registry.get(key);
+        const row = await registry.get(key);
         if (!row) return null;
         if (row.type === 'manual') return { manual: true };
         if (inflight.has(key)) return { busy: true };
@@ -221,7 +221,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
             if (!source.enabled) {
                 const r = baseRun(source, null, trigger, t);
                 Object.assign(r, { state: 'disabled', error_code: 'source_disabled', detail: 'the source is disabled' });
-                runs.push(recordNoItems(source, r, { countsAsFailure: false }));
+                runs.push(await recordNoItems(source, r, { countsAsFailure: false }));
                 return { runs };
             }
             const sinceLast = row.last_request_at == null ? Infinity : t - row.last_request_at;
@@ -229,7 +229,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
                 const r = baseRun(source, null, trigger, t);
                 const until = Math.max(row.not_before, (row.last_request_at || 0) + source.min_interval_ms);
                 Object.assign(r, { state: 'rate_limited', error_code: 'local_rate_limit', detail: `next request allowed at ${new Date(until).toISOString()}` });
-                runs.push(recordNoItems(source, r, { countsAsFailure: false }));
+                runs.push(await recordNoItems(source, r, { countsAsFailure: false }));
                 return { runs, rateLimitedUntil: until };
             }
 
@@ -251,7 +251,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
                 if (out.failed) { anyFailure = true; failures = row.consecutive_failures + 1; }
                 if (out.success) anySuccess = true;
                 if (out.notBefore) notBefore = Math.max(notBefore, out.notBefore);
-                if (!out.recorded) recordNoItems(source, out.run, { countsAsFailure: out.failed, failures });
+                if (!out.recorded) await recordNoItems(source, out.run, { countsAsFailure: out.failed, failures });
                 runs.push(out.run);
                 if (out.run.state === 'rate_limited') break;   // the site asked us to stop
             }
@@ -262,7 +262,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
                 ? Math.min(source.poll_interval_sec * 1000 * 2 ** Math.min(newFailures - 1, 10), Math.max(config.worker.maxBackoffMs, source.poll_interval_sec * 1000))
                 : source.poll_interval_sec * 1000;
             const lastState = runs.map(r => r.state).find(s => FAILURE_STATES.has(s)) || runs[runs.length - 1].state;
-            st.finish.run({
+            await st.finish.run({
                 key, at: finishedAt, state: lastState, failures: newFailures,
                 success_at: anySuccess ? finishedAt : null, next_due: finishedAt + backoff, not_before: notBefore,
             });

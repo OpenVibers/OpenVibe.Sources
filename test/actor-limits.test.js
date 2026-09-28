@@ -61,15 +61,15 @@ t('the next minute opens the window again', async () => {
 
 t('source changes: 30 a minute per principal; nothing is stored past it; another staff tool passes', async () => {
     clock = Date.UTC(2026, 8, 27, 12, 5, 0);
-    const count = () => svc.db.prepare('SELECT COUNT(*) AS n FROM sources').get().n;
+    const count = async () => (await svc.db.prepare('SELECT COUNT(*) AS n FROM sources').get()).n;
     for (let i = 0; i < 30; i++) {
         const r = await api('POST', '/api/v1/sources', { token: ADMIN, body: sourceDef({ key: `limits-${i}`, enabled: false, endpoints: ['https://example.org/feed'] }) });
         assert.strictEqual(r.status, 201, `source ${i + 1}: ${r.text}`);
     }
-    const before = count();
+    const before = await count();
     const r = await api('POST', '/api/v1/sources', { token: ADMIN, body: sourceDef({ key: 'one-too-many', enabled: false, endpoints: ['https://example.org/feed'] }) });
     assert.deepStrictEqual([r.status, r.body.code, r.headers.get('retry-after')], [429, 'rate_limited', '60']);
-    assert.strictEqual(count(), before, 'nothing stored');
+    assert.strictEqual(await count(), before, 'nothing stored');
     const other = await api('POST', '/api/v1/sources', { token: STAFF_TOOL, body: sourceDef({ key: 'other-tool', enabled: false, endpoints: ['https://example.org/feed'] }) });
     assert.strictEqual(other.status, 201, other.text);
 });

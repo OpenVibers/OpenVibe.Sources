@@ -84,8 +84,8 @@ function createItems({ db, outbox, now = () => Date.now() }) {
         return { type: 'item', id: row.id, revision: row.revision };
     }
 
-    function itemEvent(type, row, extra = {}) {
-        outbox.enqueue({
+    async function itemEvent(type, row, extra = {}) {
+        await outbox.enqueue({
             event_type: type,
             subject: subjectOf(row),
             payload: {
@@ -121,9 +121,9 @@ function createItems({ db, outbox, now = () => Date.now() }) {
         return doc;
     }
 
-    function indexEvent(source, row, deleted = false) {
+    async function indexEvent(source, row, deleted = false) {
         if (!source.search_visibility) return;
-        outbox.enqueue({
+        await outbox.enqueue({
             event_type: deleted ? 'sources.index_document.deleted' : 'sources.index_document.upserted',
             subject: subjectOf(row),
             payload: deleted ? { type: 'item', id: row.id, revision: row.revision } : indexDocument(row),
@@ -161,31 +161,31 @@ function createItems({ db, outbox, now = () => Date.now() }) {
      * Apply one successful fetch's parsed items. Must run inside the transaction that also writes
      * the fetch run row. → { created, updated, unchanged, skipped }
      */
-    function ingest(source, parsedItems, ctx) {
-        if (!db.inTransaction) throw new Error('items.ingest() must run inside the fetch run transaction');
+    async function ingest(source, parsedItems, ctx) {
+        if (!db.inTransaction()) throw new Error('items.ingest() must run inside the fetch run transaction');
         const counts = { created: 0, updated: 0, unchanged: 0, skipped: 0 };
         for (const it of parsedItems) {
-            const cur = st.byIdentity.get(source.key, it.identity);
+            const cur = await st.byIdentity.get(source.key, it.identity);
             const v = values(source, it, ctx);
             if (!cur) {
-                const row = { id: `itm_${ids.ulid(ctx.retrievedAt)}`, source_key: source.key, category: source.category, identity: it.identity, first_seen_at: ctx.retrievedAt, entered_by: ctx.enteredBy || null, change_seq: nextSeq(db, 'items'), ...v };
-                st.insert.run(row);
-                const saved = st.byId.get(row.id);
-                st.revision.run(saved.id, 1, saved.content_hash, saved.raw_body_hash, saved.parser_version, ctx.runId || null, ctx.retrievedAt, snapshot(saved));
-                itemEvent('sources.item.created', saved);
-                indexEvent(source, saved);
+                const row = { id: `itm_${ids.ulid(ctx.retrievedAt)}`, source_key: source.key, category: source.category, identity: it.identity, first_seen_at: ctx.retrievedAt, entered_by: ctx.enteredBy || null, change_seq: await nextSeq(db, 'items'), ...v };
+                await st.insert.run(row);
+                const saved = await st.byId.get(row.id);
+                await st.revision.run(saved.id, 1, saved.content_hash, saved.raw_body_hash, saved.parser_version, ctx.runId || null, ctx.retrievedAt, snapshot(saved));
+                await itemEvent('sources.item.created', saved);
+                await indexEvent(source, saved);
                 counts.created++;
             } else if (cur.removed_at) {
                 counts.skipped++;           // removal is sticky
             } else if (cur.content_hash !== v.content_hash) {
-                st.update.run({ ...v, id: cur.id, change_seq: nextSeq(db, 'items') });
-                const saved = st.byId.get(cur.id);
-                st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, ctx.runId || null, ctx.retrievedAt, snapshot(saved));
-                itemEvent('sources.item.updated', saved, { previous_content_hash: cur.content_hash });
-                indexEvent(source, saved);
+                await st.update.run({ ...v, id: cur.id, change_seq: await nextSeq(db, 'items') });
+                const saved = await st.byId.get(cur.id);
+                await st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, ctx.runId || null, ctx.retrievedAt, snapshot(saved));
+                await itemEvent('sources.item.updated', saved, { previous_content_hash: cur.content_hash });
+                await indexEvent(source, saved);
                 counts.updated++;
             } else {
-                st.seen.run(ctx.retrievedAt, ctx.runId || null, cur.id);
+                await st.seen.run(ctx.retrievedAt, ctx.runId || null, cur.id);
                 counts.unchanged++;
             }
         }
@@ -193,27 +193,27 @@ function createItems({ db, outbox, now = () => Date.now() }) {
     }
 
     /** Remove an item (takedown, licence, error). Sticky; emits sources.item.removed. */
-    function remove(source, id, reason, by) {
-        return db.transaction(() => {
-            const cur = st.byId.get(id);
+    async function remove(source, id, reason, by) {
+        return await db.tx(async () => {
+            const cur = await st.byId.get(id);
             if (!cur || cur.source_key !== source.key) return null;
             if (cur.removed_at) return view(cur);
             const t = now();
-            st.remove.run(t, `${reason}${by ? ` (by ${by})` : ''}`.slice(0, 500), nextSeq(db, 'items'), id);
-            const saved = st.byId.get(id);
-            st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, null, t, JSON.stringify({ removed: true, reason }));
-            itemEvent('sources.item.removed', saved, { reason });
-            indexEvent(source, saved, true);
+            await st.remove.run(t, `${reason}${by ? ` (by ${by})` : ''}`.slice(0, 500), await nextSeq(db, 'items'), id);
+            const saved = await st.byId.get(id);
+            await st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, null, t, JSON.stringify({ removed: true, reason }));
+            await itemEvent('sources.item.removed', saved, { reason });
+            await indexEvent(source, saved, true);
             return view(saved);
-        })();
+        });
     }
 
-    function get(id, { revisions = false } = {}) {
-        const row = st.byId.get(id);
+    async function get(id, { revisions = false } = {}) {
+        const row = await st.byId.get(id);
         if (!row) return null;
         const out = view(row);
         if (revisions) {
-            out.revisions = st.revisions.all(id).map(r => ({
+            out.revisions = (await st.revisions.all(id)).map(r => ({
                 revision: r.revision, content_hash: r.content_hash, raw_body_hash: r.raw_body_hash, parser_version: r.parser_version,
                 fetch_run_id: r.fetch_run_id, retrieved_at: new Date(r.retrieved_at).toISOString(), snapshot: JSON.parse(r.snapshot),
             }));
@@ -222,9 +222,9 @@ function createItems({ db, outbox, now = () => Date.now() }) {
     }
 
     /** Items in change order (created, updated or removed after `after`). */
-    function list({ source = null, category = null, after = 0, limit = 100, includeRemoved = false } = {}) {
-        const rows = db.prepare(`SELECT * FROM items WHERE change_seq > @after
-            AND (@source IS NULL OR source_key = @source) AND (@category IS NULL OR category = @category)
+    async function list({ source = null, category = null, after = 0, limit = 100, includeRemoved = false } = {}) {
+        const rows = await db.prepare(`SELECT * FROM items WHERE change_seq > @after
+            AND (@source::text IS NULL OR source_key = @source) AND (@category::text IS NULL OR category = @category)
             AND (@incl = 1 OR removed_at IS NULL)
             ORDER BY change_seq LIMIT @limit`).all({ after, source, category, incl: includeRemoved ? 1 : 0, limit: limit + 1 });
         const more = rows.length > limit;

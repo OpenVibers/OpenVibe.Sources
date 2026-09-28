@@ -48,67 +48,67 @@ function sourcesRouter({ db, registry, ingest, auth, limits }) {
     };
     const notFound = (res, req) => http.sendProblem(res, 404, 'sources.not_found', { detail: 'no such source', ctx: req.ov });
 
-    router.get('/api/v1/sources', read, (req, res) => {
-        res.json({ sources: registry.all().map(registry.view) });
+    router.get('/api/v1/sources', read, async (req, res) => {
+        res.json({ sources: (await registry.all()).map(registry.view) });
     });
 
-    router.get('/api/v1/sources/:key', read, (req, res) => {
-        const row = registry.get(req.params.key);
+    router.get('/api/v1/sources/:key', read, async (req, res) => {
+        const row = await registry.get(req.params.key);
         if (!row) return notFound(res, req);
         res.json({ source: registry.view(row) });
     });
 
-    router.get('/api/v1/sources/:key/runs', read, (req, res) => {
-        if (!registry.get(req.params.key)) return notFound(res, req);
+    router.get('/api/v1/sources/:key/runs', read, async (req, res) => {
+        if (!await registry.get(req.params.key)) return notFound(res, req);
         const before = /^\d{1,15}$/.test(String(req.query.before || '')) ? Number(req.query.before) : Number.MAX_SAFE_INTEGER;
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
-        const rows = db.prepare('SELECT * FROM fetch_runs WHERE source_key = ? AND rid < ? ORDER BY rid DESC LIMIT ?').all(req.params.key, before, limit);
+        const rows = await db.prepare('SELECT * FROM fetch_runs WHERE source_key = ? AND rid < ? ORDER BY rid DESC LIMIT ?').all(req.params.key, before, limit);
         res.json({ runs: rows.map(runView), next_before: rows.length === limit ? rows[rows.length - 1].rid : null });
     });
 
-    router.get('/api/v1/runs', read, (req, res) => {
+    router.get('/api/v1/runs', read, async (req, res) => {
         const state = req.query.state ? String(req.query.state) : null;
         if (state && state !== 'failed' && !STATES.includes(state)) return http.sendProblem(res, 400, 'sources.bad_query', { detail: `state must be failed or one of ${STATES.join('|')}`, ctx: req.ov });
         const after = /^\d{1,15}$/.test(String(req.query.after || '')) ? Number(req.query.after) : 0;
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
-        const rows = db.prepare(`SELECT * FROM fetch_runs WHERE rid > @after AND (@source IS NULL OR source_key = @source)
-            AND (@state IS NULL OR state = @state OR (@state = 'failed' AND state IN ('http_error','timeout','robots_denied','parse_error','rate_limited')))
+        const rows = await db.prepare(`SELECT * FROM fetch_runs WHERE rid > @after AND (@source::text IS NULL OR source_key = @source)
+            AND (@state::text IS NULL OR state = @state OR (@state = 'failed' AND state IN ('http_error','timeout','robots_denied','parse_error','rate_limited')))
             ORDER BY rid LIMIT @limit`).all({ after, source: req.query.source ? String(req.query.source) : null, state, limit });
         res.json({ runs: rows.map(runView), next_after: rows.length ? rows[rows.length - 1].rid : after });
     });
 
-    router.get('/api/v1/health', read, (req, res) => {
-        const views = registry.all().map(r => ({ key: r.key, category: r.category, type: r.type, ...registry.health(r) }));
+    router.get('/api/v1/health', read, async (req, res) => {
+        const views = (await registry.all()).map(r => ({ key: r.key, category: r.category, type: r.type, ...registry.health(r) }));
         const counts = {};
         for (const v of views) counts[v.status] = (counts[v.status] || 0) + 1;
         res.json({ counts, attention: views.filter(v => ['failing', 'stale', 'never_fetched'].includes(v.status)) });
     });
 
-    router.post('/api/v1/sources', manage, (req, res) => {
+    router.post('/api/v1/sources', manage, async (req, res) => {
         try {
-            const row = registry.create(req.body, req.principal.sub);
+            const row = await registry.create(req.body, req.principal.sub);
             res.status(201).json({ source: registry.view(row) });
         } catch (err) { fail(res, req, err); }
     });
 
-    router.patch('/api/v1/sources/:key', manage, (req, res) => {
+    router.patch('/api/v1/sources/:key', manage, async (req, res) => {
         try {
-            const row = registry.patch(req.params.key, req.body, req.principal.sub);
+            const row = await registry.patch(req.params.key, req.body, req.principal.sub);
             if (!row) return notFound(res, req);
             res.json({ source: registry.view(row) });
         } catch (err) { fail(res, req, err); }
     });
 
-    router.delete('/api/v1/sources/:key', manage, (req, res) => {
+    router.delete('/api/v1/sources/:key', manage, async (req, res) => {
         try {
-            const ok = db.transaction(() => {
-                const r = registry.remove(req.params.key);
+            const ok = await db.tx(async () => {
+                const r = await registry.remove(req.params.key);
                 if (r) {
-                    db.prepare('DELETE FROM fetch_runs WHERE source_key = ?').run(req.params.key);
-                    db.prepare('DELETE FROM endpoint_state WHERE source_key = ?').run(req.params.key);
+                    await db.prepare('DELETE FROM fetch_runs WHERE source_key = ?').run(req.params.key);
+                    await db.prepare('DELETE FROM endpoint_state WHERE source_key = ?').run(req.params.key);
                 }
                 return r;
-            })();
+            });
             if (!ok) return notFound(res, req);
             res.status(204).end();
         } catch (err) { fail(res, req, err); }

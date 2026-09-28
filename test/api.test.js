@@ -66,7 +66,7 @@ t('create, read, fetch, list runs; views never carry a credential value', async 
     let f = await api('POST', '/api/v1/sources/feed-a/fetch', { token: ADMIN });
     assert.strictEqual(f.body.runs[0].state, 'disabled');
     await api('PATCH', '/api/v1/sources/feed-a', { token: ADMIN, body: { auth: { mode: 'none' } } });
-    svc.db.prepare('UPDATE sources SET last_request_at = NULL').run();
+    await svc.db.prepare('UPDATE sources SET last_request_at = NULL').run();
     f = await api('POST', '/api/v1/sources/feed-a/fetch', { token: ADMIN });
     assert.strictEqual(f.status, 200);
     assert.deepStrictEqual(f.body.runs.map(r => [r.state, r.items.created]), [['ok', 5]]);
@@ -116,7 +116,7 @@ t('removal needs a reason, is visible with include_removed, and appears in the c
     assert.deepStrictEqual(one.body.item.revisions.map(r => r.revision), [1, 2]);
     assert.strictEqual((await api('DELETE', '/api/v1/sources/feed-a', { token: ADMIN })).status, 409, 'a source with items cannot be deleted');
     const gone = await api('DELETE', '/api/v1/sources/proposal', { token: ADMIN });
-    assert.strictEqual(gone.status, 204, gone.text + JSON.stringify(svc.db.prepare('SELECT key FROM sources').all()));
+    assert.strictEqual(gone.status, 204, gone.text + JSON.stringify(await svc.db.prepare('SELECT key FROM sources').all()));
 });
 
 t('manual sources: items need an evidence URL; fetches are refused', async () => {

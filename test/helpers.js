@@ -57,9 +57,11 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, lo
         SOURCES_TICK_MS: '50',
         ...env,
     });
-    const h = await start({ config, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
+    // One database per boot (PGlite, or SOURCES_TEST_STORE=pg: the containers), dropped when the boot stops.
+    const testdb = await require('./db').testDb();
+    const h = await start({ config, db: testdb.db, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
-    return { ...h, base, dir, async stop() { await h.close(); } };
+    return { ...h, base, dir, async stop() { await h.close(); await testdb.close(); } };
 }
 
 async function request(base, method, p, { token, body, headers = {} } = {}) {

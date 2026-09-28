@@ -42,7 +42,7 @@ const fill = (p, v) => p.replace(/:([A-Za-z0-9_]+)/g, () => encodeURIComponent(v
 t('boot with a sentinel client secret and a source whose endpoint carries a key', async () => {
     web = await site({ '/robots.txt': () => ({ status: 404 }), '/feed.xml': () => ({ status: 500, body: 'upstream broke' }) });
     svc = await boot({ env: { OV_OAUTH_CLIENT_SECRET: SECRET, OV_OAUTH_CLIENT_ID: 'sources', OV_NETWORK_INTERNAL_URL: 'http://127.0.0.1:9' } });
-    svc.registry.create(sourceDef({ key: 'keyed', endpoints: [`${web.origin}/feed.xml?api_key=${FEED_KEY}`] }), 'test');
+    await svc.registry.create(sourceDef({ key: 'keyed', endpoints: [`${web.origin}/feed.xml?api_key=${FEED_KEY}`] }), 'test');
     await svc.ingest.run('keyed', { trigger: 'manual' });
 });
 
@@ -76,8 +76,8 @@ t('every route, as every kind of caller, with real and nonsense ids: the client 
     assert.deepStrictEqual(refusedApi, [], 'an /api/v1 route answered without a valid service token');
 });
 
-t('the outbox carries neither', () => {
-    const rows = JSON.stringify(svc.outbox.all ? svc.outbox.all() : svc.db.prepare('SELECT * FROM event_outbox').all());
+t('the outbox carries neither', async () => {
+    const rows = JSON.stringify(svc.outbox.all ? await svc.outbox.all() : await svc.db.prepare('SELECT * FROM event_outbox').all());
     assert.ok(!rows.includes(SECRET), 'client secret in the outbox');
     assert.ok(!rows.includes(FEED_KEY), 'feed key in the outbox');
 });

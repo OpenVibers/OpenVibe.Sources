@@ -79,7 +79,7 @@ t('endpoints spelled as internal addresses (with the stub\'s port) are refused a
         let i = 0;
         for (const host of ['127.0.0.1', '2130706433', '0177.0.0.1', '0x7f000001', '127.1', '[::ffff:127.0.0.1]', '[::ffff:7f00:1]', '[::1]', '0.0.0.0']) {
             const key = `spell-${i++}`;
-            svc.registry.create(sourceDef({ key, endpoints: [`http://${host}:${port}/feed.xml`] }), 'test');
+            await svc.registry.create(sourceDef({ key, endpoints: [`http://${host}:${port}/feed.xml`] }), 'test');
             const out = await svc.ingest.run(key, { trigger: 'manual' });
             assert.deepStrictEqual([out.runs[0].state, out.runs[0].error_code], ['http_error', 'address_refused'], host);
         }
@@ -102,7 +102,7 @@ t('a name whose DNS answers include any internal address is refused where the co
         const n = web.requests.length;
         for (const host of Object.keys(table)) {
             const key = `dns-${host.split('.')[0]}`;
-            svc.registry.create(sourceDef({ key, endpoints: [`http://${host}:${port}/feed.xml`] }), 'test');
+            await svc.registry.create(sourceDef({ key, endpoints: [`http://${host}:${port}/feed.xml`] }), 'test');
             const out = await svc.ingest.run(key, { trigger: 'manual' });
             assert.deepStrictEqual([out.runs[0].state, out.runs[0].error_code], ['http_error', 'address_refused'], host);
         }
@@ -120,7 +120,7 @@ t('a redirect to any internal spelling is refused at that hop; the internal targ
         for (const to of [`http://127.0.0.1:${port}/feed.xml`, `http://2130706433:${port}/feed.xml`, `http://0x7f.1:${port}/feed.xml`, `http://[::ffff:7f00:1]:${port}/feed.xml`,
             `http://[::1]:${port}/feed.xml`, 'http://169.254.169.254/latest/meta-data/', 'http://10.0.0.5/admin', 'file:///etc/passwd', `gopher://127.0.0.1:${port}/_x`]) {
             const key = `redir-${i++}`;
-            svc.registry.create(sourceDef({ key, endpoints: [`http://hop.example.com:${port}/to/${encodeURIComponent(to)}`] }), 'test');
+            await svc.registry.create(sourceDef({ key, endpoints: [`http://hop.example.com:${port}/to/${encodeURIComponent(to)}`] }), 'test');
             const before = web.hits('/feed.xml').length;
             const out = await svc.ingest.run(key, { trigger: 'manual' });
             assert.strictEqual(out.runs[0].state, 'http_error', `${to}: ${out.runs[0].state}`);
@@ -142,7 +142,7 @@ t('a source registered over the API with internal endpoints is stored, and its f
             const n = web.requests.length;
             const r = await request(svc.base, 'POST', '/api/v1/sources/api-internal/fetch', { token, body: {} });
             assert.ok(r.status < 500, r.text.slice(0, 200));
-            for (let i = 0; i < 20 && svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key = 'api-internal'").get().n < 2; i++) await new Promise((res) => setTimeout(res, 50));
+            for (let i = 0; i < 20 && (await svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key = 'api-internal'").get()).n < 2; i++) await new Promise((res) => setTimeout(res, 50));
             assert.strictEqual(web.requests.length, n, 'the internal endpoint was fetched');
         }
     } finally { await svc.stop(); }

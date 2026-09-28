@@ -205,36 +205,36 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 500 }) {
         return { ...fromRow(row), health: health(row), created_at: new Date(row.created_at).toISOString(), updated_at: new Date(row.updated_at).toISOString() };
     }
 
-    function create(input, by) {
+    async function create(input, by) {
         const rec = validateSource(input, { maxItemsCap });
-        if (st.get.get(rec.key)) throw new RegistryError(`source ${rec.key} exists`, 'sources.exists');
-        st.insert.run(toRow(rec, by));
-        return st.get.get(rec.key);
+        if (await st.get.get(rec.key)) throw new RegistryError(`source ${rec.key} exists`, 'sources.exists');
+        await st.insert.run(toRow(rec, by));
+        return await st.get.get(rec.key);
     }
 
-    function patch(key, changes, by) {
-        const row = st.get.get(key);
+    async function patch(key, changes, by) {
+        const row = await st.get.get(key);
         if (!row) return null;
         if (changes && changes.key !== undefined && changes.key !== key) throw new RegistryError('key cannot change');
-        if (changes && changes.type !== undefined && changes.type !== row.type && st.itemCount.get(key).n) {
+        if (changes && changes.type !== undefined && changes.type !== row.type && (await st.itemCount.get(key)).n) {
             throw new RegistryError('type cannot change once the source has items (register a new source)');
         }
         const merged = { ...fromRow(row), ...(changes || {}), key };
         const rec = validateSource(merged, { maxItemsCap });
-        st.update.run({ ...toRow(rec, by) });
-        return st.get.get(key);
+        await st.update.run({ ...toRow(rec, by) });
+        return await st.get.get(key);
     }
 
     /** Only a source that never produced an item can be deleted; otherwise disable it. */
-    function remove(key) {
-        const row = st.get.get(key);
+    async function remove(key) {
+        const row = await st.get.get(key);
         if (!row) return null;
-        if (st.itemCount.get(key).n) throw new RegistryError('the source has items; disable it instead (provenance must stay resolvable)', 'sources.has_items');
-        st.del.run(key);
+        if ((await st.itemCount.get(key)).n) throw new RegistryError('the source has items; disable it instead (provenance must stay resolvable)', 'sources.has_items');
+        await st.del.run(key);
         return true;
     }
 
-    return { get: (k) => st.get.get(k), all: () => st.all.all(), create, patch, remove, view, fromRow, health };
+    return { get: async (k) => await st.get.get(k), all: async () => await st.all.all(), create, patch, remove, view, fromRow, health };
 }
 
 module.exports = { createRegistry, validateSource, RegistryError, TYPES, CATEGORIES };

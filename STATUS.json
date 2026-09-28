@@ -7,11 +7,25 @@
   "runtime": "node 22, express, better-sqlite3, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
-  "contracts": "openvibe-contracts v0.49.0",
-  "capabilities": ["sources.source.read", "sources.item.read", "sources.source.manage"],
+  "contracts": "openvibe-contracts v0.76.0",
+  "capabilities": [
+    "sources.source.read",
+    "sources.item.read",
+    "sources.source.manage"
+  ],
   "capabilitiesRegistered": true,
-  "contractsProposed": ["sources.source@1 (released in openvibe-contracts v0.12.0)", "sources.item@1 (released in openvibe-contracts v0.12.0)"],
-  "adapters": ["rss", "atom", "sitemap", "jsonld", "api", "manual"],
+  "contractsProposed": [
+    "sources.source@1 (released in openvibe-contracts v0.12.0)",
+    "sources.item@1 (released in openvibe-contracts v0.12.0)"
+  ],
+  "adapters": [
+    "rss",
+    "atom",
+    "sitemap",
+    "jsonld",
+    "api",
+    "manual"
+  ],
   "seededSources": 6,
   "enabledSources": 0,
   "deployed": true,

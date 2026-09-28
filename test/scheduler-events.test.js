@@ -10,7 +10,7 @@ const FEED = rss([{ guid: 's1', title: 'Scheduled', link: 'https://example.org/s
 
 async function waitFor(fn, ms = 3000) {
     const end = Date.now() + ms;
-    while (Date.now() < end) { const v = fn(); if (v) return v; await sleep(25); }
+    while (Date.now() < end) { const v = await fn(); if (v) return v; await sleep(25); }
     throw new Error('timed out waiting');
 }
 
@@ -19,30 +19,31 @@ t('due, enabled sources are fetched on schedule; disabled and manual ones never 
     const s = await site({ '/robots.txt': () => ({ status: 404 }), '/f': () => (status === 200 ? { body: FEED } : { status }) });
     const svc = await boot({ worker: 'on' });
     try {
-        svc.registry.create(sourceDef({ key: 'sched', endpoints: [`${s.origin}/f`], poll_interval_sec: 3600 }), 'test');
-        svc.registry.create(sourceDef({ key: 'off', endpoints: [`${s.origin}/f`], enabled: false }), 'test');
-        svc.registry.create({ key: 'hand', name: 'Manual', type: 'manual', category: 'coupons', terms_note: 'x', enabled: true }, 'test');
-        await waitFor(() => svc.db.prepare("SELECT 1 FROM fetch_runs WHERE source_key = 'sched'").get());
-        const row = svc.registry.get('sched');
+        await svc.registry.create(sourceDef({ key: 'sched', endpoints: [`${s.origin}/f`], poll_interval_sec: 3600 }), 'test');
+        await svc.registry.create(sourceDef({ key: 'off', endpoints: [`${s.origin}/f`], enabled: false }), 'test');
+        await svc.registry.create({ key: 'hand', name: 'Manual', type: 'manual', category: 'coupons', terms_note: 'x', enabled: true }, 'test');
+        // The run row commits with the items; the source's outcome is recorded right after it.
+        await waitFor(async () => (await svc.db.prepare("SELECT 1 FROM fetch_runs WHERE source_key = 'sched'").get()) && (await svc.registry.get('sched')).last_state);
+        const row = await svc.registry.get('sched');
         assert.strictEqual(row.last_state, 'ok');
         assert.ok(row.next_due_at - Date.now() > 3500 * 1000, 'next poll one interval later');
         await sleep(200);
-        assert.strictEqual(svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key IN ('off', 'hand')").get().n, 0);
-        assert.strictEqual(svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key = 'sched'").get().n, 1, 'not refetched before it is due');
+        assert.strictEqual((await svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key IN ('off', 'hand')").get()).n, 0);
+        assert.strictEqual((await svc.db.prepare("SELECT COUNT(*) AS n FROM fetch_runs WHERE source_key = 'sched'").get()).n, 1, 'not refetched before it is due');
 
         // a failing source backs off exponentially
         status = 500;
-        svc.db.prepare("UPDATE sources SET next_due_at = 0, last_request_at = NULL WHERE key = 'sched'").run();
-        await waitFor(() => svc.registry.get('sched').consecutive_failures === 1);
-        const f1 = svc.registry.get('sched').next_due_at - svc.registry.get('sched').last_run_at;
-        svc.db.prepare("UPDATE sources SET next_due_at = 0, last_request_at = NULL WHERE key = 'sched'").run();
-        await waitFor(() => svc.registry.get('sched').consecutive_failures === 2);
-        const f2 = svc.registry.get('sched').next_due_at - svc.registry.get('sched').last_run_at;
+        await svc.db.prepare("UPDATE sources SET next_due_at = 0, last_request_at = NULL WHERE key = 'sched'").run();
+        await waitFor(async () => (await svc.registry.get('sched')).consecutive_failures === 1);
+        const f1 = (await svc.registry.get('sched')).next_due_at - (await svc.registry.get('sched')).last_run_at;
+        await svc.db.prepare("UPDATE sources SET next_due_at = 0, last_request_at = NULL WHERE key = 'sched'").run();
+        await waitFor(async () => (await svc.registry.get('sched')).consecutive_failures === 2);
+        const f2 = (await svc.registry.get('sched')).next_due_at - (await svc.registry.get('sched')).last_run_at;
         assert.strictEqual(f1, 3600 * 1000);
         assert.strictEqual(f2, 2 * 3600 * 1000);
 
         // not_before (Retry-After) holds the scheduler back
-        svc.db.prepare("UPDATE sources SET next_due_at = 0, not_before = ?, last_request_at = NULL WHERE key = 'sched'").run(Date.now() + 60000);
+        await svc.db.prepare("UPDATE sources SET next_due_at = 0, not_before = ?, last_request_at = NULL WHERE key = 'sched'").run(Date.now() + 60000);
         const n = s.hits('/f').length;
         await sleep(300);
         assert.strictEqual(s.hits('/f').length, n);
@@ -66,10 +67,10 @@ t('events are valid envelopes and reach OpenVibe.Events through the relay', asyn
     const tokenClient = { async authHeaders() { return { Authorization: 'Bearer relay' }; }, invalidate() {} };
     const svc = await boot({ env: { EVENTS_URL: `http://127.0.0.1:${events.address().port}` }, tokenClient });
     try {
-        svc.registry.create(sourceDef({ key: 'ev', endpoints: [`${s.origin}/f`, `${s.origin}/bad`] }), 'test');
+        await svc.registry.create(sourceDef({ key: 'ev', endpoints: [`${s.origin}/f`, `${s.origin}/bad`] }), 'test');
         await svc.ingest.run('ev', { trigger: 'manual' });
-        for (let i = 0; i < 5 && svc.outbox.pending(); i++) await svc.relay.flush();
-        assert.strictEqual(svc.outbox.pending(), 0);
+        for (let i = 0; i < 5 && await svc.outbox.pending(); i++) await svc.relay.flush();
+        assert.strictEqual(await svc.outbox.pending(), 0);
         assert.deepStrictEqual(received.map(e => e.event_type).sort(), ['sources.fetch.failed', 'sources.item.created']);
         for (const e of received) {
             const v = validate('events.event-envelope@1', e);

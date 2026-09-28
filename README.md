@@ -31,7 +31,7 @@ npm test               # every test/*.test.js against local stub sites; no inter
 
 Node 22 in production (`fnm exec --using=22.22.1 npm test`). Production: `/opt/openvibe.sources`,
 env `/etc/openvibe/sources.env`, unit [deploy/systemd/openvibe-sources.service](deploy/systemd/openvibe-sources.service),
-store `/var/lib/openvibe-sources/sources.db`, nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf).
+database `ov_sources` on the host's data role (ADR-035; `sudo /opt/openvibe.host/roles/data/add-service.sh sources`; the one-time move from `/var/lib/openvibe-sources/sources.db` is `scripts/migrate-to-postgres.js`), nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf).
 
 `GET /api/health` is liveness. `GET /api/ready` (openvibe-shared/ready) is 503 only when the
 database fails; a Network key that has not loaded and a fetcher that is off, stopped or behind (a
@@ -125,7 +125,7 @@ Callers use an OpenVibe.Network client-credentials token for audience `openvibe.
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
 removals); resume from `next_after`. Every page carries the status and staleness of the sources
 it contains. The capability ids (first proposed in [docs/capabilities-proposal/](docs/capabilities-proposal/))
-are released in `openvibe-contracts` v0.12.0 (this repo pins v0.49.0); [server/auth.js](server/auth.js)
+are released in `openvibe-contracts` v0.76.0 (this repo pins v0.49.0); [server/auth.js](server/auth.js)
 decides them with the contracts grant rule.
 
 ### Per-actor limits
@@ -207,6 +207,7 @@ publishes another's output.
 
 ## Depends on
 
+- PostgreSQL 18 (OpenVibe.Host `roles/data/`, ADR-035): every read and write is async through `openvibe-sdk/db`
 - OpenVibe.Contracts (service tokens, problem details, ids, the event envelope)
 - OpenVibe.Network (signing key; service principal `sources`)
 - OpenVibe.Events (outbound events)
@@ -278,12 +279,11 @@ fast-forward `/opt/openvibe.sources`, install on a lockfile change, restart, wai
 | Unit | `openvibe-sources.service` ([deploy/systemd/](deploy/systemd/openvibe-sources.service)) |
 | Port | `127.0.0.1:4720` |
 | Env file | `/etc/openvibe/sources.env` |
-| Data | `/var/lib/openvibe-sources/sources.db` |
+| Data | PostgreSQL `ov_sources` (`DATABASE_URL` through PgBouncer; migrations on `DATABASE_DIRECT_URL`; schema in [migrations/](migrations/)) |
 | Public host | nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf) (below) |
 
 Rollback: ovhost puts the previous sha back by itself when `/api/ready` does not answer 2xx after the
-restart; afterwards `sudo ovhost rollback sources --to <sha>`. Nothing blocks a rollback: the schema
-code only adds tables and columns.
+restart; afterwards `sudo ovhost rollback sources --to <sha>`. Migrations only add tables and columns.
 
 ### Public host
 

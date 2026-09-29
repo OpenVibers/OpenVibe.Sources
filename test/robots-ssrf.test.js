@@ -127,6 +127,29 @@ t('redirects to an internal address are refused', async () => {
     } finally { await s.close(); }
 });
 
+t('a corrupt stored rules value is treated as no rules, not thrown on', async () => {
+    const s = await site({ '/feed.xml': () => ({ body: FEED }) });
+    try {
+        await svc.registry.create(sourceDef({ key: 'corrupt-robots', endpoints: [`${s.origin}/feed.xml`] }), 'test');
+        await svc.ingest.run('corrupt-robots', { trigger: 'manual' });
+        // Corrupt the cached row the way a bad migration or a truncated write would.
+        await svc.db.prepare(`UPDATE robots_cache SET outcome = 'parsed', rules = '{not json', expires_at = @e WHERE origin = @o`)
+            .run({ o: s.origin, e: Date.now() + 3600_000 });
+        assert.ok(await svc.db.prepare('SELECT 1 FROM robots_cache WHERE origin = ?').get(s.origin), 'row cached');
+        const warnings = [];
+        const realWarn = console.warn;
+        console.warn = (...a) => warnings.push(a.join(' '));
+        let states;
+        try {
+            const out = await svc.ingest.run('corrupt-robots', { trigger: 'manual' });
+            states = out.runs.map(r => r.state);
+        } finally { console.warn = realWarn; }
+        assert.deepStrictEqual(states, ['ok'], 'a corrupt row does not fail the run');
+        assert.ok(s.hits('/feed.xml').length > 0, 'the feed was still fetched');
+        assert.strictEqual(warnings.filter(w => w.includes(s.origin)).length, 1, `one warning naming the origin: ${warnings.join(' | ')}`);
+    } finally { await s.close(); }
+});
+
 t('done', async () => { await web.close(); await svc.stop(); });
 
 t.run();

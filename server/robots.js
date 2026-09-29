@@ -94,6 +94,7 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
         ON CONFLICT(origin) DO UPDATE SET fetched_at = excluded.fetched_at, expires_at = excluded.expires_at, status = excluded.status,
         outcome = excluded.outcome, rules = excluded.rules, crawl_delay_sec = excluded.crawl_delay_sec, detail = excluded.detail`);
     const inflight = new Map();
+    const warned = new Set();
 
     async function load(origin) {
         await beforeRequest(new URL(origin).host);
@@ -136,7 +137,18 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
             return { allowed: false, reason: `robots.txt unreachable (${row.detail})`, crawlDelaySec: null, source, refusedCode: ['address_refused', 'port_refused', 'bad_url'].includes(code) ? code : null };
         }
         if (row.outcome === 'unavailable') return { allowed: true, reason: null, crawlDelaySec: null, source };
-        const parsed = { rules: JSON.parse(row.rules) };
+        let rules;
+        try {
+            rules = JSON.parse(row.rules);
+        } catch (err) {
+            // A corrupt stored row must not throw: treat it as no rules and warn once per origin.
+            if (!warned.has(row.origin)) {
+                warned.add(row.origin);
+                console.warn(`[robots] unreadable stored rules for ${row.origin}: ${err.message}`);
+            }
+            rules = [];
+        }
+        const parsed = { rules: Array.isArray(rules) ? rules : [] };
         const allowed = isAllowed(parsed, url.pathname + url.search);
         return { allowed, reason: allowed ? null : `disallowed by ${url.origin}/robots.txt`, crawlDelaySec: row.crawl_delay_sec, source };
     }

@@ -1,7 +1,8 @@
 [Unit]
 Description=OpenVibe.Sources — source registry and ingestion workers (RSS/Atom, sitemaps, JSON-LD, APIs)
-# Network (openvibe-network) signs the tokens this service verifies. Sources starts without it
-# and keeps retrying the JWKS fetch; /api/ready stays 503 until the key has loaded.
+# Network (openvibe-network) signs the tokens this service verifies. Sources starts without it:
+# the SDK's JWKS client keeps the last good keys and backs off, and /api/ready degrades (200) while
+# no key has loaded.
 After=network.target postgresql.service pgbouncer.service valkey-server.service
 Wants=openvibe-network.service postgresql.service pgbouncer.service valkey-server.service
 

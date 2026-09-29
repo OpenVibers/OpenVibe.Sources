@@ -20,6 +20,11 @@ function load(env = process.env) {
     const nodeEnv = env.NODE_ENV || 'development';
     const isProduction = nodeEnv === 'production';
     const port = int(env.PORT, 4720);
+    const networkUrl = strip(env.OV_NETWORK_URL || 'https://openvibe.network');
+    const networkInternalUrl = strip(env.OV_NETWORK_INTERNAL_URL || 'http://127.0.0.1:4000');
+    // The JWKS the SDK's client (openvibe-sdk/auth jwksClient) fetches, caches and keeps fresh; one URL,
+    // since the SDK keeps one client per URL. Defaults to Network's internal JWKS.
+    const jwksUrl = strip(env.OV_NETWORK_JWKS_URL || `${networkInternalUrl}/api/.well-known/jwks`);
     return {
         port,
         host: env.HOST || '127.0.0.1',
@@ -28,10 +33,10 @@ function load(env = process.env) {
         serviceId: 'sources',
         baseUrl: strip(env.BASE_URL || (isProduction ? 'https://sources.openvibe.network' : `http://localhost:${port}`)),
 
-        networkUrl: strip(env.OV_NETWORK_URL || 'https://openvibe.network'),
-        networkInternalUrl: strip(env.OV_NETWORK_INTERNAL_URL || 'http://127.0.0.1:4000'),
+        networkUrl,
+        networkInternalUrl,
+        jwksUrl,
         issuer: strip(env.OV_NETWORK_ISSUER || env.OV_NETWORK_URL || 'https://openvibe.network'),
-        networkPublicKey: env.OV_NETWORK_PUBLIC_KEY ? env.OV_NETWORK_PUBLIC_KEY.replace(/\\n/g, '\n') : null,
         audience: 'openvibe.sources',
         // Per-actor limits (server/api/actor-limits.js, roadmap WS-R task 4): the API reads one app or
         // module may make per minute and per hour. Writes set their own numbers there.

@@ -63,7 +63,7 @@ Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers
 </html>
 `;
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log = console, limitsNow = null }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, relay, now, log = console, limitsNow = null }) {
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
@@ -88,7 +88,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, keys,
 
     // Readiness (openvibe-shared/ready): 503 only when the database fails; the Network key and the
     // fetcher (worker running, queue keeping up) are optional and degrade it (see observability.js).
-    const readiness = createSourcesReadiness({ db, keys, config, registry, ingest, scheduler, outbox, relay, now, release: release.release });
+    const readiness = createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, relay, now, release: release.release });
     app.get('/api/ready', readiness.handler);
     // GET /release.json (ADR-016) and POST /release-metrics (open tabs' update reports into /metrics).
     release.mount(app, { registry: metrics.registry });

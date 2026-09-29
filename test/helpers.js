@@ -18,6 +18,7 @@ const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
     privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
     publicKeyEncoding: { type: 'spki', format: 'pem' },
 });
+const publicJwk = crypto.createPublicKey(publicKey).export({ format: 'jwk' });
 
 const silent = { log() {}, warn() {}, error(...a) { if (process.env.DEBUG) console.error(...a); } };
 
@@ -34,10 +35,13 @@ function serviceToken(slug, cap, { aud = 'openvibe.sources', exp = Math.floor(Da
  * log: Sources' logger (default silent); limitsNow: the per-actor limiter's clock (default the wall clock).
  */
 async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, log = silent, limitsNow = null } = {}) {
+    // A stub Network JWKS serving the generated signing key, so the SDK's JWKS client has something real
+    // to fetch and verify against (no test touches the internet). Its URL is overridable via env.
+    const jwksSite = await site({ '/api/.well-known/jwks': () => ({ body: JSON.stringify({ keys: [publicJwk] }) }) });
     const config = load({
         NODE_ENV: 'test',
         PORT: '0',
-        OV_NETWORK_PUBLIC_KEY: publicKey,
+        OV_NETWORK_JWKS_URL: `${jwksSite.origin}/api/.well-known/jwks`,
         SOURCES_WORKER: worker,
         SOURCES_ALLOW_PRIVATE_HOSTS: '127.0.0.1',
         SOURCES_HOST_MIN_INTERVAL_MS: '0',
@@ -49,7 +53,7 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, lo
     const testdb = await require('./db').testDb();
     const h = await start({ config, db: testdb.db, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
-    return { ...h, base, async stop() { await h.close(); await testdb.close(); } };
+    return { ...h, base, jwksSite, async stop() { await h.close(); await testdb.close(); await jwksSite.close(); } };
 }
 
 async function request(base, method, p, { token, body, headers = {} } = {}) {

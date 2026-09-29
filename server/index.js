@@ -18,7 +18,8 @@ const { createRobots } = require('./robots');
 const { createIngest } = require('./ingest');
 const { createScheduler } = require('./scheduler');
 const { createOutbox, createRelay } = require('./events/outbox');
-const { createKeyStore, createAuth } = require('./auth');
+const { jwksClient } = require('openvibe-sdk/auth');
+const { createAuth } = require('./auth');
 const { createApp } = require('./app');
 
 async function start({ config, db: givenDb = null, now = () => Date.now(), fetchImpl = globalThis.fetch, tokenClient, lookupImpl, log = console, listen = true, limitsNow = null } = {}) {
@@ -42,11 +43,13 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     });
     const ingest = createIngest({ db, config, registry, items, robots, fetcher, spacer, outbox, now, log, relay });
     const scheduler = createScheduler({ db, ingest, config, now, log });
-    const keys = createKeyStore({ urls: [config.networkInternalUrl, config.networkUrl], pem: config.networkPublicKey, fetchImpl, log });
-    const auth = createAuth({ config, keys });
-    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, keys, outbox, relay, now, log, limitsNow });
-
-    const keyLoaded = keys.start().catch(() => null);
+    const keys = jwksClient(config.jwksUrl, { fetch: fetchImpl, log });
+    const auth = createAuth({ config, log });
+    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, relay, now, log, limitsNow });
+    // One JWKS client for the process (the SDK shares it with verifyUserToken): refresh in the background
+    // on an unref'd timer, keeping the last good keys through a Network outage.
+    keys.start();
+    const keyLoaded = keys.keys().catch(() => null);
     relay.start();
     if (config.worker.enabled) scheduler.start();
     const pruneTimer = setInterval(async () => { try { await outbox.prune(); } catch (err) { log.error(`[outbox] prune: ${err.message}`); } }, 6 * 3600 * 1000);

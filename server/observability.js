@@ -4,9 +4,9 @@
  * (openvibe-shared/ready and openvibe-shared/metrics).
  *
  *   db            required  a real query on the source registry: without it nothing is served or fetched
- *   network_jwks  optional  the Network signing key has loaded. Without it no service token can be
- *                           verified (the API answers 503), but the fetcher keeps ingesting, so it
- *                           degrades rather than fails
+ *   network_jwks  optional  the Network signing keys have loaded into the SDK's JWKS client. Without them
+ *                           no service token can be verified (the API answers 503), but the fetcher keeps
+ *                           ingesting, so it degrades rather than fails
  *   fetcher       optional  the ingestion worker is on and running, and its queue keeps up: no enabled
  *                           source has waited longer than OVERDUE_MS. Without it the API still
  *                           serves what was fetched, but nothing new arrives
@@ -15,6 +15,7 @@
  * flight), the time of the last finished fetch and of the last successful one, and the outbox backlog.
  */
 const { createReadiness } = require('openvibe-shared/ready');
+const { jwksStatus } = require('openvibe-sdk/auth');
 
 const OVERDUE_MS = 15 * 60 * 1000;
 const STATUSES = ['healthy', 'stale', 'failing', 'never_fetched', 'disabled', 'manual'];
@@ -39,7 +40,7 @@ function readers(db, { startedAt }) {
     };
 }
 
-function createSourcesReadiness({ db, keys, config, registry, ingest, scheduler, outbox, relay, now, release = null }) {
+function createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, relay, now, release = null }) {
     const read = readers(db, { startedAt: now() });
     const iso = (v) => (v == null ? null : new Date(v).toISOString());
     return createReadiness({
@@ -48,7 +49,16 @@ function createSourcesReadiness({ db, keys, config, registry, ingest, scheduler,
         checks: [
             // A real round trip that names the store (postgresql / pglite), and the schema present.
             { name: 'db', required: true, check: async () => { const r = await db.ready(); if (!r.ok) return r.error; await db.prepare('SELECT COUNT(*) AS n FROM sources').get(); return { ok: true, detail: r.detail }; } },
-            { name: 'network_jwks', required: false, check: () => keys.loaded() || 'Network signing key not loaded yet: no service token can be verified' },
+            { name: 'network_jwks', required: false, check: () => {
+                // The SDK's client for the JWKS this service verifies against (server/index.js started it).
+                // Public: counts and times only — never the internal JWKS URL and never the fetch error
+                // behind it (both are logged by the SDK client, not answered).
+                const st = jwksStatus().find((s) => s.url === config.jwksUrl) || null;
+                if (!st) return 'the Network JWKS client has not started: no service token can be verified';
+                const detail = { keys: st.keys || 0, stale: Boolean(st.stale), failures: st.failures || 0, fetchedAt: iso(st.fetchedAt) };
+                if (!st.ready) return { ok: false, error: 'Network signing key not loaded yet: no service token can be verified', detail };
+                return { ok: true, detail };
+            } },
             {
                 name: 'fetcher', required: false,
                 check: async () => {

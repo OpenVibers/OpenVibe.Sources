@@ -102,6 +102,7 @@ t('worker on: ready; a fetch queue that falls behind, or a stopped worker, degra
     const clock = { offset: 0 };
     // No run slot, so nothing due is ever started; the clock moves forward by hand.
     svc = await boot({ worker: 'on', env: { SOURCES_MAX_CONCURRENT: '0' }, now: () => Date.now() + clock.offset });
+    await svc.keyLoaded;
     let r = await request(svc.base, 'GET', '/api/ready');
     assert.strictEqual(r.body.status, 'ready', r.text);
     assert.strictEqual(r.body.checks.fetcher.detail.running, true);

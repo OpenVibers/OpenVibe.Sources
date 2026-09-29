@@ -31,7 +31,7 @@ npm test               # every test/*.test.js against local stub sites; no inter
 
 Node 22 in production (`fnm exec --using=22.22.1 npm test`). Production: `/opt/openvibe.sources`,
 env `/etc/openvibe/sources.env`, unit [deploy/systemd/openvibe-sources.service](deploy/systemd/openvibe-sources.service),
-database `ov_sources` on the host's data role (ADR-035; `sudo /opt/openvibe.host/roles/data/add-service.sh sources`; the one-time move from `/var/lib/openvibe-sources/sources.db` is `scripts/migrate-to-postgres.js`), nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf).
+database `ov_sources` on the host's data role (ADR-035; `sudo /opt/openvibe.host/roles/data/add-service.sh sources`), nginx [deploy/nginx/sources.openvibe.network.conf](deploy/nginx/sources.openvibe.network.conf).
 
 `GET /api/health` is liveness. `GET /api/ready` (openvibe-shared/ready) is 503 only when the
 database fails; a Network key that has not loaded and a fetcher that is off, stopped or behind (a

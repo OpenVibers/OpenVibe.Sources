@@ -24,9 +24,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-# The code tree stays read-only; the registry and items live in /var/lib/openvibe-sources.
-StateDirectory=openvibe-sources
-Environment=SOURCES_DB_PATH=/var/lib/openvibe-sources/sources.db
+# The code tree stays read-only; the registry and items live in PostgreSQL (ADR-035).
 
 [Install]
 WantedBy=multi-user.target

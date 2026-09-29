@@ -4,7 +4,7 @@
   "code": true,
   "wave": "W14",
   "plan": "OpenVibe End-to-End Realignment & Implementation Plan, revision 3 (20 Sep 2026)",
-  "runtime": "node 22, express, better-sqlite3, fast-xml-parser",
+  "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
   "contracts": "openvibe-contracts v0.76.0",

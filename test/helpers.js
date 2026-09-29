@@ -6,7 +6,6 @@
  */
 const crypto = require('crypto');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const nodeHttp = require('http');
 const { serviceAuth } = require('openvibe-contracts');
@@ -30,25 +29,14 @@ function serviceToken(slug, cap, { aud = 'openvibe.sources', exp = Math.floor(Da
     }, key);
 }
 
-const made = [];
-process.on('exit', () => { for (const d of made) fs.rmSync(d, { recursive: true, force: true }); });
-
-function tmpDir() {
-    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'ov-sources-test-'));
-    made.push(d);
-    return d;
-}
-
 /**
  * Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs.
  * log: Sources' logger (default silent); limitsNow: the per-actor limiter's clock (default the wall clock).
  */
 async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, log = silent, limitsNow = null } = {}) {
-    const dir = tmpDir();
     const config = load({
         NODE_ENV: 'test',
         PORT: '0',
-        SOURCES_DB_PATH: path.join(dir, 'sources.db'),
         OV_NETWORK_PUBLIC_KEY: publicKey,
         SOURCES_WORKER: worker,
         SOURCES_ALLOW_PRIVATE_HOSTS: '127.0.0.1',
@@ -61,7 +49,7 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, lo
     const testdb = await require('./db').testDb();
     const h = await start({ config, db: testdb.db, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
-    return { ...h, base, dir, async stop() { await h.close(); await testdb.close(); } };
+    return { ...h, base, async stop() { await h.close(); await testdb.close(); } };
 }
 
 async function request(base, method, p, { token, body, headers = {} } = {}) {
@@ -143,4 +131,4 @@ function suite(name) {
     return t;
 }
 
-module.exports = { ISSUER, privateKey, publicKey, silent, serviceToken, tmpDir, boot, request, site, sourceDef, rss, fixture, sleep, suite };
+module.exports = { ISSUER, privateKey, publicKey, silent, serviceToken, boot, request, site, sourceDef, rss, fixture, sleep, suite };

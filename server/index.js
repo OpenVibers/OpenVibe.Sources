@@ -19,6 +19,7 @@ const { createIngest } = require('./ingest');
 const { createScheduler } = require('./scheduler');
 const { createOutbox, createRelay } = require('./events/outbox');
 const { jwksClient } = require('openvibe-sdk/auth');
+const { gracefulStop } = require('openvibe-sdk/service');
 const { createAuth } = require('./auth');
 const { createApp } = require('./app');
 
@@ -82,13 +83,10 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
 if (require.main === module) {
     require('dotenv').config();
     start().then((handles) => {
-        const shutdown = (sig) => {
-            console.log(`[sources] ${sig}: shutting down`);
-            handles.close().then(() => process.exit(0), () => process.exit(1));
-            setTimeout(() => process.exit(1), 20000).unref();
-        };
-        process.on('SIGTERM', () => shutdown('SIGTERM'));
-        process.on('SIGINT', () => shutdown('SIGINT'));
+        // SIGTERM/SIGINT (openvibe-sdk/service, docs/service.md's handles family, Sources 20 s): requests in
+        // flight get 15 s, then handles.close() (the prune timer and JWKS refresher stopped, the scheduler,
+        // relay and server stopped, the database closed; a rejection exits 1); past 20 s the process exits 1.
+        gracefulStop({ name: 'Sources', server: handles.server, handles, drainMs: 15000, deadlineMs: 20000 });
     }).catch((err) => {
         console.error(`[sources] failed to start: ${err.stack || err}`);
         process.exit(1);

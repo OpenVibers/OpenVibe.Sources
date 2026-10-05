@@ -22,6 +22,12 @@ const schema = (name) => ajv.compile(JSON.parse(fs.readFileSync(path.join(DOCS, 
 const sourceSchema = schema('source.v1.json');
 const itemSchema = schema('item.v1.json');
 
+/** The body must validate against the contract openvibe-contracts released under that id. */
+function assertReleased(id, body, note = '') {
+    const v = contracts.validate(id, body);
+    assert.ok(v.valid, `${id}${note ? ` (${note})` : ''}: ${JSON.stringify(v.errors)}`);
+}
+
 t('capability proposals are valid capabilities.capability@1 and cover every enforced id', () => {
     const dir = path.join(DOCS, 'capabilities-proposal');
     const ids = fs.readdirSync(dir).filter(f => f.endsWith('.json')).map((f) => {
@@ -32,6 +38,16 @@ t('capability proposals are valid capabilities.capability@1 and cover every enfo
         return m.id;
     });
     assert.deepStrictEqual(ids.sort(), Object.values(CAPS).sort());
+});
+
+t('capability proposals mirror the manifests openvibe-contracts released', () => {
+    const pick = (m) => ({ id: m.id, inputSchema: m.inputSchema ?? null, outputSchema: m.outputSchema ?? null, permissions: m.permissions, resourceConstraints: m.resourceConstraints, quotaClass: m.quotaClass, events: m.events, implementedBy: m.implementedBy });
+    for (const id of Object.values(CAPS)) {
+        const released = contracts.capabilities.get(id);
+        assert.ok(released, `${id} is not released in openvibe-contracts`);
+        const proposed = JSON.parse(fs.readFileSync(path.join(DOCS, 'capabilities-proposal', `${id}.json`), 'utf8'));
+        assert.deepStrictEqual(pick(proposed), pick(released), `${id}: docs/capabilities-proposal must match the released manifest`);
+    }
 });
 
 t('the service manifest proposal is a valid registry.service-manifest@1', () => {
@@ -61,19 +77,30 @@ t('seeds: one real source per category, all disabled, all valid, notes recorded'
     await fresh.close();
 });
 
-t('API views match sources.source@1 and sources.item@1', async () => {
+t('API views match sources.source@1 and sources.item@1, and the released sources.* contracts', async () => {
     const svc = await boot();
     const web = await site({ '/robots.txt': () => ({ status: 404 }), '/f': () => ({ body: rss([{ guid: 'p1', title: 'P', link: 'https://example.org/p' }]) }) });
     try {
         const admin = serviceToken('network', ['sources.*']);
-        await request(svc.base, 'POST', '/api/v1/sources', { token: admin, body: sourceDef({ key: 'proposal-check', endpoints: [`${web.origin}/f`] }) });
-        await request(svc.base, 'POST', '/api/v1/sources/proposal-check/fetch', { token: admin });
+        const def = sourceDef({ key: 'proposal-check', endpoints: [`${web.origin}/f`] });
+        // The request bodies and every route's answer follow the contracts openvibe-contracts released for sources.
+        assertReleased('sources.source-write-request@1', def, 'POST /api/v1/sources body');
+        const created = await request(svc.base, 'POST', '/api/v1/sources', { token: admin, body: def });
+        assertReleased('sources.source-manage-result@1', created.body, 'POST /api/v1/sources');
+        const fetched = await request(svc.base, 'POST', '/api/v1/sources/proposal-check/fetch', { token: admin });
+        assertReleased('sources.source-manage-result@1', fetched.body, 'POST /api/v1/sources/:key/fetch');
         const src = await request(svc.base, 'GET', '/api/v1/sources/proposal-check', { token: admin });
         assert.ok(sourceSchema(src.body.source), JSON.stringify(sourceSchema.errors));
+        assertReleased('sources.source-read-result@1', src.body, 'GET /api/v1/sources/:key');
+        assertReleased('sources.source-read-result@1', (await request(svc.base, 'GET', '/api/v1/sources', { token: admin })).body, 'GET /api/v1/sources');
+        assertReleased('sources.source-read-result@1', (await request(svc.base, 'GET', '/api/v1/runs', { token: admin })).body, 'GET /api/v1/runs');
+        assertReleased('sources.source-read-result@1', (await request(svc.base, 'GET', '/api/v1/health', { token: admin })).body, 'GET /api/v1/health');
         const items = await request(svc.base, 'GET', '/api/v1/items', { token: admin });
         for (const it of items.body.items) assert.ok(itemSchema(it), JSON.stringify(itemSchema.errors));
+        assertReleased('sources.item-read-result@1', items.body, 'GET /api/v1/items');
         const one = await request(svc.base, 'GET', `/api/v1/items/${items.body.items[0].id}?revisions=1`, { token: admin });
         assert.ok(itemSchema(one.body.item), JSON.stringify(itemSchema.errors));
+        assertReleased('sources.item-read-result@1', one.body, 'GET /api/v1/items/:id');
     } finally { await svc.stop(); await web.close(); }
 });
 

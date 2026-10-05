@@ -6,9 +6,9 @@
  * offline against Network's JWKS (openvibe-sdk/auth, one client per URL, kept fresh and served
  * through an outage), and ONE capability per route.
  *
- * The sources.* capabilities are proposed in docs/capabilities-proposal/ and are not in
- * openvibe-contracts v0.7.0 yet; checkCapability() decides them with the library's own grant rule
- * (exact id or a `family.*` grant) until a release knows them, then the library decides.
+ * The sources.* capabilities are released in openvibe-contracts (docs/capabilities-proposal/ is
+ * kept in step with those manifests), so the library's own grant rule decides every one: an exact
+ * id or a `family.*` grant, and capability.unknown for an id it does not know.
  */
 const { serviceAuth, capabilities, http } = require('openvibe-contracts');
 const { jwksClient } = require('openvibe-sdk/auth');
@@ -18,14 +18,8 @@ const CAPS = Object.freeze({
     items: 'sources.item.read',
     manage: 'sources.source.manage',
 });
-const PROPOSED = new Set(Object.values(CAPS));
 
 function checkCapability(claims, capabilityId) {
-    if (!capabilities.get(capabilityId) && PROPOSED.has(capabilityId)) {
-        return capabilities.grants(claims && claims.cap, capabilityId)
-            ? { allowed: true, code: null, reason: null }
-            : { allowed: false, code: 'capability.denied', reason: `${capabilityId} not granted` };
-    }
     return capabilities.check(claims, capabilityId);
 }
 
@@ -71,4 +65,4 @@ function createAuth({ config, log = console }) {
     return { requireCap };
 }
 
-module.exports = { CAPS, PROPOSED, createAuth, checkCapability };
+module.exports = { CAPS, createAuth, checkCapability };

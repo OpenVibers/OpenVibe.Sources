@@ -24,5 +24,7 @@
     "POST /api/v1/sources/:key/fetch",
     "POST /api/v1/sources/:key/items",
     "DELETE /api/v1/items/:id"
-  ]
+  ],
+  "inputSchema": "sources.source-write-request@1",
+  "outputSchema": "sources.source-manage-result@1"
 }

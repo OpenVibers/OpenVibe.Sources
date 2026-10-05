@@ -1,6 +1,9 @@
 # Proposal for OpenVibe.Contracts: `sources.source@1`, `sources.item@1`
 
-Wave 14 asks OpenVibe.Contracts for the source-adapter contract. Files to add in its next release:
+Wave 14 asked OpenVibe.Contracts for the source-adapter contract; it shipped, and this directory is
+kept in step with the released contracts (the capability manifests in
+[`../capabilities-proposal/`](../capabilities-proposal/) are copied verbatim from the released
+`manifests/capabilities/`). Files that went in:
 
 | File here | Goes to |
 |---|---|

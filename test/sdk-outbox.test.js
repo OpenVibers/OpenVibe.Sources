@@ -55,8 +55,12 @@ t('the expand migration copies a legacy pending row and the SDK relays it with a
         const env = envelope();
         await h.db.query('INSERT INTO event_outbox (event_id, event_type, envelope, created_at) VALUES ($1, $2, $3, $4)',
             [env.event_id, env.event_type, JSON.stringify(env), Date.now()]);
+        // The harness already applied the migration (as the owner); re-run its copy step, the only DML in it, as the
+        // runtime role (the CI containers give that role no CREATE on the schema).
         const migration = fs.readFileSync(path.join(__dirname, '..', 'migrations', '0002_sdk_outbox.sql'), 'utf8');
-        await h.db.query(migration);
+        const copy = migration.slice(migration.indexOf('INSERT INTO service_outbox'));
+        assert.match(copy, /^INSERT INTO service_outbox[\s\S]*ON CONFLICT \(event_id\) DO NOTHING;/);
+        await h.db.query(copy);
         const copied = await h.db.one('SELECT envelope FROM service_outbox WHERE event_id = $1', [env.event_id]);
         assert.deepStrictEqual(copied.envelope, env);
         const p = platform();

@@ -56,7 +56,7 @@ t('a disallowed endpoint is robots_denied and never requested', async () => {
     assert.deepStrictEqual(out.runs.map(r => r.state), ['robots_denied', 'ok']);
     assert.strictEqual(web.hits('/private/feed.xml').length, 0);
     assert.strictEqual(web.hits('/robots.txt').length, 1, 'robots.txt is cached per origin');
-    assert.ok((await svc.outbox.all()).some(e => e.event_type === 'sources.fetch.failed' && e.payload.state === 'robots_denied'));
+    assert.ok((await svc.db.prepare('SELECT envelope FROM service_outbox').all()).some(r => r.envelope.event_type === 'sources.fetch.failed' && r.envelope.payload.state === 'robots_denied'));
 });
 
 t('a redirect into a disallowed path is refused before it is followed', async () => {

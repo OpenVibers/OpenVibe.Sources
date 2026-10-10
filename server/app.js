@@ -63,7 +63,7 @@ Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers
 </html>
 `;
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, relay, now, log = console, limitsNow = null }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null }) {
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
@@ -88,7 +88,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
 
     // Readiness (openvibe-shared/ready): 503 only when the database fails; the Network key and the
     // fetcher (worker running, queue keeping up) are optional and degrade it (see observability.js).
-    const readiness = createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, relay, now, release: release.release });
+    const readiness = createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, now, release: release.release });
     app.get('/api/ready', readiness.handler);
     // GET /release.json (ADR-016) and POST /release-metrics (open tabs' update reports into /metrics).
     release.mount(app, { registry: metrics.registry });
@@ -97,7 +97,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     // passed. limitsNow: the limiter's clock (tests; default the wall clock, not the ingest clock).
     const limits = createActorLimits({ config, now: limitsNow || (() => Date.now()), registry: metrics.registry, log });
     app.use(sourcesRouter({ db, registry, ingest, auth, limits }));
-    app.use(itemsRouter({ db, registry, items, auth, relay, now, limits }));
+    app.use(itemsRouter({ db, registry, items, auth, outbox, now, limits }));
 
     // The public host (sources.openvibe.network) shows only this page, health, readiness and
     // /release.json: Sources is internal. Browsers get a short honest HTML page, other clients the

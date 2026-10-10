@@ -77,7 +77,7 @@ t('every route, as every kind of caller, with real and nonsense ids: the client 
 });
 
 t('the outbox carries neither', async () => {
-    const rows = JSON.stringify(svc.outbox.all ? await svc.outbox.all() : await svc.db.prepare('SELECT * FROM event_outbox').all());
+    const rows = JSON.stringify(await svc.db.prepare('SELECT * FROM service_outbox').all());
     assert.ok(!rows.includes(SECRET), 'client secret in the outbox');
     assert.ok(!rows.includes(FEED_KEY), 'feed key in the outbox');
 });

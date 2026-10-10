@@ -25,7 +25,8 @@ async function create(def) {
 const run = async (key, trigger = 'manual') => await svc.ingest.run(key, { trigger });
 const itemsOf = async (key) => await svc.db.prepare('SELECT * FROM items WHERE source_key = ? ORDER BY identity').all(key);
 const runsOf = async (key) => await svc.db.prepare('SELECT * FROM fetch_runs WHERE source_key = ? ORDER BY rid').all(key);
-const events = async (type) => (await svc.outbox.all()).filter(e => e.event_type === type);
+const allEvents = async (service = svc) => (await service.db.prepare('SELECT envelope FROM service_outbox ORDER BY id').all()).map(r => r.envelope);
+const events = async (type) => (await allEvents()).filter(e => e.event_type === type);
 const reset = async (key) => await svc.db.prepare('UPDATE sources SET last_request_at = NULL, not_before = 0 WHERE key = ?').run(key);
 
 t('boot', async () => {
@@ -271,7 +272,7 @@ t('a credential is read by name, sent only to its origin, and never stored', asy
         assert.strictEqual(s.hits('/api')[0].headers['x-api-key'], secret);
         assert.strictEqual(other.hits('/landing')[0].headers['x-api-key'], undefined, 'not forwarded across origins');
         const dump = JSON.stringify(await svc2.db.prepare('SELECT * FROM sources').all()) + JSON.stringify(await svc2.db.prepare('SELECT * FROM fetch_runs').all())
-            + JSON.stringify(await svc2.db.prepare('SELECT * FROM items').all()) + JSON.stringify(await svc2.outbox.all());
+            + JSON.stringify(await svc2.db.prepare('SELECT * FROM items').all()) + JSON.stringify(await allEvents(svc2));
         assert.ok(!dump.includes(secret), 'the secret value is nowhere in the database or events');
         assert.ok(dump.includes('SOURCES_CRED_EXAMPLE'), 'the variable name is recorded');
     } finally { await svc2.stop(); await s.close(); await other.close(); }

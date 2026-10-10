@@ -47,7 +47,7 @@ function manualItem(body) {
     };
 }
 
-function itemsRouter({ db, registry, items, auth, relay, now, limits }) {
+function itemsRouter({ db, registry, items, auth, outbox, now, limits }) {
     const router = express.Router();
     // Each guard, then the principal's per-actor limit (api/actor-limits.js), before any work.
     const read = [auth.requireCap(CAPS.items), limits.reads('sources.read')];
@@ -92,7 +92,7 @@ function itemsRouter({ db, registry, items, auth, relay, now, limits }) {
         const t = now();
         const counts = await db.tx(async () => await items.ingest(source, [m.item], { runId: null, rawBodyHash: null, parserVersion: MANUAL_VERSION, retrievedAt: t, enteredBy: req.principal.sub }));
         await db.prepare('UPDATE sources SET last_success_at = ?, last_run_at = ? WHERE key = ?').run(t, t, source.key);
-        if (relay) relay.flush().catch(() => {});
+        if (outbox) outbox.kick().catch(() => {});
         const saved = await db.prepare('SELECT id FROM items WHERE source_key = ? AND identity = ?').get(source.key, m.item.identity);
         const outcome = counts.created ? 'created' : counts.updated ? 'updated' : counts.skipped ? 'removed' : 'unchanged';
         res.status(counts.created ? 201 : 200).json({ outcome, item: await items.get(saved.id) });
@@ -105,7 +105,7 @@ function itemsRouter({ db, registry, items, auth, relay, now, limits }) {
         if (!found) return http.sendProblem(res, 404, 'sources.not_found', { detail: 'no such item', ctx: req.ov });
         const source = registry.fromRow(await registry.get(found.source_key));
         const item = await items.remove(source, found.id, reason, req.principal.sub);
-        if (relay) relay.flush().catch(() => {});
+        if (outbox) outbox.kick().catch(() => {});
         res.json({ item });
     });
 

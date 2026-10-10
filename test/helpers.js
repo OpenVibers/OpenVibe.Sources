@@ -34,7 +34,7 @@ function serviceToken(slug, cap, { aud = 'openvibe.sources', exp = Math.floor(Da
  * Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs.
  * log: Sources' logger (default silent); limitsNow: the per-actor limiter's clock (default the wall clock).
  */
-async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, log = silent, limitsNow = null } = {}) {
+async function boot({ env = {}, worker = 'off', lookupImpl, now, log = silent, limitsNow = null } = {}) {
     // A stub Network JWKS serving the generated signing key, so the SDK's JWKS client has something real
     // to fetch and verify against (no test touches the internet). Its URL is overridable via env.
     const jwksSite = await site({ '/api/.well-known/jwks': () => ({ body: JSON.stringify({ keys: [publicJwk] }) }) });
@@ -51,7 +51,7 @@ async function boot({ env = {}, worker = 'off', lookupImpl, tokenClient, now, lo
     });
     // One database per boot (PGlite, or SOURCES_TEST_STORE=pg: the containers), dropped when the boot stops.
     const testdb = await require('./db').testDb();
-    const h = await start({ config, db: testdb.db, log, lookupImpl, tokenClient, limitsNow, ...(now ? { now } : {}) });
+    const h = await start({ config, db: testdb.db, log, lookupImpl, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
     return { ...h, base, jwksSite, async stop() { await h.close(); await testdb.close(); await jwksSite.close(); } };
 }

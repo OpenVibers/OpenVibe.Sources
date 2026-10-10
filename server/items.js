@@ -25,7 +25,7 @@ function contentHash(it) {
     }));
 }
 
-function createItems({ db, outbox, now = () => Date.now() }) {
+function createItems({ db, emitEvent, now = () => Date.now() }) {
     const st = {
         byIdentity: db.prepare('SELECT * FROM items WHERE source_key = ? AND identity = ?'),
         byId: db.prepare('SELECT * FROM items WHERE id = ?'),
@@ -85,7 +85,7 @@ function createItems({ db, outbox, now = () => Date.now() }) {
     }
 
     async function itemEvent(type, row, extra = {}) {
-        await outbox.enqueue({
+        await emitEvent({
             event_type: type,
             subject: subjectOf(row),
             payload: {
@@ -123,7 +123,7 @@ function createItems({ db, outbox, now = () => Date.now() }) {
 
     async function indexEvent(source, row, deleted = false) {
         if (!source.search_visibility) return;
-        await outbox.enqueue({
+        await emitEvent({
             event_type: deleted ? 'sources.index_document.deleted' : 'sources.index_document.upserted',
             subject: subjectOf(row),
             payload: deleted ? { type: 'item', id: row.id, revision: row.revision } : indexDocument(row),

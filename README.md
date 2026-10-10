@@ -155,6 +155,9 @@ scheduler, fetches, the outbox relay) run in-process and never pass through HTTP
 - `sources.index_document.upserted|deleted` for sources with `search_visibility: "members"`: raw items indexed in OpenVibe.Search for staff only (`acl.groups: role:admin, role:global_mod`), always `noindex` (`third_party_content`).
 
 All with `visibility: "internal"`. Envelopes validate as `events.event-envelope@1`.
+The openvibe-sdk service outbox stores pending events in `service_outbox` and relays them with the
+Sources service token. The expand migration copies pending legacy rows; `event_outbox` remains
+for the N-1 rollback window.
 
 ## Seeds
 

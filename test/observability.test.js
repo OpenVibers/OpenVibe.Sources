@@ -48,6 +48,7 @@ t('/api/ready: db is the only required check; a worker that is off degrades it (
     assert.match(r.body.checks.fetcher.error, /SOURCES_WORKER=off/);
     assert.ok(Date.parse(r.body.checks.fetcher.detail.last_fetch_at));
     assert.deepStrictEqual(r.body.sources, { healthy: 1 });
+    assert.deepStrictEqual(r.body.outbox, { enabled: false, pending: 3, rejected: 0, last_error: null });
 });
 
 t('/metrics: 404 through a proxy; route templates and Sources gauges direct', async () => {

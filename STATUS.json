@@ -40,7 +40,7 @@
     "failed fetches recorded, never fabricated",
     "item revisions and sticky removals with provenance",
     "cursor item API by capability",
-    "transactional outbox to Events",
+    "openvibe-sdk transactional outbox to Events (service_outbox)",
     "staff-only index documents for Search",
     "per-actor limits (openvibe-sdk/limits)"
   ],

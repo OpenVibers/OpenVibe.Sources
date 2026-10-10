@@ -57,9 +57,10 @@ t('the service manifest proposal is a valid registry.service-manifest@1', () => 
     assert.deepStrictEqual([...m.capabilities].sort(), Object.values(CAPS).sort());
 });
 
-t('seeds: one real source per category, all disabled, all valid, notes recorded', async () => {
+t('seeds: every category represented, all disabled, all valid, notes recorded', async () => {
     const seeds = require('../seeds/sources.json').sources;
-    assert.deepStrictEqual(seeds.map(s => s.category).sort(), [...CATEGORIES].sort());
+    const represented = new Set(seeds.map(s => s.category));
+    for (const c of CATEGORIES) assert.ok(represented.has(c), `seeds must cover category ${c}`);
     for (const s of seeds) {
         const rec = validateSource(s);
         assert.strictEqual(rec.enabled, false, s.key);

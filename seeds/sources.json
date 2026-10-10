@@ -1,5 +1,5 @@
 {
-  "_about": "One real source per category, all DISABLED. Robots notes were checked by hand on 2026-09-22; terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
+  "_about": "One real source per category in the original set, all DISABLED; further news and trade sources were added later, also all DISABLED with review_required. Robots notes were checked by hand on the date each one records (2026-09-22 for the original six, 2026-10-10 for those added later); terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
   "sources": [
     {
       "key": "nasa-news-releases",
@@ -104,6 +104,111 @@
       "min_interval_ms": 10000,
       "poll_interval_sec": 900,
       "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "govuk-news",
+      "name": "GOV.UK news and announcements",
+      "type": "atom",
+      "category": "news",
+      "homepage_url": "https://www.gov.uk/",
+      "endpoints": ["https://www.gov.uk/search/news-and-communications.atom"],
+      "robots_note": "robots.txt checked 2026-10-10: User-agent * disallows /*/print$ and /search/all*; the .atom feed at /search/news-and-communications.atom matches neither, so it is allowed. No crawl-delay for *.",
+      "terms_note": "Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/): copy, publish, distribute and exploit commercially, with acknowledgement and, where possible, a link to the licence. Credit the provider's attribution statement where given, otherwise the fallback 'Contains public sector information licensed under the Open Government Licence v3.0.' No implied official status or endorsement. Store titles, links and short summaries only; never full text or images; drop items marked 'except where otherwise stated' (third-party rights, logos, personal data). Re-verify before enabling.",
+      "license_note": "Contains public sector information licensed under the Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "eu-press-corner",
+      "name": "European Commission press corner",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://ec.europa.eu/commission/presscorner/",
+      "endpoints": ["https://ec.europa.eu/commission/presscorner/api/rss?language=en"],
+      "robots_note": "robots.txt checked 2026-10-10: User-agent * lists many disallowed paths but none for /commission/presscorner/ or its /api/; the feed path is allowed. No crawl-delay.",
+      "terms_note": "Content owned by the EU is licensed under CC BY 4.0: reuse allowed with appropriate credit and an indication of changes; per-item notices ('unless otherwise indicated') override. Credit 'European Commission' and link the licence (https://creativecommons.org/licenses/by/4.0/). EU logos and names are excluded from the reuse policy. Store titles, links and short summaries only; never full text or images; drop third-party-credited items. Re-verify before enabling.",
+      "license_note": "Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/. EU logos excluded.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "noaa-news",
+      "name": "NOAA news",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.noaa.gov/",
+      "endpoints": ["https://www.noaa.gov/rss.xml"],
+      "robots_note": "robots.txt checked 2026-10-10: https://www.noaa.gov/robots.txt answers 403 to our identifying User-Agent (NOAA's CDN blocks bot UAs on HTML paths), so its rules could not be read; the FEED https://www.noaa.gov/rss.xml itself answers 200/application/rss+xml to our identifying UA. Resolve the robots/User-Agent 403 with NOAA before enabling.",
+      "terms_note": "Most NOAA information is in the US public domain and may be used with credit; third-party-credited items, images and video are excluded, and use must not imply US-Government endorsement or affiliation. Credit 'NOAA' (National Oceanic and Atmospheric Administration) and link back. Store titles, links and short summaries only; never full text or images. Re-verify before enabling.",
+      "license_note": "US federal government work (public domain) with per-item credits; credit NOAA.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "frankfurter-eur-rates",
+      "name": "Frankfurter euro reference rates",
+      "type": "api",
+      "category": "trade",
+      "homepage_url": "https://frankfurter.dev/",
+      "endpoints": [
+        {
+          "url": "https://api.frankfurter.dev/v2/rates?base=EUR&quotes=USD,GBP,JPY,CHF,CAD,AUD,NZD,SEK,NOK,DKK,CZK,PLN,HUF,RON,TRY,CNY,HKD,SGD,KRW,INR,BRL,MXN,ZAR,THB,IDR,MYR,PHP,ILS",
+          "format": "json",
+          "items_path": "",
+          "item_kind": "rate",
+          "fields": {
+            "identity": "quote"
+          },
+          "extra": {
+            "rate": "rate",
+            "base": "base",
+            "date": "date"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-10: https://frankfurter.dev/robots.txt and https://api.frankfurter.dev/robots.txt both say User-agent * Allow /; the /v2/rates path is allowed. No crawl-delay.",
+      "terms_note": "Frankfurter is MIT-licensed software, free for commercial use, with no API key and no quota (only anti-abuse rate limiting). The rates themselves fall under each provider's terms, so attribute the contributing provider (ECB, TCMB, ...) and link https://frankfurter.dev/ and the provider's terms; for ECB-sourced rates cite 'European Central Bank'. The legacy object endpoint https://api.frankfurter.app/latest cannot be mapped by the api adapter (it requires an array at items_path), so the array endpoint https://api.frankfurter.dev/v2/rates is used and each row (date, base, quote, rate) becomes one item. Rates are informational observations only, never advice (ADR-025). Re-verify before enabling.",
+      "license_note": "Frankfurter software: MIT. Underlying rates: per provider (ECB reference rates reusable with attribution); see https://frankfurter.dev/license/.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 40,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "ecb-euro-reference-rates",
+      "name": "ECB euro reference rates: US dollar",
+      "type": "rss",
+      "category": "trade",
+      "homepage_url": "https://www.ecb.europa.eu/stats/eurofxref/",
+      "endpoints": ["https://www.ecb.europa.eu/rss/fxref-usd.html"],
+      "robots_note": "robots.txt checked 2026-10-10: User-agent * with Crawl-delay 5 (honoured; min_interval_ms is well above it) and disallows only *_content.<lang>.html and a few video/data paths; the /rss/fxref-usd.html feed path is not disallowed.",
+      "terms_note": "ECB statistics may be used freely and must be reproduced accurately with the ECB cited as the source; where incorporated into a sold product, buyers must be told the information is available free of charge from the ECB website. Cite 'European Central Bank' and link https://www.ecb.europa.eu/services/disclaimer/html/index.en.html; no framing or logos. Store published rates as retrieved observations only — informational, never advice (ADR-025). Re-verify before enabling.",
+      "license_note": "ECB copyright and disclaimer: free use with citation; see https://www.ecb.europa.eu/services/disclaimer/html/index.en.html.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 40,
       "enabled": false,
       "review_required": true,
       "sensitivity": "financial",

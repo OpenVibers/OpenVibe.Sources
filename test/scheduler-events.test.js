@@ -52,25 +52,35 @@ t('due, enabled sources are fetched on schedule; disabled and manual ones never 
 
 t('events are valid envelopes and reach OpenVibe.Events through the relay', async () => {
     const received = [];
+    const tokenRequests = [];
     const events = http.createServer((req, res) => {
         const chunks = [];
         req.on('data', c => chunks.push(c));
         req.on('end', () => {
+            if (req.url === '/oauth/token') {
+                tokenRequests.push(Object.fromEntries(new URLSearchParams(Buffer.concat(chunks).toString('utf8'))));
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ access_token: 'relay', token_type: 'Bearer', expires_in: 300 }));
+                return;
+            }
+            assert.strictEqual(req.headers.authorization, 'Bearer relay');
             const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-            received.push(...(body.events || [body]));
+            const sent = body.events || [body];
+            received.push(...sent);
             res.statusCode = 201;
-            res.end('{}');
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(body.events ? { results: sent.map((e, i) => ({ event_id: e.event_id, seq: i + 1 })) } : { event_id: sent[0].event_id, seq: 1 }));
         });
     });
     await new Promise(r => events.listen(0, '127.0.0.1', r));
     const s = await site({ '/robots.txt': () => ({ status: 404 }), '/f': () => ({ body: FEED }), '/bad': () => ({ status: 502 }) });
-    const tokenClient = { async authHeaders() { return { Authorization: 'Bearer relay' }; }, invalidate() {} };
-    const svc = await boot({ env: { EVENTS_URL: `http://127.0.0.1:${events.address().port}` }, tokenClient });
+    const svc = await boot({ env: { EVENTS_URL: `http://127.0.0.1:${events.address().port}`, OV_NETWORK_INTERNAL_URL: `http://127.0.0.1:${events.address().port}`, OV_OAUTH_CLIENT_SECRET: 'test-secret' } });
     try {
         await svc.registry.create(sourceDef({ key: 'ev', endpoints: [`${s.origin}/f`, `${s.origin}/bad`] }), 'test');
         await svc.ingest.run('ev', { trigger: 'manual' });
-        for (let i = 0; i < 5 && await svc.outbox.pending(); i++) await svc.relay.flush();
-        assert.strictEqual(await svc.outbox.pending(), 0);
+        for (let i = 0; i < 5 && (await svc.outbox.status()).pending; i++) await svc.outbox.outbox.flush();
+        assert.strictEqual((await svc.outbox.status()).pending, 0);
+        assert.ok(tokenRequests.some(r => r.audience === 'openvibe.events' && r.scope === 'events.event.publish' && r.client_secret === 'test-secret'));
         assert.deepStrictEqual(received.map(e => e.event_type).sort(), ['sources.fetch.failed', 'sources.item.created']);
         for (const e of received) {
             const v = validate('events.event-envelope@1', e);

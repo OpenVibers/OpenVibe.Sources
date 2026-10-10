@@ -31,7 +31,7 @@ function retryAfterMs(value, now) {
     return Number.isFinite(t) ? Math.max(0, t - now) : null;
 }
 
-function createIngest({ db, config, registry, items, robots, fetcher, spacer, outbox, now = () => Date.now(), log = console, relay = null }) {
+function createIngest({ db, config, registry, items, robots, fetcher, spacer, emitEvent, now = () => Date.now(), log = console, outbox = null }) {
     const inflight = new Set();
     const { space, setCrawlDelay } = spacer;
 
@@ -73,7 +73,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
     }
 
     async function failedEvent(source, run, failures) {
-        await outbox.enqueue({
+        await emitEvent({
             event_type: 'sources.fetch.failed',
             subject: { type: 'source', id: source.key },
             payload: {
@@ -266,7 +266,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, ou
                 key, at: finishedAt, state: lastState, failures: newFailures,
                 success_at: anySuccess ? finishedAt : null, next_due: finishedAt + backoff, not_before: notBefore,
             });
-            if (relay) relay.flush().catch(() => {});
+            if (outbox) outbox.kick().catch(() => {});
             return { runs };
         } finally {
             inflight.delete(key);

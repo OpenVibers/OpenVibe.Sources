@@ -40,7 +40,7 @@ function readers(db, { startedAt }) {
     };
 }
 
-function createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, relay, now, release = null }) {
+function createSourcesReadiness({ db, config, registry, ingest, scheduler, outbox, now, release = null }) {
     const read = readers(db, { startedAt: now() });
     const iso = (v) => (v == null ? null : new Date(v).toISOString());
     return createReadiness({
@@ -88,7 +88,7 @@ function createSourcesReadiness({ db, config, registry, ingest, scheduler, outbo
             return {
                 sources,
                 runs_in_flight: ingest.inflight().length,
-                outbox: dbOk ? { pending: await outbox.pending(), rejected: await outbox.rejected(), relay: config.events.url ? (relay.running() ? 'running' : 'stopped') : 'off (EVENTS_URL unset)' } : null,
+                outbox: dbOk ? await outbox.status() : null,
             };
         },
     });
@@ -116,7 +116,7 @@ function registerSourcesGauges(registry, { db, sources, ingest, outbox, now }) {
     // Left out until there is a fetch: a timestamp of 0 would read as "1970", not "never".
     registry.gauge({ name: 'sources_last_fetch_timestamp_seconds', help: 'When the last fetch run finished (any outcome), Unix seconds', collect: async () => seconds(await read.lastFetchAt()) });
     registry.gauge({ name: 'sources_last_success_timestamp_seconds', help: 'When a source was last fetched successfully, Unix seconds', collect: async () => seconds(await read.lastSuccessAt()) });
-    registry.gauge({ name: 'sources_outbox_pending', help: 'Events waiting in the outbox', collect: async () => await outbox.pending() });
+    registry.gauge({ name: 'sources_outbox_pending', help: 'Events waiting in the outbox', collect: async () => (await outbox.status()).pending });
 }
 
 module.exports = { createSourcesReadiness, registerSourcesGauges, OVERDUE_MS };

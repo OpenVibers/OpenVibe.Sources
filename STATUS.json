@@ -9,7 +9,7 @@
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
   "contracts": "openvibe-contracts v0.129.0",
   "sdk": "openvibe-sdk v0.38.0",
-  "shared": "openvibe-shared v3.0.0",
+  "shared": "openvibe-shared v3.0.1",
   "capabilities": [
     "sources.source.read",
     "sources.item.read",

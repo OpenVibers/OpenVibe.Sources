@@ -43,7 +43,7 @@ t('the vhost: wildcard certificate, client address from $remote_addr, /metrics 4
     assert.match(conf, /ssl_certificate\s+\/etc\/letsencrypt\/live\/openvibe\.network\/fullchain\.pem;/);
     for (const h of ['X-Real-IP', 'X-Forwarded-For', 'CF-Connecting-IP']) assert.match(conf, new RegExp(`proxy_set_header ${h} \\$remote_addr;`));
     assert.ok(!/proxy_add_x_forwarded_for|\$http_cf_connecting_ip|\$http_x_forwarded_for/.test(conf), 'never a client-sent address');
-    assert.match(conf, /location = \/metrics \{ return 404; \}/);
+    assert.match(conf, /location ~\* \^\/metrics\(\/\|\$\) \{ return 404; \}/, '/metrics is refused in any letter case');
     assert.match(conf, /location \^~ \/api\/v1\/ \{\s*allow 127\.0\.0\.1;\s*allow ::1;\s*deny all;/);
     assert.match(conf, /location \/ \{\s*default_type application\/problem\+json;\s*return 404 '\{/);
     const body = /return 404 '(\{.*\})';/.exec(conf)[1];

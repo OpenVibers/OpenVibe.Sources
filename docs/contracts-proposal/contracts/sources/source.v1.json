@@ -19,6 +19,7 @@
         "properties": {
           "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
           "format": { "enum": ["json", "xml"] },
+          "items_shape": { "enum": ["array", "map"], "description": "array (default): the value at items_path is a list of records. map: it is an object keyed by id, each own property a record, in sorted key order; the key is readable as the virtual path $key." },
           "items_path": { "type": "string" },
           "item_kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,39}$" },
           "fields": { "type": "object", "additionalProperties": { "type": "string" } },

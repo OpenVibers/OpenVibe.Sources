@@ -96,11 +96,25 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 | `rss`, `atom` (`feed@1`) | RSS 2.0, RSS 1.0/RDF, Atom 1.0 | guid/id identity, else link; text-only summary capped at 1000 chars |
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
 | `jsonld` (`jsonld@1`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error` |
-| `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `fields`, `extra`; epoch fields only where mapped as such |
+| `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`; epoch fields only where mapped as such |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
 
 XML with DTD entity declarations is refused; the parser expands no entities (values are decoded
 per field). Fixtures and expectations: `test/adapters.test.js`.
+
+Some official price lists key their records by id instead of listing them — Porkbun's TLD pricing
+is `{ "pricing": { "com": {…}, "net": {…} } }`. `items_shape: "map"` reads that object: each own
+property becomes one record in sorted key order, and the property's key is available as the
+virtual path `$key` (so `fields.identity: "$key"` makes the id the identity). A property whose
+value is not an object is skipped, and an `items_path` of the wrong shape is a parse error, never
+an empty success.
+
+```json
+{ "url": "https://api.porkbun.com/api/json/v3/pricing/get", "format": "json",
+  "items_path": "pricing", "items_shape": "map", "item_kind": "tld",
+  "fields": { "identity": "$key" },
+  "extra": { "tld": "$key", "registration": "registration", "renewal": "renewal" } }
+```
 
 ### Items
 

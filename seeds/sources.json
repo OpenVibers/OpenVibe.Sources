@@ -1,5 +1,5 @@
 {
-  "_about": "One real source per category in the original set, all DISABLED; further news and trade sources were added later, also all DISABLED with review_required. Robots notes were checked by hand on the date each one records (2026-09-22 for the original six, 2026-10-10 for those added later); terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
+  "_about": "One real source per category in the original set, all DISABLED; further news and trade sources were added later, also all DISABLED with review_required. Robots notes were checked by hand on the date each one records (2026-09-22 for the original six, 2026-10-10 for those added later, 2026-10-11 for the two hosting seeds); terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
   "sources": [
     {
       "key": "nasa-news-releases",
@@ -212,6 +212,82 @@
       "enabled": false,
       "review_required": true,
       "sensitivity": "financial",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "vultr-plans",
+      "name": "Vultr cloud plans",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://www.vultr.com/pricing/",
+      "endpoints": [
+        {
+          "url": "https://api.vultr.com/v2/plans?per_page=500",
+          "format": "json",
+          "items_path": "plans",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "id"
+          },
+          "extra": {
+            "vcpu_count": "vcpu_count",
+            "ram": "ram",
+            "disk": "disk",
+            "disk_count": "disk_count",
+            "bandwidth": "bandwidth",
+            "monthly_cost": "monthly_cost",
+            "hourly_cost": "hourly_cost",
+            "type": "type"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-11: https://api.vultr.com/robots.txt is exactly 'User-agent: *' followed by 'Disallow: /', which disallows every path on the API host. The fetcher re-checks robots.txt on every run and would refuse /v2/plans as disallowed, so this source cannot be enabled as written — an operator must resolve the robots.txt block with Vultr first. (The endpoint itself answers without an API key.)",
+      "terms_note": "Vultr's API documentation says the plans listing needs no API key for ordinary accounts ('If your account has special plans available, you will need to pass your API key ... For all other accounts, the API key is not required'), and the official govultr client documents that 'public operations like listing plans ... will still work' unauthenticated; /v2/plans answered with plan data to our keyless fetcher. www.vultr.com/api/ and www.vultr.com/legal/tos/ both answered 403 to our fetcher, so Vultr's API terms could not be read here and must be read by a person before enabling. Attribute Vultr by linking https://www.vultr.com/pricing/; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Re-verify before enabling.",
+      "license_note": "Plan specifications and prices are Vultr's data (https://www.vultr.com/pricing/); Vultr's terms pages could not be fetched (HTTP 403 to our fetcher) and no licence to republish them was found. Attribute Vultr and link the pricing page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "linode-types",
+      "name": "Akamai Cloud (Linode) plan types",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://www.linode.com/pricing/",
+      "endpoints": [
+        {
+          "url": "https://api.linode.com/v4/linode/types?page_size=500",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "id",
+            "title": "label"
+          },
+          "extra": {
+            "vcpus": "vcpus",
+            "memory": "memory",
+            "disk": "disk",
+            "transfer": "transfer",
+            "class": "class",
+            "price_monthly": "price.monthly",
+            "price_hourly": "price.hourly"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-11: https://api.linode.com/robots.txt answers 301 to https://api.linode.com/v4/, which answers 404 (a JSON 'Not found'), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow), so /v4/linode/types is allowed. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Akamai's Linode API documentation says 'Some of this API's operations are publicly accessible and don't require authentication'; /v4/linode/types answered with type data to our keyless fetcher. https://www.linode.com/legal-tos/ answers 404 and https://www.linode.com/legal redirects to https://www.akamai.com/legal, where the governing documents are Akamai's Acceptable Use Policy and the Akamai Cloud (Linode) Master Services Agreement; none of those pages states a right to, or a clear ban on, republishing plan or price data (the AUP forbids using the network to build a competitive service and IP infringement), so a person must read them before enabling. Attribute Akamai/Linode by linking https://www.linode.com/pricing/; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Re-verify before enabling.",
+      "license_note": "Plan specifications and prices are Akamai/Linode's data (https://www.linode.com/pricing/); the terms hub is https://www.akamai.com/legal. No licence to republish them was found. Attribute Akamai/Linode and link the pricing page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
       "default_indexability": "noindex"
     }
   ]

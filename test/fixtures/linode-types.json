@@ -1,0 +1,91 @@
+{
+  "data": [
+    {
+      "id": "g6-nanode-1",
+      "label": "Nanode 1GB",
+      "price": { "hourly": 0.0075, "monthly": 5.0 },
+      "region_prices": [
+        { "id": "id-cgk", "hourly": 0.009, "monthly": 6.0 },
+        { "id": "br-gru", "hourly": 0.0105, "monthly": 7.0 }
+      ],
+      "addons": {
+        "backups": {
+          "price": { "hourly": 0.003, "monthly": 2.0 },
+          "region_prices": [
+            { "id": "id-cgk", "hourly": 0.0036, "monthly": 2.4 },
+            { "id": "br-gru", "hourly": 0.004, "monthly": 2.8 }
+          ]
+        }
+      },
+      "memory": 1024,
+      "disk": 25600,
+      "transfer": 1000,
+      "vcpus": 1,
+      "gpus": 0,
+      "network_out": 1000,
+      "class": "nanode",
+      "successor": null,
+      "capabilities": [],
+      "accelerated_devices": 0
+    },
+    {
+      "id": "g6-standard-1",
+      "label": "Linode 2GB",
+      "price": { "hourly": 0.018, "monthly": 12.0 },
+      "region_prices": [
+        { "id": "id-cgk", "hourly": 0.022, "monthly": 14.4 },
+        { "id": "br-gru", "hourly": 0.025, "monthly": 16.8 }
+      ],
+      "addons": {
+        "backups": {
+          "price": { "hourly": 0.004, "monthly": 2.5 },
+          "region_prices": [
+            { "id": "id-cgk", "hourly": 0.0045, "monthly": 3.0 },
+            { "id": "br-gru", "hourly": 0.005, "monthly": 3.5 }
+          ]
+        }
+      },
+      "memory": 2048,
+      "disk": 51200,
+      "transfer": 2000,
+      "vcpus": 1,
+      "gpus": 0,
+      "network_out": 2000,
+      "class": "standard",
+      "successor": null,
+      "capabilities": [],
+      "accelerated_devices": 0
+    },
+    {
+      "id": "g6-standard-2",
+      "label": "Linode 4GB",
+      "price": { "hourly": 0.036, "monthly": 24.0 },
+      "region_prices": [
+        { "id": "id-cgk", "hourly": 0.043, "monthly": 28.8 },
+        { "id": "br-gru", "hourly": 0.05, "monthly": 33.6 }
+      ],
+      "addons": {
+        "backups": {
+          "price": { "hourly": 0.008, "monthly": 5.0 },
+          "region_prices": [
+            { "id": "id-cgk", "hourly": 0.009, "monthly": 6.0 },
+            { "id": "br-gru", "hourly": 0.01, "monthly": 7.0 }
+          ]
+        }
+      },
+      "memory": 4096,
+      "disk": 81920,
+      "transfer": 4000,
+      "vcpus": 2,
+      "gpus": 0,
+      "network_out": 4000,
+      "class": "standard",
+      "successor": null,
+      "capabilities": [],
+      "accelerated_devices": 0
+    }
+  ],
+  "page": 1,
+  "pages": 1,
+  "results": 75
+}

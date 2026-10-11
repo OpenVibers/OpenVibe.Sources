@@ -10,7 +10,7 @@
     "key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
     "name": { "type": "string", "minLength": 1, "maxLength": 200 },
     "type": { "enum": ["rss", "atom", "sitemap", "jsonld", "api", "manual"] },
-    "category": { "enum": ["news", "blog", "reviews", "deals", "coupons", "trade"] },
+    "category": { "enum": ["news", "blog", "reviews", "deals", "coupons", "trade", "hosting"] },
     "homepage_url": { "type": ["string", "null"], "format": "uri" },
     "endpoints": {
       "type": "array", "maxItems": 20,

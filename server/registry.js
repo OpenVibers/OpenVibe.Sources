@@ -12,7 +12,7 @@
 const { checkApiMapping } = require('./adapters');
 
 const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
-const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade'];
+const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting'];
 const SENSITIVITY = ['none', 'financial', 'health', 'political', 'legal', 'adult'];
 const AUTH_MODES = ['none', 'header', 'bearer', 'query'];
 const KEY_RE = /^[a-z0-9][a-z0-9-]{1,63}$/;

@@ -45,7 +45,7 @@ the fetch queue (`sources_fetch_due`, `sources_fetch_oldest_wait_seconds`,
 ## The registry
 
 A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|manual`), `category`
-(`news|blog|reviews|deals|coupons|trade`), `endpoints` (for `api`: a field mapping, no code per
+(`news|blog|reviews|deals|coupons|trade|hosting`), `endpoints` (for `api`: a field mapping, no code per
 provider), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
 secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),

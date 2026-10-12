@@ -13,26 +13,72 @@
  * the array. `extra` values are copied as the API gave them (scalars only, strings capped):
  * a missing field is null, never a default. A record without an identity is skipped.
  *
+ * A path segment `*` steps into the single child of an object: when the current value is a
+ * non-array object with exactly one own property it steps into that property, and otherwise the
+ * path resolves to undefined (so the field is null). It may appear anywhere in a path.
+ *
+ * A path starting with `$root.` is resolved from the parsed response body rather than the record,
+ * so a record can reach a value kept elsewhere in the same response. Inside such a path a segment
+ * written `{$key}` is the record's map key (only valid when `items_shape` is "map", and only
+ * inside `$root.`). Example — join an AWS Lightsail SKU to its price:
+ *
+ *   "extra": { "price_hourly": "$root.terms.OnDemand.{$key}.*.priceDimensions.*.pricePerUnit.USD" }
+ *
+ * An endpoint may carry `where`: an object of up to 10 `path -> expected` conditions whose paths
+ * follow the same rules (relative, `$key`, `$root.`, `*`). Expected is a string, number or boolean
+ * (compared to the value after `scalar()`), or an array of up to 20 such values (any of them
+ * matches). A record that fails any condition is left out before `maxItems` is counted and
+ * reported as `meta.filtered`, not `skipped`:
+ *
+ *   "where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }
+ *
  * Some price lists key their records by id instead of listing them: Porkbun returns
  * `{ "pricing": { "com": {…}, "net": {…} } }` and AWS Lightsail keys its price list by SKU.
  * `"items_shape": "map"` reads such an object: each own property becomes one record, in sorted
  * key order, and the key is available as the virtual path `$key` (so `fields.identity: "$key"`
- * makes the id the identity). `"array"` (the default) is today's behaviour. A property whose value
- * is not an object is skipped; a non-object `items_path` is a parse error, never an empty success.
+ * makes the id the identity) or as `{$key}` inside a `$root.` path. `"array"` (the default) is
+ * today's behaviour. A property whose value is not an object is skipped; a non-object
+ * `items_path` is a parse error, never an empty success.
  */
 const { parseXml, toText, toIsoDate, epochSecondsToIso, canonicalUrl, toId, ParseError } = require('./util');
 
 const PARSER_VERSION = 'api@1';
-const PATH_RE = /^[A-Za-z0-9_@:$-]+(\.[A-Za-z0-9_@:$-]+)*$/;
+// A segment is `*` (the single child of an object), `{$key}` (the map key, only inside `$root.`),
+// or an ordinary key. PATH_RE is syntax only; keyPathViolation enforces where each token may sit.
+const PATH_SEG = '(?:\\*|\\{\\$key\\}|[A-Za-z0-9_@:$-]+)';
+const PATH_RE = new RegExp(`^${PATH_SEG}(?:\\.${PATH_SEG})*$`);
 
-function at(obj, path) {
-    if (!path) return obj;
+/** Walk a dot path: `*` steps into an object's single own property, `{$key}` uses the map key. */
+function walk(obj, path, key) {
     let cur = obj;
     for (const seg of path.split('.')) {
         if (cur == null || typeof cur !== 'object') return undefined;
-        cur = cur[seg];
+        if (seg === '*') {
+            if (Array.isArray(cur)) return undefined;
+            const own = Object.keys(cur);
+            if (own.length !== 1) return undefined;
+            cur = cur[own[0]];
+        } else if (seg === '{$key}') {
+            if (key === undefined) return undefined;
+            cur = cur[key];
+        } else {
+            cur = cur[seg];
+        }
     }
     return cur;
+}
+
+/** A record's value: `$key` is its map key, `$root.…` resolves from the body, else the record. */
+function getField(body, rec, key, p) {
+    if (!p) return rec;
+    if (p === '$key') return key;
+    if (p.startsWith('$root.')) return walk(body, p.slice('$root.'.length), key);
+    return walk(rec, p, key);
+}
+
+function at(obj, path) {
+    if (!path) return obj;
+    return walk(obj, path, undefined);
 }
 
 function scalar(v) {
@@ -43,11 +89,33 @@ function scalar(v) {
     return null;
 }
 
-/** `$key` is the map key: only as a whole path, and only when items_shape is "map". */
+/** Does one record satisfy every `where` condition? Values compare after scalar(). */
+function matchesWhere(body, rec, key, where) {
+    for (const [p, expected] of Object.entries(where)) {
+        const actual = scalar(getField(body, rec, key, p));
+        const wanted = Array.isArray(expected) ? expected : [expected];
+        if (!wanted.some((w) => w === actual)) return false;
+    }
+    return true;
+}
+
+/**
+ * `$key` is the map key: as a whole relative path only when items_shape is "map", or as the
+ * segment `{$key}` inside a `$root.` path. `$root` must be followed by a path.
+ */
 function keyPathViolation(p, shape) {
-    if (!p.includes('$key')) return null;
-    if (p !== '$key') return 'a $key path is exactly "$key"';
-    if (shape !== 'map') return '$key requires items_shape "map"';
+    const segs = p.split('.');
+    const hasBare = segs.includes('$key');
+    const hasBrace = segs.includes('{$key}');
+    if (p === '$root' || p.startsWith('$root.')) {
+        if (p === '$root') return '$root must be followed by a path';
+        if (hasBare) return 'inside a $root. path, use "{$key}" for the record key';
+        if (hasBrace && shape !== 'map') return '{$key} requires items_shape "map"';
+        return null;
+    }
+    if (hasBrace) return '{$key} is only valid inside a $root. path';
+    if (p === '$key') return shape === 'map' ? null : '$key requires items_shape "map"';
+    if (hasBare) return 'a $key path is exactly "$key"';
     return null;
 }
 
@@ -72,6 +140,19 @@ function checkMapping(ep) {
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `extra.${k}: ${kerr}`;
     }
+    const where = ep.where == null ? {} : ep.where;
+    if (typeof where !== 'object' || Array.isArray(where)) return 'where must be an object of path -> expected';
+    if (Object.keys(where).length > 10) return 'at most 10 where conditions';
+    for (const [p, expected] of Object.entries(where)) {
+        if (!PATH_RE.test(p)) return `where.${p} path is malformed`;
+        const kerr = keyPathViolation(p, shape);
+        if (kerr) return `where.${p}: ${kerr}`;
+        const wanted = Array.isArray(expected) ? expected : [expected];
+        if (wanted.length > 20) return `where.${p} has at most 20 expected values`;
+        for (const v of wanted) {
+            if (typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean') return `where.${p} expectations must be strings, numbers or booleans`;
+        }
+    }
     if (ep.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(ep.item_kind)) return 'item_kind is malformed';
     return null;
 }
@@ -95,12 +176,17 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
         records = node.map((value) => ({ key: undefined, value }));
     }
     const f = endpoint.fields || {};
+    const where = endpoint.where && typeof endpoint.where === 'object' && !Array.isArray(endpoint.where) ? endpoint.where : {};
+    const filterKeys = Object.keys(where);
     const items = [];
     let skipped = 0;
+    let filtered = 0;
     const seen = new Set();
     for (const { key, value: rec } of records) {
-        if (items.length >= maxItems || !rec || typeof rec !== 'object' || (shape === 'map' && Array.isArray(rec))) { skipped++; continue; }
-        const get = (p) => (shape === 'map' && p === '$key' ? key : at(rec, p));
+        if (!rec || typeof rec !== 'object' || (shape === 'map' && Array.isArray(rec))) { skipped++; continue; }
+        if (filterKeys.length && !matchesWhere(body, rec, key, where)) { filtered++; continue; }
+        if (items.length >= maxItems) { skipped++; continue; }
+        const get = (p) => getField(body, rec, key, p);
         const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
         const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
         if (!identity || seen.has(identity)) { skipped++; continue; }
@@ -119,7 +205,7 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
             fields: extra,
         });
     }
-    return { items, skipped, meta: { format } };
+    return { items, skipped, meta: { format, filtered } };
 }
 
 module.exports = { parse, PARSER_VERSION, checkMapping };

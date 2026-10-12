@@ -74,6 +74,8 @@ function validateSource(input, { maxItemsCap = 500 } = {}) {
             const err = checkApiMapping(e);
             if (err) throw new RegistryError(`endpoints[${i}]: ${err}`);
             Object.assign(out, { format: e.format || 'json', items_shape: e.items_shape || 'array', items_path: e.items_path || '', item_kind: e.item_kind || 'record', fields: e.fields || {}, extra: e.extra || {} });
+            // `where` is only copied when given, so records without conditions stay byte-identical.
+            if (e.where) out.where = e.where;
         } else {
             for (const k of Object.keys(e)) if (k !== 'url') throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);
         }

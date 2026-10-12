@@ -116,6 +116,16 @@ an empty success.
   "extra": { "tld": "$key", "registration": "registration", "renewal": "renewal" } }
 ```
 
+A path segment `*` steps into the single child of an object (a path that meets an array, or an
+object with zero or more than one own property, resolves to null). A path starting with `$root.`
+resolves from the parsed response body rather than the record, and inside it `{$key}` stands for
+the record's map key — so a keyed price list can be joined to prices held elsewhere in the same
+response: `"price_hourly": "$root.terms.OnDemand.{$key}.*.priceDimensions.*.pricePerUnit.USD"`.
+An endpoint may also carry `where`, up to 10 `path -> expected` conditions (expected is a string,
+number or boolean, or an array of up to 20 of them, matching any): a record that fails any
+condition is left out before `maxItems` is counted and reported as `meta.filtered`, e.g.
+`"where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }`.
+
 ### Items
 
 Each item: `source_key`, `category`, `kind`, `identity`, `canonical_url` (tracking parameters and
@@ -345,7 +355,7 @@ vhost serves it.
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.143.0
+- openvibe-contracts: v0.146.0
 - openvibe-sdk: v0.44.0
 - openvibe-shared: v4.0.0
 <!-- versions:end -->

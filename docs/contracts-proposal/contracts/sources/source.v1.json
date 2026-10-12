@@ -4,64 +4,303 @@
   "title": "Source",
   "description": "A registered source (roadmap §4.2 B, Wave 14): where it is fetched from and on what terms. Credentials are referenced by environment-variable NAME only. A source's existence is never permission to fetch: robots and terms are verified before it is enabled, and the fetcher re-checks robots.txt on every run.",
   "type": "object",
-  "required": ["key", "name", "type", "category", "endpoints", "auth", "min_interval_ms", "poll_interval_sec", "stale_after_sec", "max_items", "enabled", "review_required", "sensitivity", "default_indexability"],
+  "required": [
+    "key",
+    "name",
+    "type",
+    "category",
+    "endpoints",
+    "auth",
+    "min_interval_ms",
+    "poll_interval_sec",
+    "stale_after_sec",
+    "max_items",
+    "enabled",
+    "review_required",
+    "sensitivity",
+    "default_indexability"
+  ],
   "additionalProperties": false,
   "properties": {
-    "key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
-    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
-    "type": { "enum": ["rss", "atom", "sitemap", "jsonld", "api", "manual"] },
-    "category": { "enum": ["news", "blog", "reviews", "deals", "coupons", "trade", "hosting"] },
-    "homepage_url": { "type": ["string", "null"], "format": "uri" },
+    "key": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "type": {
+      "enum": [
+        "rss",
+        "atom",
+        "sitemap",
+        "jsonld",
+        "api",
+        "manual"
+      ]
+    },
+    "category": {
+      "enum": [
+        "news",
+        "blog",
+        "reviews",
+        "deals",
+        "coupons",
+        "trade",
+        "hosting"
+      ]
+    },
+    "homepage_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri"
+    },
     "endpoints": {
-      "type": "array", "maxItems": 20,
+      "type": "array",
+      "maxItems": 20,
       "items": {
-        "type": "object", "required": ["url"], "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
         "properties": {
-          "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
-          "format": { "enum": ["json", "xml"] },
-          "items_shape": { "enum": ["array", "map"], "description": "array (default): the value at items_path is a list of records. map: it is an object keyed by id, each own property a record, in sorted key order; the key is readable as the virtual path $key." },
-          "items_path": { "type": "string" },
-          "item_kind": { "type": "string", "pattern": "^[a-z][a-z0-9_]{1,39}$" },
-          "fields": { "type": "object", "additionalProperties": { "type": "string" } },
-          "extra": { "type": "object", "additionalProperties": { "type": "string" } }
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://"
+          },
+          "format": {
+            "enum": [
+              "json",
+              "xml"
+            ]
+          },
+          "items_path": {
+            "type": "string"
+          },
+          "items_shape": {
+            "enum": [
+              "array",
+              "map"
+            ],
+            "description": "array (default): items_path names a JSON array of records. map: items_path names an object whose own properties are the records, in sorted key order, with the key available as the path $key (Sources#37)."
+          },
+          "where": {
+            "type": "object",
+            "maxProperties": 10,
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 20,
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              ]
+            },
+            "description": "Records kept only when every path equals its value (or one of an array of values); others are left out before max_items counts. Paths follow the field rules: relative to the record, $key, an absolute $root.<path> into the response (a {$key} segment there is the record's map key), and * for an object's single child (Sources#39)."
+          },
+          "item_kind": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,39}$"
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "extra": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Extra fields copied as the API gave them (scalars). A path is relative to the record; $key is the map key; $root.<path> reads the response from its root, where a {$key} segment is the record's map key; * steps into an object's single child."
+          }
         }
       }
     },
     "auth": {
-      "type": "object", "required": ["mode"], "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false,
       "properties": {
-        "mode": { "enum": ["none", "header", "bearer", "query"] },
-        "env": { "type": "string", "pattern": "^SOURCES_CRED_[A-Z0-9_]{2,60}$", "description": "Name of the environment variable holding the credential. Never a value." },
-        "header": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9-]{0,63}$" },
-        "param": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,64}$" }
+        "mode": {
+          "enum": [
+            "none",
+            "header",
+            "bearer",
+            "query"
+          ]
+        },
+        "env": {
+          "type": "string",
+          "pattern": "^SOURCES_CRED_[A-Z0-9_]{2,60}$",
+          "description": "Name of the environment variable holding the credential. Never a value."
+        },
+        "header": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9-]{0,63}$"
+        },
+        "param": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+        }
       }
     },
-    "robots_note": { "type": ["string", "null"], "maxLength": 2000 },
-    "terms_note": { "type": ["string", "null"], "maxLength": 2000 },
-    "license_note": { "type": ["string", "null"], "maxLength": 2000 },
-    "min_interval_ms": { "type": "integer", "minimum": 0, "description": "Rate limit: the least time between two requests to this source (the per-host floor and robots Crawl-delay may raise it)." },
-    "poll_interval_sec": { "type": "integer", "minimum": 1 },
-    "stale_after_sec": { "type": "integer", "minimum": 1 },
-    "max_items": { "type": "integer", "minimum": 1 },
-    "enabled": { "type": "boolean" },
-    "review_required": { "type": "boolean", "description": "Products must review what they derive from this source before it can be indexable." },
-    "sensitivity": { "enum": ["none", "financial", "health", "political", "legal", "adult"] },
-    "default_indexability": { "enum": ["index", "noindex"], "description": "What a product's indexability gate starts from for content derived from this source." },
-    "search_visibility": { "type": ["string", "null"], "enum": ["members", null], "description": "members = raw items are indexed in OpenVibe.Search for staff only (never indexable)." },
+    "robots_note": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000
+    },
+    "terms_note": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000
+    },
+    "license_note": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000
+    },
+    "min_interval_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rate limit: the least time between two requests to this source (the per-host floor and robots Crawl-delay may raise it)."
+    },
+    "poll_interval_sec": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stale_after_sec": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_items": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "review_required": {
+      "type": "boolean",
+      "description": "Products must review what they derive from this source before it can be indexable."
+    },
+    "sensitivity": {
+      "enum": [
+        "none",
+        "financial",
+        "health",
+        "political",
+        "legal",
+        "adult"
+      ]
+    },
+    "default_indexability": {
+      "enum": [
+        "index",
+        "noindex"
+      ],
+      "description": "What a product's indexability gate starts from for content derived from this source."
+    },
+    "search_visibility": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "members",
+        null
+      ],
+      "description": "members = raw items are indexed in OpenVibe.Search for staff only (never indexable)."
+    },
     "health": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "status": { "enum": ["healthy", "stale", "failing", "never_fetched", "disabled", "manual"] },
-        "stale": { "type": "boolean" },
-        "last_success_at": { "type": ["string", "null"], "format": "date-time" },
-        "last_run_at": { "type": ["string", "null"], "format": "date-time" },
-        "last_state": { "type": ["string", "null"] },
-        "consecutive_failures": { "type": "integer", "minimum": 0 },
-        "next_due_at": { "type": ["string", "null"], "format": "date-time" },
-        "stale_after_sec": { "type": "integer" }
+        "status": {
+          "enum": [
+            "healthy",
+            "stale",
+            "failing",
+            "never_fetched",
+            "disabled",
+            "manual"
+          ]
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "last_success_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "last_run_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "last_state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "consecutive_failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "next_due_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "stale_after_sec": {
+          "type": "integer"
+        }
       }
     },
-    "created_at": { "type": "string", "format": "date-time" },
-    "updated_at": { "type": "string", "format": "date-time" }
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
   }
 }

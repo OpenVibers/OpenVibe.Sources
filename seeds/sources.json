@@ -289,6 +289,51 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "aws-lightsail-bundles",
+      "name": "Amazon Lightsail instance bundles (US East, N. Virginia)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://aws.amazon.com/lightsail/pricing/",
+      "endpoints": [
+        {
+          "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonLightsail/current/us-east-1/index.json",
+          "format": "json",
+          "items_shape": "map",
+          "items_path": "products",
+          "item_kind": "plan",
+          "where": {
+            "productFamily": "Lightsail Instance",
+            "attributes.operatingSystem": "Linux"
+          },
+          "fields": {
+            "identity": "$key",
+            "title": "attributes.usagetype"
+          },
+          "extra": {
+            "usagetype": "attributes.usagetype",
+            "vcpu": "attributes.vcpu",
+            "memory": "attributes.memory",
+            "storage": "attributes.storage",
+            "transfer": "attributes.dataTransferQuota",
+            "location": "attributes.location",
+            "region": "attributes.regionCode",
+            "price_hourly": "$root.terms.OnDemand.{$key}.*.priceDimensions.*.pricePerUnit.USD",
+            "price_unit": "$root.terms.OnDemand.{$key}.*.priceDimensions.*.unit"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-12: https://pricing.us-east-1.amazonaws.com/robots.txt answers 404 (an S3 NoSuchKey error), so the price list host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
+      "terms_note": "This is the AWS Price List bulk API, AWS's documented keyless way to read its prices by program. Every file carries its own disclaimer: 'This pricing list is for informational purposes only. All prices are subject to the additional terms included in the pricing pages on http://aws.amazon.com.' Show each price as an observation 'checked on <date>' with a link to https://aws.amazon.com/lightsail/pricing/, never as a quote, and imply no endorsement. One file (about 230 KB) a day. Re-verify before enabling.",
+      "license_note": "Prices and bundle specifications are Amazon Web Services' data. No licence to republish them was found beyond the informational disclaimer above. Attribute AWS and link the Lightsail pricing page.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

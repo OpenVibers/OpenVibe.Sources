@@ -207,6 +207,8 @@ person before enabling:
 | `steam-reviews-<game>` (18 more, 2026-10-14) | reviews | api | The same Steam endpoint, terms and mapping for Portal, Stardew Valley, Terraria, Hollow Knight, Hades, Slay the Spire, The Witcher 3, Baldur's Gate 3, Counter-Strike 2, Dota 2, Elden Ring, Celeste, Dead Cells, Valheim, Half-Life 2, Vampire Survivors, Outer Wilds and Lethal Company (app ids checked against Steam's appdetails) |
 | `dealnews-daily` | deals | rss | dealnews.com RSS (Crawl-delay 2) |
 | `staff-coupon-codes` | coupons | manual | codes a merchant published itself, entered with the evidence URL |
+| `lowendtalk-offers` (2026-10-14) | hosting | rss | LowEndTalk's Offers board feed: OpenVibe.Host's offers page (headline, poster, date, link, the stated price) |
+| `lowendbox-posts` (2026-10-14) | hosting | rss | LowEndBox's feed: Host keeps only the offer posts |
 | `sec-xbrl-filings` | trade | rss | SEC EDGAR XBRL filings RSS (`/cgi-bin` is robots-disallowed, so the getcurrent feed is not used) |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its

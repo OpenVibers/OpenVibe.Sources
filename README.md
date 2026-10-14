@@ -194,6 +194,7 @@ person before enabling:
 | `nasa-news-releases` | news | rss | nasa.gov news-release feed |
 | `nodejs-blog` | blog | rss | nodejs.org blog feed |
 | `steam-reviews-portal-2` | reviews | api | Steam `appreviews` for app 620 — signals only, review text not mapped |
+| `steam-reviews-<game>` (18 more, 2026-10-14) | reviews | api | The same Steam endpoint, terms and mapping for Portal, Stardew Valley, Terraria, Hollow Knight, Hades, Slay the Spire, The Witcher 3, Baldur's Gate 3, Counter-Strike 2, Dota 2, Elden Ring, Celeste, Dead Cells, Valheim, Half-Life 2, Vampire Survivors, Outer Wilds and Lethal Company (app ids checked against Steam's appdetails) |
 | `dealnews-daily` | deals | rss | dealnews.com RSS (Crawl-delay 2) |
 | `staff-coupon-codes` | coupons | manual | codes a merchant published itself, entered with the evidence URL |
 | `sec-xbrl-filings` | trade | rss | SEC EDGAR XBRL filings RSS (`/cgi-bin` is robots-disallowed, so the getcurrent feed is not used) |

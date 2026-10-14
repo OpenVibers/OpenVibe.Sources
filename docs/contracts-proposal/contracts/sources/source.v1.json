@@ -134,6 +134,65 @@
               "type": "string"
             },
             "description": "Extra fields copied as the API gave them (scalars). A path is relative to the record; $key is the map key; $root.<path> reads the response from its root, where a {$key} segment is the record's map key; * steps into an object's single child."
+          },
+          "extract": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "require",
+              "fields"
+            ],
+            "description": "rss and atom sources only (Sources#45): facts an item states in its own title or summary, read by the source's patterns. An item that yields every REQUIRE'd field is stored as KIND with those fields; any other item is skipped. Each field's PATTERN has one capturing group; AS date turns a stated day such as October 20 into YYYY-MM-DD (without a year, the first such day on or after the item's publication).",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,40}$"
+              },
+              "require": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,40}$"
+                }
+              },
+              "fields": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 12,
+                "propertyNames": {
+                  "pattern": "^[a-z][a-z0-9_]{0,40}$"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "from",
+                    "pattern"
+                  ],
+                  "properties": {
+                    "from": {
+                      "enum": [
+                        "title",
+                        "summary"
+                      ]
+                    },
+                    "pattern": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "as": {
+                      "enum": [
+                        "date"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

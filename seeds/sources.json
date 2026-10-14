@@ -1054,6 +1054,49 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "dealnews-coupon-codes",
+      "name": "DealNews: coupon codes its deals state",
+      "type": "rss",
+      "category": "coupons",
+      "homepage_url": "https://www.dealnews.com/",
+      "endpoints": [
+        {
+          "url": "https://www.dealnews.com/?rss=1",
+          "extract": {
+            "kind": "coupon",
+            "require": [
+              "code",
+              "merchant"
+            ],
+            "fields": {
+              "code": {
+                "from": "summary",
+                "pattern": "(?:coupon|promo|discount) code \"([A-Z0-9][A-Z0-9-]{3,31})\""
+              },
+              "expires": {
+                "from": "summary",
+                "pattern": "(?:Deal|Sale|Offer|It) ends ([A-Z][a-z]{2,8}\\.? \\d{1,2}(?:, \\d{4})?)",
+                "as": "date"
+              },
+              "merchant": {
+                "from": "summary",
+                "pattern": "(?:Buy|Shop) Now at ([A-Z][A-Za-z0-9&.' -]{1,40}?)(?= Features| Shop| Buy|\\.|$)"
+              }
+            }
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: Crawl-delay 2 (honoured); the feed URL is not disallowed.",
+      "terms_note": "The same feed and terms as dealnews-daily (Copyright DealNews, all rights reserved). Only items whose text states a coupon code and the shop are kept, as kind coupon with the code, the shop's name and the stated end date exactly as written, plus the headline and link; never a claim that a code works. Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

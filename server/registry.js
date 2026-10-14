@@ -10,6 +10,7 @@
  * an adapter existing is not permission to ingest (roadmap anti-goal 26).
  */
 const { checkApiMapping } = require('./adapters');
+const extract = require('./adapters/extract');
 
 const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
 const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting'];
@@ -77,7 +78,13 @@ function validateSource(input, { maxItemsCap = 500 } = {}) {
             // `where` is only copied when given, so records without conditions stay byte-identical.
             if (e.where) out.where = e.where;
         } else {
-            for (const k of Object.keys(e)) if (k !== 'url') throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);
+            // A feed may read structured facts out of its items' prose (adapters/extract.js).
+            for (const k of Object.keys(e)) if (k !== 'url' && !(k === 'extract' && (input.type === 'rss' || input.type === 'atom'))) throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);
+            if (e.extract !== undefined) {
+                const err = extract.check(e.extract);
+                if (err) throw new RegistryError(`endpoints[${i}]: ${err}`);
+                out.extract = e.extract;
+            }
         }
         return out;
     });

@@ -65,6 +65,726 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "steam-reviews-portal",
+      "name": "Steam user review signals: Portal (app 400)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/400/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/400?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-stardew-valley",
+      "name": "Steam user review signals: Stardew Valley (app 413150)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/413150/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/413150?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-terraria",
+      "name": "Steam user review signals: Terraria (app 105600)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/105600/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/105600?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-hollow-knight",
+      "name": "Steam user review signals: Hollow Knight (app 367520)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/367520/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/367520?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-hades",
+      "name": "Steam user review signals: Hades (app 1145360)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/1145360/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/1145360?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-slay-the-spire",
+      "name": "Steam user review signals: Slay the Spire (app 646570)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/646570/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/646570?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-the-witcher-3-wild-hunt",
+      "name": "Steam user review signals: The Witcher 3: Wild Hunt (app 292030)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/292030/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/292030?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-baldur-s-gate-3",
+      "name": "Steam user review signals: Baldur's Gate 3 (app 1086940)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/1086940/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/1086940?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-counter-strike-2",
+      "name": "Steam user review signals: Counter-Strike 2 (app 730)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/730/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/730?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-dota-2",
+      "name": "Steam user review signals: Dota 2 (app 570)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/570/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/570?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-elden-ring",
+      "name": "Steam user review signals: Elden Ring (app 1245620)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/1245620/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/1245620?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-celeste",
+      "name": "Steam user review signals: Celeste (app 504230)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/504230/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/504230?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-dead-cells",
+      "name": "Steam user review signals: Dead Cells (app 588650)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/588650/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/588650?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-valheim",
+      "name": "Steam user review signals: Valheim (app 892970)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/892970/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/892970?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-half-life-2",
+      "name": "Steam user review signals: Half-Life 2 (app 220)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/220/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/220?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-vampire-survivors",
+      "name": "Steam user review signals: Vampire Survivors (app 1794680)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/1794680/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/1794680?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-outer-wilds",
+      "name": "Steam user review signals: Outer Wilds (app 753640)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/753640/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/753640?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-reviews-lethal-company",
+      "name": "Steam user review signals: Lethal Company (app 1966720)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://store.steampowered.com/app/1966720/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/appreviews/1966720?json=1&filter=recent&language=english&purchase_type=all&num_per_page=20",
+          "format": "json",
+          "items_path": "reviews",
+          "item_kind": "review_signal",
+          "fields": {
+            "identity": "recommendationid",
+            "published_at_epoch": "timestamp_created",
+            "updated_at_epoch": "timestamp_updated"
+          },
+          "extra": {
+            "voted_up": "voted_up",
+            "votes_up": "votes_up",
+            "votes_funny": "votes_funny",
+            "weighted_vote_score": "weighted_vote_score",
+            "playtime_at_review_min": "author.playtime_at_review",
+            "language": "language",
+            "steam_purchase": "steam_purchase",
+            "received_for_free": "received_for_free",
+            "written_during_early_access": "written_during_early_access"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 20,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "dealnews-daily",
       "name": "DealNews daily deals",
       "type": "rss",

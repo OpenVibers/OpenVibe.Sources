@@ -126,6 +126,15 @@ number or boolean, or an array of up to 20 of them, matching any): a record that
 condition is left out before `maxItems` is counted and reported as `meta.filtered`, e.g.
 `"where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }`.
 
+**Facts stated in prose (`extract`, rss/atom only).** A feed endpoint may carry
+`extract: { kind, require, fields }` ([server/adapters/extract.js](server/adapters/extract.js)). Each field is read from
+the item's own `title` or `summary` by a pattern with one capturing group. With `as: "date"`, "October 20" becomes
+2026-10-20: without a year, the first such day on or after the item's publication. An item that yields every `require`d
+field is stored as `kind` with those fields; any other item is skipped and counted in the run's `items_skipped` (the
+plain feed source keeps it). The registry refuses a pattern that does not compile or has no group, an unknown option,
+and `extract` on an api source. `dealnews-coupon-codes` (category `coupons`) is the first: the code, the shop and the
+stated end date of the DealNews deals that state a code, exactly as written.
+
 ### Items
 
 Each item: `source_key`, `category`, `kind`, `identity`, `canonical_url` (tracking parameters and
@@ -193,6 +202,7 @@ person before enabling:
 |---|---|---|---|
 | `nasa-news-releases` | news | rss | nasa.gov news-release feed |
 | `nodejs-blog` | blog | rss | nodejs.org blog feed |
+| `dealnews-coupon-codes` | coupons | rss | The DealNews feed with `extract`: only items that state a coupon code and the shop, as kind `coupon` (code, merchant, expires) |
 | `steam-reviews-portal-2` | reviews | api | Steam `appreviews` for app 620 — signals only, review text not mapped |
 | `steam-reviews-<game>` (18 more, 2026-10-14) | reviews | api | The same Steam endpoint, terms and mapping for Portal, Stardew Valley, Terraria, Hollow Knight, Hades, Slay the Spire, The Witcher 3, Baldur's Gate 3, Counter-Strike 2, Dota 2, Elden Ring, Celeste, Dead Cells, Valheim, Half-Life 2, Vampire Survivors, Outer Wilds and Lethal Company (app ids checked against Steam's appdetails) |
 | `dealnews-daily` | deals | rss | dealnews.com RSS (Crawl-delay 2) |

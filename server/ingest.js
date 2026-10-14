@@ -19,6 +19,7 @@
  */
 const { ids } = require('openvibe-contracts');
 const { ADAPTERS } = require('./adapters');
+const extract = require('./adapters/extract');
 const { sha256, decodeBody } = require('./adapters/util');
 
 const FAILURE_STATES = new Set(['http_error', 'timeout', 'robots_denied', 'parse_error', 'rate_limited']);
@@ -178,6 +179,11 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         try {
             const text = decodeBody(res.body, res.headers['content-type']);
             parsed = adapter.parse(text, { url: res.finalUrl, endpoint, summaryMax: config.items.summaryMax, maxItems: source.max_items });
+            // An endpoint that reads facts out of its items' prose keeps only the items that state them (adapters/extract.js).
+            if (endpoint.extract) {
+                const x = extract.apply(parsed.items, endpoint.extract);
+                parsed = { ...parsed, items: x.items, skipped: parsed.skipped + x.skipped };
+            }
         } catch (err) {
             Object.assign(run, { state: 'parse_error', error_code: err.code === 'parse_error' ? 'unreadable' : 'adapter_error', detail: String(err.message).slice(0, 500) });
             if (err.code !== 'parse_error') log.error(`[ingest] ${source.key}: adapter crashed: ${err.stack || err}`);

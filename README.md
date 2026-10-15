@@ -125,6 +125,22 @@ An endpoint may also carry `where`, up to 10 `path -> expected` conditions (expe
 number or boolean, or an array of up to 20 of them, matching any): a record that fails any
 condition is left out before `maxItems` is counted and reported as `meta.filtered`, e.g.
 `"where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }`.
+An expectation may instead be `{ "pattern": "<regular expression, at most 200 characters>" }`, which the value must
+match as text.
+
+**Catalogs that keep plans, hardware and prices apart** (OVHcloud's public order catalog, `ovhcloud-vps`). A key may
+carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and the path steps into its
+first element whose fields equal every value, compared as text after `scalar()` (so `interval=1` matches the number 1).
+A value is literal text or `$rec.<path>`, read from the record itself. No match is null.
+
+```json
+"where": { "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } },
+"extra": { "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+           "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price" }
+```
+
+`max_bytes` (an integer from 1 KiB to 32 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
+catalog is about 12 MB.
 
 **Facts stated in prose (`extract`, rss/atom only).** A feed endpoint may carry
 `extract: { kind, require, fields }` ([server/adapters/extract.js](server/adapters/extract.js)). Each field is read from
@@ -368,7 +384,7 @@ vhost serves it.
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.163.0
+- openvibe-contracts: v0.180.0
 - openvibe-sdk: v0.44.0
 - openvibe-shared: v4.1.7
 <!-- versions:end -->

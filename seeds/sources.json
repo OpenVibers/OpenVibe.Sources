@@ -1056,6 +1056,54 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "ovhcloud-vps",
+      "name": "OVHcloud VPS plans (US catalog)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://us.ovhcloud.com/vps/",
+      "endpoints": [
+        {
+          "url": "https://api.us.ovhcloud.com/1.0/order/catalog/public/vps?ovhSubsidiary=US",
+          "format": "json",
+          "items_path": "plans",
+          "item_kind": "plan",
+          "max_bytes": 25165824,
+          "where": {
+            "planCode": {
+              "pattern": "^vps-[0-9]{4}-model[0-9]+$"
+            }
+          },
+          "fields": {
+            "identity": "planCode",
+            "title": "invoiceName"
+          },
+          "extra": {
+            "product": "product",
+            "currency": "$root.locale.currencyCode",
+            "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+            "cpu_type": "$root.products[name=$rec.product].blobs.technical.cpu.type",
+            "memory_gb": "$root.products[name=$rec.product].blobs.technical.memory.size",
+            "disk_gb": "$root.products[name=$rec.product].blobs.technical.storage.disks.0.capacity",
+            "disk_interface": "$root.products[name=$rec.product].blobs.technical.storage.disks.0.interface",
+            "disk_technology": "$root.products[name=$rec.product].blobs.technical.storage.disks.0.technology",
+            "bandwidth_mbps": "$root.products[name=$rec.product].blobs.technical.bandwidth.level",
+            "bandwidth_unlimited": "$root.products[name=$rec.product].blobs.technical.bandwidth.unlimited",
+            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-15: https://api.us.ovhcloud.com/robots.txt answers 404 (nginx), and api.ovh.com/robots.txt redirects to https://api.eu.ovhcloud.com/robots.txt, also 404, so the API hosts publish no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run. (us.ovhcloud.com, the marketing site, is a different host and is not fetched.)",
+      "terms_note": "OVHcloud's own API schema (https://api.us.ovhcloud.com/1.0/order.json) marks GET /order/catalog/public/vps 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve VPS catalog'): the public catalog is meant to be read without an account, and it answered our keyless fetcher. OVHcloud's general terms (https://us.ovhcloud.com/legal/) govern its services; no page found states a right to, or a ban on, republishing catalog prices, so a person reads them before enabling. One file (about 12 MB, mostly operating-system options) a day. Prices are the catalog's integers in hundred-millionths of the currency (535000000 is $5.35); show each as an observation 'checked on <date>' with a link to https://us.ovhcloud.com/vps/, never a quote, and imply no endorsement. Only the current plan codes (vps-<year>-model<n>, US datacenters) are kept: the -eu/-ca region copies, local-zone (.LZ) plans, commitment discounts and legacy upgrade codes are filtered out. Re-verify before enabling.",
+      "license_note": "Plan specifications and prices are OVHcloud's data (https://us.ovhcloud.com/vps/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link the VPS page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "lowendtalk-offers",
       "name": "LowEndTalk: the Offers board",
       "type": "rss",

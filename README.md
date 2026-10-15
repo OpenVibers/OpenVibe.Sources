@@ -42,6 +42,14 @@ the fetch queue (`sources_fetch_due`, `sources_fetch_oldest_wait_seconds`,
 `sources_fetch_in_flight`), `sources_last_fetch_timestamp_seconds` and
 `sources_last_success_timestamp_seconds`.
 
+Requests are aggregated by route template, method and status class, never by raw URL; health,
+readiness, `/metrics`, `/shared` and static files are not counted. Once a minute one `http.request`
+sample per key, plus the active-requests, p95 and event-loop-lag gauges, is written to this service's
+own `telemetry_samples` table (openvibe-sdk 0.46 telemetry, `platform.telemetry-sample@1`, migration
+`0003_telemetry.sql`); rows older than 14 days are deleted daily. `server/app.js` mounts the SDK's
+no-op-until-init `telemetryMiddleware`; `server/index.js` calls `telemetry.init()` at production
+start and flushes on stop.
+
 ## The registry
 
 A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|manual`), `category`

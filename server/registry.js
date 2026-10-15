@@ -13,7 +13,7 @@ const { checkApiMapping } = require('./adapters');
 const extract = require('./adapters/extract');
 
 const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
-const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting'];
+const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting', 'crowdfunding'];
 const SENSITIVITY = ['none', 'financial', 'health', 'political', 'legal', 'adult'];
 const AUTH_MODES = ['none', 'header', 'bearer', 'query'];
 const KEY_RE = /^[a-z0-9][a-z0-9-]{1,63}$/;
@@ -78,6 +78,7 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             // `where` is only copied when given, so records without conditions stay byte-identical.
             if (e.where) out.where = e.where;
             if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
+            if (e.request_content_type !== undefined) out.request_content_type = e.request_content_type;
         } else {
             // A feed may read structured facts out of its items' prose (adapters/extract.js).
             for (const k of Object.keys(e)) if (k !== 'url' && !(k === 'extract' && (input.type === 'rss' || input.type === 'atom'))) throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);

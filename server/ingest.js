@@ -105,6 +105,8 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
 
         // credential by variable name, read now, never stored
         const headers = { Accept: adapter.accept };
+        // An api endpoint may name the Content-Type its GET carries (adapters/api.js `request_content_type`).
+        if (endpoint.request_content_type) headers['Content-Type'] = endpoint.request_content_type;
         const sensitive = [];
         let requestUrl = target;
         if (source.auth.mode !== 'none') {

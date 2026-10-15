@@ -49,7 +49,7 @@
         "deals",
         "coupons",
         "trade",
-        "hosting"
+        "hosting", "crowdfunding"
       ]
     },
     "homepage_url": {
@@ -135,6 +135,10 @@
           "item_kind": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]{1,39}$"
+          },
+          "request_content_type": {
+            "enum": ["application/json"],
+            "description": "Sent as the request's Content-Type on this endpoint's GET (no body). Open Collective's GraphQL API answers a GET only with it, as its CSRF guard (Sources#65)."
           },
           "max_bytes": {
             "type": "integer",

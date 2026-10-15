@@ -53,7 +53,7 @@ start and flushes on stop.
 ## The registry
 
 A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|manual`), `category`
-(`news|blog|reviews|deals|coupons|trade|hosting`), `endpoints` (for `api`: a field mapping, no code per
+(`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding`), `endpoints` (for `api`: a field mapping, no code per
 provider), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
 secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),
@@ -149,6 +149,11 @@ A value is literal text or `$rec.<path>`, read from the record itself. No match 
 
 `max_bytes` (an integer from 1 KiB to 32 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
 catalog is about 12 MB.
+
+`request_content_type` (`application/json` only) is sent as the Content-Type of the endpoint's GET, which has no body.
+Open Collective's public GraphQL API answers a GET only with it (its CSRF guard): `opencollective-accounts` (category
+`crowdfunding`) reads the 200 most active and the 100 newest collectives, projects and funds every six hours, each a
+`campaign` item with the amounts and counts as Open Collective states them, for OpenVibe.Deals' crowdfunding discovery.
 
 **Facts stated in prose (`extract`, rss/atom only).** A feed endpoint may carry
 `extract: { kind, require, fields }` ([server/adapters/extract.js](server/adapters/extract.js)). Each field is read from

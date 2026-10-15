@@ -1237,6 +1237,76 @@
       "review_required": true,
       "sensitivity": "health",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "opencollective-accounts",
+      "name": "Open Collective: collectives, projects and funds",
+      "type": "api",
+      "category": "crowdfunding",
+      "homepage_url": "https://opencollective.com/discover",
+      "endpoints": [
+        {
+          "url": "https://api.opencollective.com/graphql/v2?query=%7B+accounts%28type%3A+%5BCOLLECTIVE%2C+PROJECT%2C+FUND%5D%2C+limit%3A+200%2C+orderBy%3A+%7Bfield%3A+ACTIVITY%2C+direction%3A+DESC%7D%29+%7B+nodes+%7B+slug+name+type+description+currency+createdAt+imageUrl+website+tags+stats+%7B+totalAmountReceived+%7B+valueInCents+currency+%7D+yearlyBudget+%7B+valueInCents+currency+%7D+contributorsCount+%7D+%7D+%7D+%7D",
+          "format": "json",
+          "request_content_type": "application/json",
+          "items_path": "data.accounts.nodes",
+          "item_kind": "campaign",
+          "fields": {
+            "identity": "slug",
+            "title": "name",
+            "summary": "description",
+            "published_at": "createdAt"
+          },
+          "extra": {
+            "slug": "slug",
+            "account_type": "type",
+            "currency": "currency",
+            "raised_cents": "stats.totalAmountReceived.valueInCents",
+            "raised_currency": "stats.totalAmountReceived.currency",
+            "yearly_budget_cents": "stats.yearlyBudget.valueInCents",
+            "backers": "stats.contributorsCount",
+            "image_url": "imageUrl",
+            "website": "website",
+            "tag": "tags.0"
+          }
+        },
+        {
+          "url": "https://api.opencollective.com/graphql/v2?query=%7B+accounts%28type%3A+%5BCOLLECTIVE%2C+PROJECT%2C+FUND%5D%2C+limit%3A+100%2C+orderBy%3A+%7Bfield%3A+CREATED_AT%2C+direction%3A+DESC%7D%29+%7B+nodes+%7B+slug+name+type+description+currency+createdAt+imageUrl+website+tags+stats+%7B+totalAmountReceived+%7B+valueInCents+currency+%7D+yearlyBudget+%7B+valueInCents+currency+%7D+contributorsCount+%7D+%7D+%7D+%7D",
+          "format": "json",
+          "request_content_type": "application/json",
+          "items_path": "data.accounts.nodes",
+          "item_kind": "campaign",
+          "fields": {
+            "identity": "slug",
+            "title": "name",
+            "summary": "description",
+            "published_at": "createdAt"
+          },
+          "extra": {
+            "slug": "slug",
+            "account_type": "type",
+            "currency": "currency",
+            "raised_cents": "stats.totalAmountReceived.valueInCents",
+            "raised_currency": "stats.totalAmountReceived.currency",
+            "yearly_budget_cents": "stats.yearlyBudget.valueInCents",
+            "backers": "stats.contributorsCount",
+            "image_url": "imageUrl",
+            "website": "website",
+            "tag": "tags.0"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-15: https://api.opencollective.com/robots.txt answers 404, so the API host publishes no robots rules (a 404 is treated as no restrictions, never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Open Collective's public GraphQL API v2 (documented at https://graphql-docs-v2.opencollective.com) answers anonymous reads of public accounts; a GET must carry Content-Type: application/json (its CSRF guard). Two requests every six hours: the 200 most active collectives, projects and funds and the 100 newest. Each becomes a campaign item: name, description, type, currency, the total received and yearly budget in cents, the number of contributors, logo URL, website and first tag, as Open Collective states them; the profile is https://opencollective.com/<slug>. Show amounts as observations with their fetch date, link each to its Open Collective page, and imply no endorsement.",
+      "license_note": "Public account data published by Open Collective; the descriptions are the collectives' own words (short summaries only, linked back).",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "stale_after_sec": 86400,
+      "max_items": 300,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
     }
   ]
 }

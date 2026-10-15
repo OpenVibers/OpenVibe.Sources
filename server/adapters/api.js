@@ -48,6 +48,9 @@
  * `max_bytes` (an integer from 1 KiB to 32 MiB) raises or lowers the body cap for one endpoint
  * (SOURCES_MAX_BYTES otherwise); OVHcloud's VPS catalog is about 12 MB.
  *
+ * `request_content_type` ("application/json" only) is sent as the GET's Content-Type (the request has no body): Open
+ * Collective's public GraphQL API answers a GET only with it, as its CSRF guard.
+ *
  * Some price lists key their records by id instead of listing them: Porkbun returns
  * `{ "pricing": { "com": {…}, "net": {…} } }` and AWS Lightsail keys its price list by SKU.
  * `"items_shape": "map"` reads such an object: each own property becomes one record, in sorted
@@ -228,6 +231,7 @@ function checkMapping(ep) {
     }
     if (ep.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(ep.item_kind)) return 'item_kind is malformed';
     if (ep.max_bytes !== undefined && (!Number.isInteger(ep.max_bytes) || ep.max_bytes < 1024 || ep.max_bytes > 32 * 1024 * 1024)) return 'max_bytes is an integer from 1024 to 33554432';
+    if (ep.request_content_type !== undefined && ep.request_content_type !== 'application/json') return 'request_content_type may only be application/json';
     return null;
 }
 

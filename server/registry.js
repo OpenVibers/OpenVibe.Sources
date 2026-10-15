@@ -51,7 +51,7 @@ const bool = (v, d, what) => {
 };
 
 /** Validate a full source definition → normalized record (no runtime state). */
-function validateSource(input, { maxItemsCap = 500 } = {}) {
+function validateSource(input, { maxItemsCap = 12000 } = {}) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw new RegistryError('body must be a source object');
     const known = new Set(['key', 'name', 'type', 'category', 'homepage_url', 'endpoints', 'auth', 'robots_note', 'terms_note', 'license_note',
         'min_interval_ms', 'poll_interval_sec', 'stale_after_sec', 'max_items', 'enabled', 'review_required', 'sensitivity',
@@ -142,7 +142,7 @@ function validateSource(input, { maxItemsCap = 500 } = {}) {
     return record;
 }
 
-function createRegistry({ db, now = () => Date.now(), maxItemsCap = 500 }) {
+function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
     const st = {
         get: db.prepare('SELECT * FROM sources WHERE key = ?'),
         all: db.prepare('SELECT * FROM sources ORDER BY key'),

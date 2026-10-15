@@ -82,7 +82,9 @@ function load(env = process.env) {
             allowPrivateHosts: list(env.SOURCES_ALLOW_PRIVATE_HOSTS, []),
         },
         items: {
-            maxPerFetch: int(env.SOURCES_MAX_ITEMS_PER_FETCH, 500),
+            // The ceiling on any one source's max_items. Each source still keeps its own (most are 200 or less); 12000
+            // lets sec-company-tickers take SEC's whole ticker list (about 10,450 rows) in its one daily request.
+            maxPerFetch: int(env.SOURCES_MAX_ITEMS_PER_FETCH, 12000),
             summaryMax: 1000,
         },
         secrets: env,

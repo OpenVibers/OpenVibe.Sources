@@ -49,6 +49,18 @@ t('Atom: id identity, relative alternate link, html title, bad dates are null', 
     assert.strictEqual(b.summary, 'Body');
 });
 
+t('Atom: an entry with only <updated> (GOV.UK) is dated by it, and says so', () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>https://www.gov.uk/news</id><title>GOV.UK</title><updated>2026-10-14T12:00:00+01:00</updated>
+<entry><id>https://www.gov.uk/government/news/a</id><link rel="alternate" href="https://www.gov.uk/government/news/a"/><title>Rail strategy</title><updated>2026-10-14T11:15:00+01:00</updated><summary>s</summary></entry>
+<entry><id>https://www.gov.uk/government/news/b</id><title>Both dates</title><published>2026-10-13T09:00:00Z</published><updated>2026-10-14T09:00:00Z</updated></entry></feed>`;
+    const [only, both] = feed.parse(xml, { url: 'https://www.gov.uk/news.atom' }).items;
+    assert.strictEqual(only.published_at, '2026-10-14T10:15:00.000Z');
+    assert.strictEqual(only.updated_at, '2026-10-14T10:15:00.000Z');
+    assert.strictEqual(only.fields.dated_by, 'updated');
+    assert.strictEqual(both.published_at, '2026-10-13T09:00:00.000Z', 'a stated <published> wins');
+    assert.strictEqual(both.fields.dated_by, undefined);
+});
+
 t('a large real-world-sized feed with thousands of entities parses (no expansion limit tripped)', () => {
     const items = Array.from({ length: 1500 }, (_, i) => `<item><title>Deal ${i} &amp; more &#8212; $${i}</title><link>https://deals.example.com/d/${i}?a=1&amp;b=2</link><guid>d-${i}</guid></item>`).join('');
     const r = feed.parse(`<?xml version="1.0"?><rss version="2.0"><channel><title>Big &amp; busy</title>${items}</channel></rss>`, { url: 'https://deals.example.com/rss', maxItems: 2000 });

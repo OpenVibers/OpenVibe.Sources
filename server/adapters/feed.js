@@ -67,6 +67,10 @@ function atomEntry(e, base, summaryMax) {
     const url = atomLink(e, base);
     const identity = id || url;
     if (!identity) return null;
+    // Atom requires <updated> and makes <published> optional. A feed that states only <updated> (GOV.UK's) is dated by
+    // it, as feed readers do; fields.dated_by says so, and published_at stays null when neither is a date.
+    const published = toIsoDate(pick(e, 'published', 'issued'));
+    const updated = toIsoDate(pick(e, 'updated', 'modified'));
     return {
         identity,
         kind: 'article',
@@ -74,9 +78,9 @@ function atomEntry(e, base, summaryMax) {
         title: toText(pick(e, 'title'), 500),
         summary: toText(pick(e, 'summary', 'content'), summaryMax),
         authors: authorsOf(e.author),
-        published_at: toIsoDate(pick(e, 'published', 'issued')),
-        updated_at: toIsoDate(pick(e, 'updated', 'modified')),
-        fields: { categories: categoriesOf(e.category) },
+        published_at: published || updated,
+        updated_at: updated,
+        fields: { categories: categoriesOf(e.category), ...(!published && updated ? { dated_by: 'updated' } : {}) },
     };
 }
 

@@ -830,6 +830,43 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "sec-company-tickers",
+      "name": "SEC EDGAR: company tickers and exchanges",
+      "type": "api",
+      "category": "trade",
+      "homepage_url": "https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data",
+      "endpoints": [
+        {
+          "url": "https://www.sec.gov/files/company_tickers_exchange.json",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "instrument",
+          "max_bytes": 4194304,
+          "fields": {
+            "identity": "2",
+            "title": "1"
+          },
+          "extra": {
+            "ticker": "2",
+            "name": "1",
+            "cik": "0",
+            "exchange": "3"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-15: https://www.sec.gov/robots.txt does not disallow /files/; this is SEC's own published mapping of tickers to CIKs, linked from 'Accessing EDGAR Data'.",
+      "terms_note": "Public EDGAR data. SEC fair-access policy: a User-Agent that names the requester and a contact (ours does) and at most 10 requests per second; this is one request a day. Each row [cik, name, ticker, exchange] becomes one instrument item: the company's name, ticker, exchange and CIK as SEC lists them. Informational only: no advice, no execution (ADR-025). Needs SOURCES_MAX_ITEMS_PER_FETCH of at least 11000 (about 10,450 rows in October 2026).",
+      "license_note": "US government work: public domain (17 U.S.C. 105). Cite 'U.S. Securities and Exchange Commission'.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "stale_after_sec": 259200,
+      "max_items": 11000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "govuk-news",
       "name": "GOV.UK news and announcements",
       "type": "atom",

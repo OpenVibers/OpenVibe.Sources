@@ -13,9 +13,9 @@ const { load } = require('../server/config');
 const { openDb } = require('../server/db');
 const { createRegistry } = require('../server/registry');
 
-async function seed(db, { now = () => Date.now(), by = 'seed' } = {}) {
+async function seed(db, { now = () => Date.now(), by = 'seed', maxItemsCap } = {}) {
     const seeds = require(path.join(__dirname, '..', 'seeds', 'sources.json')).sources;
-    const registry = createRegistry({ db, now });
+    const registry = createRegistry({ db, now, ...(maxItemsCap ? { maxItemsCap } : {}) });
     const out = { created: [], kept: [] };
     for (const s of seeds) {
         if (await registry.get(s.key)) { out.kept.push(s.key); continue; }
@@ -27,8 +27,9 @@ async function seed(db, { now = () => Date.now(), by = 'seed' } = {}) {
 
 if (require.main === module) {
     (async () => {
-        const db = await openDb(load());   // DATABASE_URL (PostgreSQL); without it, the development PGlite
-        const r = await seed(db);
+        const config = load();
+        const db = await openDb(config);   // DATABASE_URL (PostgreSQL); without it, the development PGlite
+        const r = await seed(db, { maxItemsCap: config.items.maxPerFetch });
         console.log(`seeded ${r.created.length} source(s)${r.created.length ? `: ${r.created.join(', ')}` : ''}; kept ${r.kept.length} existing. All seeds are disabled.`);
         await db.close();
     })().catch((err) => { console.error(`[seed] ${err.message}`); process.exit(1); });

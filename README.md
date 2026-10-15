@@ -234,6 +234,7 @@ person before enabling:
 | `lowendtalk-offers` (2026-10-14) | hosting | rss | LowEndTalk's Offers board feed: OpenVibe.Host's offers page (headline, poster, date, link, the stated price) |
 | `lowendbox-posts` (2026-10-14) | hosting | rss | LowEndBox's feed: Host keeps only the offer posts |
 | `sec-xbrl-filings` | trade | rss | SEC EDGAR XBRL filings RSS (`/cgi-bin` is robots-disallowed, so the getcurrent feed is not used) |
+| `sec-company-tickers` | trade | api | SEC's ticker, CIK and exchange list (`company_tickers_exchange.json`), one request a day; each row is an `instrument` item OpenVibe.Trade turns into a company page. Needs the per-fetch cap (`SOURCES_MAX_ITEMS_PER_FETCH`, default 12000) |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its
 robots.txt) and EDGAR's `getcurrent` Atom feed (`/cgi-bin` disallowed). The seeded feeds were

@@ -32,6 +32,22 @@
  *
  *   "where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }
  *
+ * A key may carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and
+ * the path steps into its first element whose fields equal every value (compared as text after
+ * `scalar()`, so `interval=1` matches the number 1). A value is literal text (letters, digits, spaces,
+ * `_ : @ + -`) or `$rec.<path>`, a plain dotted path read from the record itself. No match, a missing
+ * value or a non-array is undefined (the field is null). OVHcloud's catalog lists plans and their
+ * hardware separately and keeps every price variant in one array:
+ *
+ *   "extra": { "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+ *              "price": "pricings[mode=default,commitment=0,intervalUnit=month].price" }
+ *
+ * A `where` expectation may also be `{ "pattern": "<regular expression>" }` (at most 200 characters):
+ * the value must be text the expression matches, e.g. `{ "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } }`.
+ *
+ * `max_bytes` (an integer from 1 KiB to 32 MiB) raises or lowers the body cap for one endpoint
+ * (SOURCES_MAX_BYTES otherwise); OVHcloud's VPS catalog is about 12 MB.
+ *
  * Some price lists key their records by id instead of listing them: Porkbun returns
  * `{ "pricing": { "com": {…}, "net": {…} } }` and AWS Lightsail keys its price list by SKU.
  * `"items_shape": "map"` reads such an object: each own property becomes one record, in sorted
@@ -45,13 +61,44 @@ const { parseXml, toText, toIsoDate, epochSecondsToIso, canonicalUrl, toId, Pars
 const PARSER_VERSION = 'api@1';
 // A segment is `*` (the single child of an object), `{$key}` (the map key, only inside `$root.`),
 // or an ordinary key. PATH_RE is syntax only; keyPathViolation enforces where each token may sit.
-const PATH_SEG = '(?:\\*|\\{\\$key\\}|[A-Za-z0-9_@:$-]+)';
+// A selector condition is `field=value`, the value literal text or `$rec.` and a plain dotted path.
+const SEL_COND = '[A-Za-z0-9_]+=(?:\\$rec(?:\\.[A-Za-z0-9_]+)+|[A-Za-z0-9_ :@+-]+)';
+const SELECTOR = `\\[${SEL_COND}(?:,${SEL_COND}){0,3}\\]`;
+const PATH_SEG = `(?:\\*|\\{\\$key\\}|[A-Za-z0-9_@:$-]+(?:${SELECTOR})?)`;
 const PATH_RE = new RegExp(`^${PATH_SEG}(?:\\.${PATH_SEG})*$`);
 
-/** Walk a dot path: `*` steps into an object's single own property, `{$key}` uses the map key. */
-function walk(obj, path, key) {
+/** A path's segments: dots split it, except inside a selector (whose `$rec.` values have dots of their own). */
+const SPLIT = new Map();
+function splitPath(path) {
+    let segs = SPLIT.get(path);
+    if (segs) return segs;
+    segs = [];
+    let depth = 0;
+    let cur = '';
+    for (const ch of path) {
+        if (ch === '[') depth++;
+        else if (ch === ']') depth--;
+        if (ch === '.' && depth === 0) { segs.push(cur); cur = ''; } else cur += ch;
+    }
+    segs.push(cur);
+    if (SPLIT.size < 1000) SPLIT.set(path, segs);
+    return segs;
+}
+
+/** `key[a=b,c=$rec.d]` → { name, conds: [[field, value]] }, or null for a plain segment. */
+function selectorOf(seg) {
+    const m = /^([^[]+)\[(.+)\]$/.exec(seg);
+    if (!m) return null;
+    return { name: m[1], conds: m[2].split(',').map((c) => [c.slice(0, c.indexOf('=')), c.slice(c.indexOf('=') + 1)]) };
+}
+
+/**
+ * Walk a dot path: `*` steps into an object's single own property, `{$key}` uses the map key, and
+ * `key[field=value,…]` steps into the first element of the array `key` whose fields match.
+ */
+function walk(obj, path, key, rec) {
     let cur = obj;
-    for (const seg of path.split('.')) {
+    for (const seg of splitPath(path)) {
         if (cur == null || typeof cur !== 'object') return undefined;
         if (seg === '*') {
             if (Array.isArray(cur)) return undefined;
@@ -62,7 +109,16 @@ function walk(obj, path, key) {
             if (key === undefined) return undefined;
             cur = cur[key];
         } else {
-            cur = cur[seg];
+            const sel = selectorOf(seg);
+            if (!sel) { cur = cur[seg]; continue; }
+            const list = cur[sel.name];
+            if (!Array.isArray(list)) return undefined;
+            const wanted = sel.conds.map(([f, v]) => [f, v.startsWith('$rec.') ? scalar(walk(rec, v.slice('$rec.'.length), key, rec)) : v]);
+            if (wanted.some(([, v]) => v == null)) return undefined;
+            cur = list.find((el) => el && typeof el === 'object' && wanted.every(([f, v]) => {
+                const a = scalar(el[f]);
+                return a != null && String(a) === String(v);
+            }));
         }
     }
     return cur;
@@ -72,8 +128,8 @@ function walk(obj, path, key) {
 function getField(body, rec, key, p) {
     if (!p) return rec;
     if (p === '$key') return key;
-    if (p.startsWith('$root.')) return walk(body, p.slice('$root.'.length), key);
-    return walk(rec, p, key);
+    if (p.startsWith('$root.')) return walk(body, p.slice('$root.'.length), key, rec);
+    return walk(rec, p, key, rec);
 }
 
 function at(obj, path) {
@@ -89,10 +145,22 @@ function scalar(v) {
     return null;
 }
 
-/** Does one record satisfy every `where` condition? Values compare after scalar(). */
+const PATTERNS = new Map();
+function patternOf(source) {
+    let re = PATTERNS.get(source);
+    if (!re) { re = new RegExp(source); if (PATTERNS.size < 100) PATTERNS.set(source, re); }
+    return re;
+}
+const isPattern = (v) => v != null && typeof v === 'object' && !Array.isArray(v) && 'pattern' in v;
+
+/** Does one record satisfy every `where` condition? Values compare after scalar(); a pattern tests text. */
 function matchesWhere(body, rec, key, where) {
     for (const [p, expected] of Object.entries(where)) {
         const actual = scalar(getField(body, rec, key, p));
+        if (isPattern(expected)) {
+            if (typeof actual !== 'string' || !patternOf(expected.pattern).test(actual)) return false;
+            continue;
+        }
         const wanted = Array.isArray(expected) ? expected : [expected];
         if (!wanted.some((w) => w === actual)) return false;
     }
@@ -104,7 +172,7 @@ function matchesWhere(body, rec, key, where) {
  * segment `{$key}` inside a `$root.` path. `$root` must be followed by a path.
  */
 function keyPathViolation(p, shape) {
-    const segs = p.split('.');
+    const segs = splitPath(p);
     const hasBare = segs.includes('$key');
     const hasBrace = segs.includes('{$key}');
     if (p === '$root' || p.startsWith('$root.')) {
@@ -147,6 +215,11 @@ function checkMapping(ep) {
         if (!PATH_RE.test(p)) return `where.${p} path is malformed`;
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `where.${p}: ${kerr}`;
+        if (isPattern(expected)) {
+            if (Object.keys(expected).length !== 1 || typeof expected.pattern !== 'string' || !expected.pattern || expected.pattern.length > 200) return `where.${p}: a pattern is { "pattern": "<at most 200 characters>" }`;
+            try { new RegExp(expected.pattern); } catch { return `where.${p}: the pattern is not a valid regular expression`; }
+            continue;
+        }
         const wanted = Array.isArray(expected) ? expected : [expected];
         if (wanted.length > 20) return `where.${p} has at most 20 expected values`;
         for (const v of wanted) {
@@ -154,6 +227,7 @@ function checkMapping(ep) {
         }
     }
     if (ep.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(ep.item_kind)) return 'item_kind is malformed';
+    if (ep.max_bytes !== undefined && (!Number.isInteger(ep.max_bytes) || ep.max_bytes < 1024 || ep.max_bytes > 32 * 1024 * 1024)) return 'max_bytes is an integer from 1024 to 33554432';
     return null;
 }
 

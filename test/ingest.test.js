@@ -159,6 +159,7 @@ t('timeouts and oversize bodies are explicit states', async () => {
         '/robots.txt': () => ({ status: 404 }),
         '/slow': () => ({ delayMs: 3000, body: FEED_V1 }),
         '/huge': () => ({ body: 'x'.repeat(4096) }),
+        '/huge.json': () => ({ body: JSON.stringify(Array.from({ length: 60 }, (_, i) => ({ id: `p${i}`, pad: 'x'.repeat(50) }))) }),
     });
     try {
         const key = await create(sourceDef({ endpoints: [`${s.origin}/slow`] }));
@@ -171,6 +172,14 @@ t('timeouts and oversize bodies are explicit states', async () => {
             await small.registry.create(sourceDef({ key: 'huge', endpoints: [`${s.origin}/huge`] }), 'test');
             const r = await small.ingest.run('huge', { trigger: 'manual' });
             assert.deepStrictEqual([r.runs[0].state, r.runs[0].error_code], ['http_error', 'too_large']);
+            // An api endpoint's own max_bytes lifts the cap for that endpoint only.
+            const api = (key, extra) => sourceDef({ key, type: 'api', category: 'hosting', endpoints: [{ url: `${s.origin}/huge.json`, items_path: '', fields: { identity: 'id' }, ...extra }] });
+            await small.registry.create(api('capped', {}), 'test');
+            await small.registry.create(api('lifted', { max_bytes: 8192 }), 'test');
+            const capped = await small.ingest.run('capped', { trigger: 'manual' });
+            assert.deepStrictEqual([capped.runs[0].state, capped.runs[0].error_code], ['http_error', 'too_large']);
+            const lifted = await small.ingest.run('lifted', { trigger: 'manual' });
+            assert.deepStrictEqual([lifted.runs[0].state, lifted.runs[0].items_seen], ['ok', 60]);
         } finally { await small.stop(); }
     } finally { await s.close(); }
 });

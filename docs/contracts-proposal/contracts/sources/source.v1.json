@@ -113,14 +113,34 @@
                       "boolean"
                     ]
                   }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "pattern"
+                  ],
+                  "properties": {
+                    "pattern": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  }
                 }
               ]
             },
-            "description": "Records kept only when every path equals its value (or one of an array of values); others are left out before max_items counts. Paths follow the field rules: relative to the record, $key, an absolute $root.<path> into the response (a {$key} segment there is the record's map key), and * for an object's single child (Sources#39)."
+            "description": "Records kept only when every path equals its value (or one of an array of values), or, for { pattern }, is text the regular expression matches; others are left out before max_items counts. Paths follow the field rules: relative to the record, $key, an absolute $root.<path> into the response (a {$key} segment there is the record's map key), * for an object's single child, and key[field=value,...] selectors (Sources#39, Sources#49)."
           },
           "item_kind": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]{1,39}$"
+          },
+          "max_bytes": {
+            "type": "integer",
+            "minimum": 1024,
+            "maximum": 33554432,
+            "description": "The body cap for this endpoint, in bytes (1 KiB to 32 MiB); the deployment's cap otherwise. OVHcloud's VPS catalog is about 12 MB (Sources#49)."
           },
           "fields": {
             "type": "object",
@@ -133,7 +153,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "Extra fields copied as the API gave them (scalars). A path is relative to the record; $key is the map key; $root.<path> reads the response from its root, where a {$key} segment is the record's map key; * steps into an object's single child."
+            "description": "Extra fields copied as the API gave them (scalars). A path is relative to the record; $key is the map key; $root.<path> reads the response from its root, where a {$key} segment is the record's map key; * steps into an object's single child; key[field=value,...] (one to four conditions) steps into the first element of the array key whose fields equal the values, compared as text, where a value is literal text or $rec.<path> read from the record (Sources#49)."
           },
           "extract": {
             "type": "object",

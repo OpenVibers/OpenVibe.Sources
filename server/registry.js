@@ -77,6 +77,7 @@ function validateSource(input, { maxItemsCap = 500 } = {}) {
             Object.assign(out, { format: e.format || 'json', items_shape: e.items_shape || 'array', items_path: e.items_path || '', item_kind: e.item_kind || 'record', fields: e.fields || {}, extra: e.extra || {} });
             // `where` is only copied when given, so records without conditions stay byte-identical.
             if (e.where) out.where = e.where;
+            if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
         } else {
             // A feed may read structured facts out of its items' prose (adapters/extract.js).
             for (const k of Object.keys(e)) if (k !== 'url' && !(k === 'extract' && (input.type === 'rss' || input.type === 'atom'))) throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);

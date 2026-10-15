@@ -2,7 +2,8 @@
 /**
  * The hosting seeds: each provider API maps through the api adapter exactly as the registry
  * declares it, and the registry accepts category `hosting` (refusing anything else). The fixtures
- * are the live responses (Vultr /v2/plans, Akamai Linode /v4/linode/types) trimmed to three records.
+ * are the live responses (Vultr /v2/plans, Akamai Linode /v4/linode/types) trimmed to three records,
+ * and OVHcloud's US VPS catalog trimmed to five plans and their products.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -18,7 +19,7 @@ const seed = (key) => seeds.find((s) => s.key === key);
 const endpoint = (key) => seed(key).endpoints[0];
 
 t('both hosting seeds declare an api mapping the adapter accepts', () => {
-    for (const key of ['vultr-plans', 'linode-types']) {
+    for (const key of ['vultr-plans', 'linode-types', 'ovhcloud-vps']) {
         const s = seed(key);
         assert.ok(s, `${key} is seeded`);
         assert.strictEqual(s.type, 'api');
@@ -41,6 +42,22 @@ t('Vultr /v2/plans: one item per plan, identity from id, every extra field kept'
     });
     assert.strictEqual(r.items[0].title, null, 'no title is mapped for Vultr');
     assert.strictEqual(r.items[0].canonical_url, null, 'no url is mapped for Vultr');
+});
+
+t('OVHcloud catalog: only current plan codes, each joined to its product\'s hardware and its monthly no-commitment price', () => {
+    const s = seed('ovhcloud-vps');
+    assert.deepStrictEqual([s.enabled, s.review_required], [false, true], 'seeded disabled, for a person to enable');
+    const ep = endpoint('ovhcloud-vps');
+    const r = api.parse(fx('ovhcloud-vps.json'), { url: ep.url, endpoint: ep });
+    // The -eu region copy, a legacy upgrade code and an option plan are filtered by the plan-code pattern.
+    assert.deepStrictEqual([r.items.map((i) => i.identity), r.meta.filtered, r.skipped], [['vps-2027-model1', 'vps-2025-model6'], 3, 0]);
+    assert.deepStrictEqual(r.items.map((i) => i.title), ['VPS-1 2027', 'VPS-6 2026']);
+    assert.deepStrictEqual(r.items[0].fields, {
+        product: 'vps-2027-model1', currency: 'USD', vcpu: 2, cpu_type: 'vCore', memory_gb: 4, disk_gb: 40, disk_interface: 'NVMe',
+        disk_technology: 'SSD', bandwidth_mbps: 500, bandwidth_unlimited: true, price_monthly: 535000000,
+    });
+    // 8600000000 hundred-millionths: the $86.00 a month plan, not its 12-month commitment price.
+    assert.deepStrictEqual([r.items[1].fields.vcpu, r.items[1].fields.memory_gb, r.items[1].fields.price_monthly], [24, 96, 8600000000]);
 });
 
 t('Linode /v4/linode/types: identity id, title label, dotted price.monthly/hourly mapped', () => {

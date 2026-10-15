@@ -235,6 +235,7 @@ person before enabling:
 | `lowendbox-posts` (2026-10-14) | hosting | rss | LowEndBox's feed: Host keeps only the offer posts |
 | `sec-xbrl-filings` | trade | rss | SEC EDGAR XBRL filings RSS (`/cgi-bin` is robots-disallowed, so the getcurrent feed is not used) |
 | `sec-company-tickers` | trade | api | SEC's ticker, CIK and exchange list (`company_tickers_exchange.json`), one request a day; each row is an `instrument` item OpenVibe.Trade turns into a company page. Needs the per-fetch cap (`SOURCES_MAX_ITEMS_PER_FETCH`, default 12000) |
+| `porkbun-domain-pricing` | hosting | api | Porkbun's public price list for every TLD it sells (registration, renewal, transfer, US dollars), one request a day; each TLD is a `domain_price` item OpenVibe.Host compares |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its
 robots.txt) and EDGAR's `getcurrent` Atom feed (`/cgi-bin` disallowed). The seeded feeds were

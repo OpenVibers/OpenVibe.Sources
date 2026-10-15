@@ -1141,6 +1141,43 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "porkbun-domain-pricing",
+      "name": "Porkbun: domain prices for every TLD",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://porkbun.com/products/domains",
+      "endpoints": [
+        {
+          "url": "https://api.porkbun.com/api/json/v3/pricing/get",
+          "format": "json",
+          "items_path": "pricing",
+          "items_shape": "map",
+          "item_kind": "domain_price",
+          "max_bytes": 2097152,
+          "fields": {
+            "identity": "$key"
+          },
+          "extra": {
+            "tld": "$key",
+            "registration": "registration",
+            "renewal": "renewal",
+            "transfer": "transfer"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-15: api.porkbun.com serves none (404); porkbun.com's own robots.txt is about the website, not the API host. The pricing endpoint is Porkbun's documented public API call ('does not require authentication').",
+      "terms_note": "Porkbun API v3 'Domain Pricing': default prices for every TLD Porkbun sells, in US dollars, public and unauthenticated. One request a day. Shown as Porkbun's list prices with the time they were read and a link to Porkbun; coupons and sale prices are not carried. Not a quote: the registrar's checkout is the price.",
+      "license_note": "Prices are Porkbun's published list prices, shown with attribution and a link to porkbun.com.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "stale_after_sec": 259200,
+      "max_items": 1500,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "lowendtalk-offers",
       "name": "LowEndTalk: the Offers board",
       "type": "rss",

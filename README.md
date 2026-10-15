@@ -152,7 +152,7 @@ catalog is about 12 MB.
 
 `request_content_type` (`application/json` only) is sent as the Content-Type of the endpoint's GET, which has no body.
 Open Collective's public GraphQL API answers a GET only with it (its CSRF guard): `opencollective-accounts` (category
-`crowdfunding`) reads the 200 most active and the 100 newest collectives, projects and funds every six hours, each a
+`crowdfunding`) reads the 100 most active and the 100 newest collectives, projects and funds every six hours, each a
 `campaign` item with the amounts and counts as Open Collective states them, for OpenVibe.Deals' crowdfunding discovery.
 
 **Facts stated in prose (`extract`, rss/atom only).** A feed endpoint may carry

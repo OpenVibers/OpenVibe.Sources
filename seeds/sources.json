@@ -1218,6 +1218,25 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "fda-food-recalls",
+      "name": "FDA food safety recalls",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts",
+      "endpoints": ["https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/food-safety-recalls/rss.xml"],
+      "robots_note": "robots.txt checked 2026-10-15: User-agent * disallows only /health (plus the /core/ and /profiles/ asset folders) and asks Crawl-Delay 30; /about-fda/contact-fda/stay-informed/rss-feeds/ is allowed. One request an hour is far inside the delay. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "FDA's own RSS feed of the recall, market withdrawal and safety alert notices companies post through FDA ('Food Safety Recalls' on FDA's Stay Informed page). Store titles, links and the feed's short descriptions; link each notice back to fda.gov. FDA posts company announcements as a public service and does not endorse the product or the company. OpenVibe.Blog's Food desk summarises the notices with citations and tells readers to read the notice itself.",
+      "license_note": "US government work: public domain (17 U.S.C. 105) for FDA's own text; the notices are the companies' press releases, kept only as titles and short descriptions with a link.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "stale_after_sec": 172800,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "health",
+      "default_indexability": "noindex"
     }
   ]
 }

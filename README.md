@@ -298,8 +298,13 @@ through Events.
 - the public host shows only an honest "internal service" page, and the vhost keeps the API
   loopback-only (`test/public-host.test.js`)
 
-Not yet demonstrated: a run against a real source from the deployed service (every seed is disabled
-until a person verifies its terms), and a consuming product using real items. News and Reviews run
+Demonstrated on production (2026-10-15):
+- 32 sources are enabled, each after its terms and robots were read: news 3, reviews 19, deals 1, coupons 2, trade 3,
+  hosting 3 and blog 1.
+- Their items are consumed by News (237 wire reports), Reviews (1,183 items), Deals (1,862), Trade (2,314 rates),
+  Coupons, and Host (135 plans across Linode, Amazon Lightsail and OVHcloud; the OVHcloud catalog is about 12 MB).
+
+Before that, every seed was disabled until a person verified its terms, and no product consumed real items. News and Reviews run
 loopback-only on the host and are subscribed to `sources.item.*` through Events (Deals, Coupons and
 Trade also run loopback-only and have Sources import clients), but with no enabled source none of them has
 received an item.

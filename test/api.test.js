@@ -88,7 +88,7 @@ t('items page in change order and carry provenance and source staleness', async 
     assert.strictEqual(p2.body.items.length, 3);
     assert.strictEqual(p2.body.more, false);
     const it = p1.body.items[0];
-    assert.ok(it.provenance.retrieved_at && it.provenance.content_hash && it.provenance.raw_body_hash && it.provenance.parser_version === 'feed@1');
+    assert.ok(it.provenance.retrieved_at && it.provenance.content_hash && it.provenance.raw_body_hash && it.provenance.parser_version === 'feed@2');
     assert.strictEqual(it.provenance.terms_note, 'test fixture');
     assert.deepStrictEqual(Object.keys(p1.body.sources), ['feed-a']);
     assert.strictEqual(p1.body.sources['feed-a'].stale, false);

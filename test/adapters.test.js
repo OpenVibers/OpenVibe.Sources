@@ -33,6 +33,23 @@ t('RSS 2.0: guid identity, cleaned link, text-only summary, dates, skips', () =>
     assert.deepStrictEqual(b.authors, []);
 });
 
+t('RSS 2.0 deal feed (DealNews namespace): price, currency, retailer and end date as stated; malformed ones left out', () => {
+    const xml = `<?xml version="1.0"?><rss version="2.0" xmlns:dealnews="https://www.dealnews.com/ns/rss/1.0.htm"><channel><title>D</title>
+<item><title>Air Mattress for $67 + free shipping</title><link>https://www.dealnews.com/p/1.html?iref=rss</link><guid>https://www.dealnews.com/1.html</guid>
+<dealnews:retailer>Amazon</dealnews:retailer><dealnews:expires>2027-01-13T19:54:28-05:00</dealnews:expires><dealnews:price currency="USD">67.00</dealnews:price></item>
+<item><title>Sale at Target</title><link>https://www.dealnews.com/p/2.html</link><guid>https://www.dealnews.com/2.html</guid>
+<dealnews:retailer>Target</dealnews:retailer><dealnews:price currency="dollars">about 10</dealnews:price></item>
+<item><title>Plain news</title><link>https://www.dealnews.com/p/3.html</link><guid>https://www.dealnews.com/3.html</guid></item>
+</channel></rss>`;
+    const r = feed.parse(xml, { url: 'https://www.dealnews.com/?rss=1' });
+    const [a, b, c] = r.items;
+    assert.strictEqual(a.kind, 'article', 'still an article');
+    assert.deepStrictEqual([a.fields.price, a.fields.currency, a.fields.seller, a.fields.valid_until], ['67.00', 'USD', 'Amazon', '2027-01-14T00:54:28.000Z']);
+    assert.deepStrictEqual([b.fields.price, b.fields.currency, b.fields.seller], [undefined, undefined, 'Target'], 'a price that is not a number is not kept');
+    assert.ok(!('price' in c.fields) && !('seller' in c.fields), 'an item that states none has none');
+    assert.strictEqual(feed.PARSER_VERSION, 'feed@2');
+});
+
 t('Atom: id identity, relative alternate link, html title, bad dates are null', () => {
     const r = feed.parse(fx('atom.xml'), { url: 'https://blog.example.com/feed.atom' });
     assert.strictEqual(r.meta.format, 'atom');

@@ -1141,6 +1141,33 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "porkbun-tld-pricing",
+      "name": "Porkbun domain prices (every TLD it sells)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://porkbun.com/products/domains",
+      "endpoints": [{
+        "url": "https://api.porkbun.com/api/json/v3/pricing/get",
+        "format": "json",
+        "items_path": "pricing",
+        "items_shape": "map",
+        "item_kind": "tld_price",
+        "max_bytes": 1048576,
+        "fields": { "identity": "$key", "title": "$key" },
+        "extra": { "registration": "registration", "renewal": "renewal", "transfer": "transfer", "special_type": "specialType" }
+      }],
+      "robots_note": "robots.txt checked 2026-10-16: https://api.porkbun.com/robots.txt answers 404 (openresty), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). porkbun.com's own robots.txt disallows /api/* on porkbun.com, a different host that is not fetched. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Porkbun's API v3 documentation (https://porkbun.com/llms/pricing, https://porkbun.com/api/json/v3/documentation) names GET /api/json/v3/pricing/get 'Retrieve domain pricing (public)' and says it 'does not require authentication'; prices are in US dollars. The legal hub (https://porkbun.com/legal) lists no API agreement, and the Product Terms of Service (https://porkbun.com/legal/agreement/product_terms_of_service) has no clause on automated access, API use or republishing prices (read 2026-10-16). One request a day. Attribute Porkbun by linking https://porkbun.com/products/domains; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Handshake names (specialType 'handshake') are not ICANN TLDs; OpenVibe.Host leaves them out.",
+      "license_note": "Domain prices are Porkbun's data (https://porkbun.com/products/domains). No licence to republish them was found; attribute Porkbun and link the price list; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 1200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "lowendtalk-offers",
       "name": "LowEndTalk: the Offers board",
       "type": "rss",

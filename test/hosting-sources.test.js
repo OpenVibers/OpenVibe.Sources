@@ -75,6 +75,22 @@ t('Linode /v4/linode/types: identity id, title label, dotted price.monthly/hourl
     });
 });
 
+t('Porkbun prices: one item per TLD from the keyed price list, the prices as Porkbun writes them (Host parses them)', () => {
+    const s = seed('porkbun-tld-pricing');
+    assert.deepStrictEqual([s.type, s.category, s.enabled, s.review_required], ['api', 'hosting', false, true]);
+    const ep = endpoint('porkbun-tld-pricing');
+    assert.strictEqual(api.checkMapping(ep), null);
+    assert.strictEqual(validateSource(s).max_items, 1200, 'Porkbun sells about 900 names; the whole list fits');
+    const r = api.parse(fx('porkbun-pricing.json'), { url: ep.url, endpoint: ep });
+    assert.strictEqual(r.skipped, 0);
+    assert.deepStrictEqual(r.items.map((i) => i.identity), ['0zebra', 'com', 'com.mx', 'dev', 'protection', 'security', 'xn--q9jyb4c']);
+    assert.ok(r.items.every((i) => i.kind === 'tld_price' && i.title === i.identity));
+    const by = Object.fromEntries(r.items.map((i) => [i.identity, i.fields]));
+    assert.deepStrictEqual(by.dev, { registration: '8.75', renewal: '12.87', transfer: '12.87', special_type: null });
+    assert.strictEqual(by.security.registration, '2,060.25', 'thousands separators are kept as given');
+    assert.strictEqual(by['0zebra'].special_type, 'handshake', 'Handshake names are marked, for Host to leave out');
+});
+
 t('the registry accepts category hosting and refuses an unknown category', () => {
     const rec = validateSource(seed('vultr-plans'));
     assert.strictEqual(rec.category, 'hosting');

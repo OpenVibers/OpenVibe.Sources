@@ -1,0 +1,48 @@
+{
+  "status": "SUCCESS",
+  "pricing": {
+    "0zebra": {
+      "registration": "3.63",
+      "renewal": "8.20",
+      "transfer": "8.20",
+      "coupons": [],
+      "specialType": "handshake"
+    },
+    "com": {
+      "registration": "11.08",
+      "renewal": "11.08",
+      "transfer": "11.08",
+      "coupons": []
+    },
+    "com.mx": {
+      "registration": "11.33",
+      "renewal": "23.32",
+      "transfer": "23.32",
+      "coupons": []
+    },
+    "dev": {
+      "registration": "8.75",
+      "renewal": "12.87",
+      "transfer": "12.87",
+      "coupons": []
+    },
+    "protection": {
+      "registration": "2,060.25",
+      "renewal": "2,060.25",
+      "transfer": "2,060.25",
+      "coupons": []
+    },
+    "security": {
+      "registration": "2,060.25",
+      "renewal": "2,060.25",
+      "transfer": "2,060.25",
+      "coupons": []
+    },
+    "xn--q9jyb4c": {
+      "registration": "7.43",
+      "renewal": "7.43",
+      "transfer": "7.43",
+      "coupons": []
+    }
+  }
+}

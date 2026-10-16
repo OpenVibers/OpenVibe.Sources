@@ -28,7 +28,7 @@
     "api",
     "manual"
   ],
-  "seededSources": 39,
+  "seededSources": 40,
   "enabledSources": 35,
   "deployed": true,
   "deployment": "Deployed with `sudo ovhost deploy sources`: /opt/openvibe.sources, unit openvibe-sources, 127.0.0.1:4720, principal sources. On 2026-10-16, 35 of 39 sources were enabled in production (reviews 19, trade 4, news 4, hosting 3, coupons 2, and blog, crowdfunding and deals 1 each), with 17,965 items from 2,156 fetch runs; they feed OpenVibe.Deals, News, Reviews, Trade, Host, Coupons, Blog's desks and Deals' crowdfunding search. Restore drill passed 2026-09-23.",

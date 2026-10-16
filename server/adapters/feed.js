@@ -8,7 +8,33 @@
  */
 const { parseXml, toText, toIsoDate, canonicalUrl, toId, asArray, pick, ParseError } = require('./util');
 
-const PARSER_VERSION = 'feed@1';
+const PARSER_VERSION = 'feed@2';
+
+/**
+ * Offer facts a deal feed states in its own elements (not read out of the headline): DealNews' namespace gives the
+ * price (with its currency), the retailer and when the deal ends. They become fields.price / currency / seller /
+ * valid_until, the names an `offer` item uses, exactly as stated; the item stays an article. Anything malformed is
+ * left out, never guessed.
+ */
+const STATED_OFFER = [{ price: 'dealnews:price', seller: 'dealnews:retailer', valid_until: 'dealnews:expires' }];
+function statedOffer(it) {
+    for (const map of STATED_OFFER) {
+        if (it[map.price] == null && it[map.seller] == null) continue;
+        const node = it[map.price];
+        const raw = node != null && typeof node === 'object' ? node['#text'] : node;
+        const price = /^\d{1,9}(?:\.\d{1,2})?$/.test(String(raw ?? '').trim()) ? String(raw).trim() : null;
+        const cur = node != null && typeof node === 'object' ? String(node['@_currency'] || '').trim().toUpperCase() : '';
+        const seller = toText(it[map.seller], 120);
+        const until = toIsoDate(it[map.valid_until]);
+        const out = {
+            ...(price ? { price, ...(/^[A-Z]{3}$/.test(cur) ? { currency: cur } : {}) } : {}),
+            ...(seller ? { seller } : {}),
+            ...(until ? { valid_until: until } : {}),
+        };
+        return Object.keys(out).length ? out : null;
+    }
+    return null;
+}
 
 function atomLink(entry, base) {
     const links = asArray(entry.link);
@@ -58,6 +84,7 @@ function rssItem(it, base, summaryMax) {
             categories: categoriesOf(it.category ?? it['dc:subject']),
             enclosure: enclosure ? { url: canonicalUrl(enclosure['@_url'], base), type: toId(enclosure['@_type'], 100), length: /^\d{1,15}$/.test(String(enclosure['@_length'] || '')) ? Number(enclosure['@_length']) : null } : null,
             comments_url: canonicalUrl(pick(it, 'comments'), base),
+            ...(statedOffer(it) || {}),
         },
     };
 }

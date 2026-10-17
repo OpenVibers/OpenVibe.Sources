@@ -1334,6 +1334,65 @@
       "review_required": true,
       "sensitivity": "financial",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "cfpb-complaints-by-company",
+      "name": "CFPB Consumer Complaint Database: complaints per company",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/",
+      "endpoints": [{
+        "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/?size=0",
+        "format": "json",
+        "items_path": "aggregations.company.company.buckets",
+        "item_kind": "complaint_tally",
+        "max_bytes": 2097152,
+        "fields": { "identity": "key", "title": "key" },
+        "extra": { "company": "key", "complaints": "doc_count" }
+      }],
+      "robots_note": "robots.txt checked 2026-10-17: https://www.consumerfinance.gov/robots.txt does not disallow /data-research/consumer-complaints/search/api/.",
+      "terms_note": "The CFPB publishes the database for public use through this documented API (cfpb.github.io/api/ccdb/). One request a week (the counts move slowly; a daily poll would rewrite thousands of items a day). Each company bucket (the company's name and how many complaints the database holds about it, every year since 2011) becomes one complaint_tally item. Complaints are what consumers sent, not findings: the CFPB says it does not verify them, and Reviews shows that next to the number. Narratives are never read.",
+      "license_note": "CC0 (the API's _meta.license). Cite 'Consumer Financial Protection Bureau, Consumer Complaint Database'.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "stale_after_sec": 1814400,
+      "max_items": 8000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "financial",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "nyc-restaurant-inspections",
+      "name": "NYC Health: restaurant inspection results (DOHMH, NYC Open Data)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j",
+      "endpoints": [{
+        "url": "https://data.cityofnewyork.us/resource/43nn-pn8j.json?$select=:id,camis,dba,boro,building,street,zipcode,cuisine_description,inspection_date,action,violation_code,violation_description,critical_flag,score,grade,grade_date,inspection_type&$where=inspection_date%3E%272000-01-01%27&$order=inspection_date%20DESC&$limit=4000",
+        "format": "json",
+        "items_path": "",
+        "item_kind": "inspection_violation",
+        "max_bytes": 8388608,
+        "fields": { "identity": ":id", "title": "dba" },
+        "extra": {
+          "camis": "camis", "dba": "dba", "boro": "boro", "building": "building", "street": "street", "zipcode": "zipcode",
+          "cuisine": "cuisine_description", "inspection_date": "inspection_date", "inspection_type": "inspection_type", "action": "action",
+          "violation_code": "violation_code", "violation": "violation_description", "critical_flag": "critical_flag",
+          "score": "score", "grade": "grade", "grade_date": "grade_date"
+        }
+      }],
+      "robots_note": "robots.txt checked 2026-10-17: https://data.cityofnewyork.us/robots.txt does not disallow /resource/ (Crawl-delay 1; this is one request a poll).",
+      "terms_note": "NYC Open Data's SODA API, dataset 43nn-pn8j, published by the Department of Health and Mental Hygiene for public use under the NYC Open Data Terms of Use. Each row is one violation cited at one inspection (or an inspection with none), as the inspector recorded it that day; a letter grade is given only on some inspections. The newest 4,000 rows each poll; rows dated 1900-01-01 (not yet inspected) are left out.",
+      "license_note": "NYC Open Data Terms of Use: free to use. Cite 'NYC Department of Health and Mental Hygiene, via NYC Open Data'.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "stale_after_sec": 172800,
+      "max_items": 4000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

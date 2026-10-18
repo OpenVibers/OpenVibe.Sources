@@ -160,6 +160,7 @@ t('timeouts and oversize bodies are explicit states', async () => {
         '/slow': () => ({ delayMs: 3000, body: FEED_V1 }),
         '/huge': () => ({ body: 'x'.repeat(4096) }),
         '/huge.json': () => ({ body: JSON.stringify(Array.from({ length: 60 }, (_, i) => ({ id: `p${i}`, pad: 'x'.repeat(50) }))) }),
+        '/slow.json': () => ({ delayMs: 3000, body: JSON.stringify([{ id: 'b1' }, { id: 'b2' }]) }),
     });
     try {
         const key = await create(sourceDef({ endpoints: [`${s.origin}/slow`] }));
@@ -180,6 +181,14 @@ t('timeouts and oversize bodies are explicit states', async () => {
             assert.deepStrictEqual([capped.runs[0].state, capped.runs[0].error_code], ['http_error', 'too_large']);
             const lifted = await small.ingest.run('lifted', { trigger: 'manual' });
             assert.deepStrictEqual([lifted.runs[0].state, lifted.runs[0].items_seen], ['ok', 60]);
+            // And its own timeout_ms gives a slow aggregate (NYC's HPD tally) longer than everyone else.
+            const slow = (key, extra) => sourceDef({ key, type: 'api', category: 'reviews', endpoints: [{ url: `${s.origin}/slow.json`, items_path: '', fields: { identity: 'id' }, ...extra }] });
+            await small.registry.create(slow('hurried', {}), 'test');
+            await small.registry.create(slow('patient', { timeout_ms: 10000 }), 'test');
+            const hurried = await small.ingest.run('hurried', { trigger: 'manual' });
+            assert.deepStrictEqual([hurried.runs[0].state, hurried.runs[0].error_code], ['timeout', 'timeout']);
+            const patient = await small.ingest.run('patient', { trigger: 'manual' });
+            assert.deepStrictEqual([patient.runs[0].state, patient.runs[0].items_seen], ['ok', 2]);
         } finally { await small.stop(); }
     } finally { await s.close(); }
 });

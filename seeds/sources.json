@@ -1393,6 +1393,33 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "nyc-hpd-open-violations",
+      "name": "NYC HPD: open housing-code violations per building (NYC Open Data)",
+      "type": "api",
+      "category": "reviews",
+      "homepage_url": "https://data.cityofnewyork.us/Housing-Development/Housing-Maintenance-Code-Violations/wvxf-dwi5",
+      "endpoints": [{
+        "url": "https://data.cityofnewyork.us/resource/wvxf-dwi5.json?$select=buildingid,max(boro)%20AS%20boro,max(housenumber)%20AS%20housenumber,max(streetname)%20AS%20streetname,max(zip)%20AS%20zip,count(*)%20AS%20open,sum(case(class=%27C%27,1,true,0))%20AS%20c,sum(case(class=%27B%27,1,true,0))%20AS%20b,sum(case(class=%27A%27,1,true,0))%20AS%20a,max(inspectiondate)%20AS%20last&$where=violationstatus=%27Open%27&$group=buildingid&$having=sum(case(class=%27C%27,1,true,0))%3E=10&$order=c%20DESC,buildingid&$limit=4000",
+        "format": "json",
+        "items_path": "",
+        "item_kind": "housing_violation_tally",
+        "timeout_ms": 120000,
+        "fields": { "identity": "buildingid", "title": "streetname" },
+        "extra": { "buildingid": "buildingid", "boro": "boro", "housenumber": "housenumber", "streetname": "streetname", "zip": "zip", "open": "open", "c": "c", "b": "b", "a": "a", "last": "last" }
+      }],
+      "robots_note": "robots.txt checked 2026-10-17: https://data.cityofnewyork.us/robots.txt does not disallow /resource/ (Crawl-delay 1; this is one request a week).",
+      "terms_note": "NYC Open Data's SODA API, dataset wvxf-dwi5, published by the Department of Housing Preservation and Development for public use under the NYC Open Data Terms of Use. One aggregate query a week: for every building with 10 or more open class C (immediately hazardous) violations, how many violations HPD lists as open, by class (C immediately hazardous, B hazardous, A non-hazardous), and the latest inspection day. The 4,000 buildings with the most class C. Open means HPD has not recorded the violation as corrected; Reviews says so beside the numbers. NYC computes the aggregate in 12 to 60 seconds, hence the endpoint's own deadline.",
+      "license_note": "NYC Open Data Terms of Use: free to use. Cite 'NYC Department of Housing Preservation and Development, via NYC Open Data'.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "stale_after_sec": 1814400,
+      "max_items": 4000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

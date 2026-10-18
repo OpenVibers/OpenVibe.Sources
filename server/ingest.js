@@ -141,6 +141,8 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
                 sensitiveHeaders: sensitive,
                 // an api endpoint may set its own body cap (adapters/api.js `max_bytes`)
                 capBytes: endpoint.max_bytes || undefined,
+                // and its own deadline (`timeout_ms`)
+                timeoutMs: endpoint.timeout_ms || undefined,
                 // every redirect hop is checked against its own origin's robots.txt and, on a new
                 // host, spaced like any other request to that host
                 beforeHop: async (next) => {

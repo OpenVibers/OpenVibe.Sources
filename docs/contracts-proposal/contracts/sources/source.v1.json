@@ -146,6 +146,12 @@
             "maximum": 33554432,
             "description": "The body cap for this endpoint, in bytes (1 KiB to 32 MiB); the deployment's cap otherwise. OVHcloud's VPS catalog is about 12 MB (Sources#49)."
           },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 120000,
+            "description": "This endpoint's fetch deadline, in milliseconds (1 s to 120 s); the deployment's otherwise. NYC Open Data computes the HPD per-building violation tally in 12 to 60 seconds."
+          },
           "fields": {
             "type": "object",
             "additionalProperties": {

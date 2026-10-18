@@ -115,7 +115,9 @@ is `{ "pricing": { "com": {…}, "net": {…} } }`. `items_shape: "map"` reads t
 property becomes one record in sorted key order, and the property's key is available as the
 virtual path `$key` (so `fields.identity: "$key"` makes the id the identity). A property whose
 value is not an object is skipped, and an `items_path` of the wrong shape is a parse error, never
-an empty success.
+an empty success. With the default `items_shape: "array"`, `$index` is a record's 0-based position in
+the array (as a whole path, e.g. `"extra": { "position": "$index" }`), so a ranked list keeps its
+order (Steam's top sellers).
 
 ```json
 { "url": "https://api.porkbun.com/api/json/v3/pricing/get", "format": "json",

@@ -19,7 +19,7 @@ class FetchError extends Error {
 }
 
 function createFetcher({ guard, userAgent, timeoutMs = 20000, maxBytes = 5 * 1024 * 1024, maxRedirects = 5 }) {
-    function once(url, headers, deadline, capBytes) {
+    function once(url, headers, deadline, capBytes, limitMs = timeoutMs) {
         return new Promise((resolve, reject) => {
             const mod = url.protocol === 'https:' ? https : http;
             const remaining = deadline - Date.now();
@@ -65,11 +65,11 @@ function createFetcher({ guard, userAgent, timeoutMs = 20000, maxBytes = 5 * 102
             });
             const timer = setTimeout(() => {
                 req.destroy();
-                done(reject, new FetchError('timeout', `no complete response within ${timeoutMs} ms`));
+                done(reject, new FetchError('timeout', `no complete response within ${limitMs} ms`));
             }, remaining);
             req.on('timeout', () => {
                 req.destroy();
-                done(reject, new FetchError('timeout', `no complete response within ${timeoutMs} ms`));
+                done(reject, new FetchError('timeout', `no complete response within ${limitMs} ms`));
             });
             req.on('error', (err) => {
                 if (err instanceof GuardError) return done(reject, new FetchError(err.code, err.message));
@@ -79,8 +79,11 @@ function createFetcher({ guard, userAgent, timeoutMs = 20000, maxBytes = 5 * 102
         });
     }
 
-    async function fetchUrl(input, { headers = {}, etag = null, lastModified = null, beforeHop = null, capBytes = maxBytes, sensitiveHeaders = [] } = {}) {
-        const deadline = Date.now() + timeoutMs;
+    async function fetchUrl(input, { headers = {}, etag = null, lastModified = null, beforeHop = null, capBytes = maxBytes, sensitiveHeaders = [], timeoutMs: ownTimeout = null } = {}) {
+        // An api endpoint may set its own deadline (adapters/api.js `timeout_ms`): a city's open-data aggregate can
+        // take a minute to compute.
+        const limitMs = ownTimeout || timeoutMs;
+        const deadline = Date.now() + limitMs;
         let url;
         try { url = guard.checkUrl(input); } catch (err) { throw new FetchError(err.code || 'bad_url', err.message); }
         const h = {
@@ -92,7 +95,7 @@ function createFetcher({ guard, userAgent, timeoutMs = 20000, maxBytes = 5 * 102
         if (etag) h['If-None-Match'] = etag;
         if (lastModified) h['If-Modified-Since'] = lastModified;
         for (let hop = 0; ; hop++) {
-            const r = await once(url, h, deadline, capBytes);
+            const r = await once(url, h, deadline, capBytes, limitMs);
             if (!r.redirect) return { kind: 'response', status: r.status, headers: r.headers, body: r.body, bytes: r.bytes, finalUrl: url.toString() };
             if (hop >= maxRedirects) throw new FetchError('too_many_redirects', `more than ${maxRedirects} redirects`);
             let next;

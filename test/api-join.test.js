@@ -187,6 +187,10 @@ t('the registry stores max_bytes only when an endpoint gives it', () => {
     const base = { key: 'catalog', name: 'A catalog', type: 'api', category: 'hosting', endpoints: [endpoint] };
     assert.ok(!('max_bytes' in validateSource(base).endpoints[0]));
     assert.strictEqual(validateSource({ ...base, endpoints: [{ ...endpoint, max_bytes: 25165824 }] }).endpoints[0].max_bytes, 25165824);
+    // timeout_ms likewise, from 1 s to 120 s.
+    assert.ok(!('timeout_ms' in validateSource(base).endpoints[0]));
+    assert.strictEqual(validateSource({ ...base, endpoints: [{ ...endpoint, timeout_ms: 120000 }] }).endpoints[0].timeout_ms, 120000);
+    for (const bad of [999, 120001, 1.5, '60000']) assert.throws(() => validateSource({ ...base, endpoints: [{ ...endpoint, timeout_ms: bad }] }), /timeout_ms is an integer from 1000 to 120000/, String(bad));
 });
 
 t('the registry stores `where` only when an endpoint gives it', () => {

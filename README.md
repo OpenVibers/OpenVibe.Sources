@@ -150,6 +150,9 @@ A value is literal text or `$rec.<path>`, read from the record itself. No match 
 `max_bytes` (an integer from 1 KiB to 32 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
 catalog is about 12 MB.
 
+`timeout_ms` (an integer from 1 s to 120 s) sets one endpoint's deadline instead of `SOURCES_FETCH_TIMEOUT_MS`. NYC Open
+Data computes the HPD per-building violation tally (`nyc-hpd-open-violations`) in 12 to 60 seconds.
+
 `request_content_type` (`application/json` only) is sent as the Content-Type of the endpoint's GET, which has no body.
 Open Collective's public GraphQL API answers a GET only with it (its CSRF guard): `opencollective-accounts` (category
 `crowdfunding`) reads the 100 most active and the 100 newest collectives, projects and funds every six hours, each a

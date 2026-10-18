@@ -8,6 +8,9 @@
  *   nyc-restaurant-inspections   NYC Health's inspection results on NYC Open Data, the newest 4,000 rows each poll:
  *                                one inspection_violation item per row, keyed by Socrata's row id, with the restaurant
  *                                (camis, name, borough, address, cuisine) and what the inspector recorded
+ *   nyc-hpd-open-violations      NYC HPD's housing-code violations, one aggregate query a week: one
+ *                                housing_violation_tally item per building with 10 or more open class C violations
+ *                                (open by class, the address, the latest inspection), the 4,000 with the most
  *
  * Both validate, start disabled, sit in the reviews category, and fit under the per-fetch cap.
  */
@@ -21,6 +24,7 @@ const t = suite('official-records-sources');
 const seeds = require('../seeds/sources.json').sources;
 const cfpb = seeds.find((s) => s.key === 'cfpb-complaints-by-company');
 const nyc = seeds.find((s) => s.key === 'nyc-restaurant-inspections');
+const hpd = seeds.find((s) => s.key === 'nyc-hpd-open-violations');
 
 const CFPB_BODY = JSON.stringify({
     took: 12, hits: { total: { value: 18486121, relation: 'eq' }, hits: [] },
@@ -48,8 +52,8 @@ const NYC_BODY = JSON.stringify([
         grade_date: '2026-10-14T00:00:00.000', inspection_type: 'Cycle Inspection / Re-inspection' },
 ]);
 
-t('both seeds validate, start disabled, are reviews sources and fit under the per-fetch cap', () => {
-    for (const s of [cfpb, nyc]) {
+t('the seeds validate, start disabled, are reviews sources and fit under the per-fetch cap', () => {
+    for (const s of [cfpb, nyc, hpd]) {
         assert.ok(s, 'seeded');
         const rec = validateSource(s);
         assert.strictEqual(rec.enabled, false);
@@ -89,6 +93,27 @@ t('NYC: one inspection_violation item per row, keyed by its row id, with the res
     assert.match(u.searchParams.get('$select'), /^:id,camis,dba,/);
     assert.strictEqual(u.searchParams.get('$where'), "inspection_date>'2000-01-01'");
     assert.strictEqual(u.searchParams.get('$order'), 'inspection_date DESC');
+});
+
+const HPD_BODY = JSON.stringify([
+    { buildingid: '288857', boro: 'BROOKLYN', housenumber: '760', streetname: 'ELDERT LANE', zip: '11208', open: '1794', c: '423', b: '1118', a: '252', last: '2026-03-24T00:00:00.000' },
+    { buildingid: '60898', boro: 'BRONX', housenumber: '3067', streetname: 'DECATUR AVENUE', zip: '10467', open: '58', c: '27', b: '21', a: '10', last: '2026-10-12T00:00:00.000' },
+]);
+
+t('HPD: one housing_violation_tally item per building, open counts by class, a minute to answer', () => {
+    const rec = validateSource(hpd);
+    assert.strictEqual(rec.endpoints[0].timeout_ms, 120000, 'NYC computes the aggregate in 12 to 60 s');
+    assert.strictEqual(hpd.poll_interval_sec, 604800, 'one request a week');
+    const r = api.parse(HPD_BODY, { url: hpd.endpoints[0].url, endpoint: hpd.endpoints[0], maxItems: hpd.max_items });
+    assert.strictEqual(r.items.length, 2);
+    const [eldert] = r.items;
+    assert.strictEqual(eldert.kind, 'housing_violation_tally');
+    assert.strictEqual(eldert.identity, '288857');
+    assert.deepStrictEqual(eldert.fields, { buildingid: '288857', boro: 'BROOKLYN', housenumber: '760', streetname: 'ELDERT LANE', zip: '11208', open: '1794', c: '423', b: '1118', a: '252', last: '2026-03-24T00:00:00.000' });
+    const u = new URL(hpd.endpoints[0].url);
+    assert.strictEqual(u.searchParams.get('$where'), "violationstatus='Open'");
+    assert.strictEqual(u.searchParams.get('$having'), "sum(case(class='C',1,true,0))>=10");
+    assert.strictEqual(u.searchParams.get('$limit'), '4000');
 });
 
 t.run();

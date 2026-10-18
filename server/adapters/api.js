@@ -59,7 +59,8 @@
  * `"items_shape": "map"` reads such an object: each own property becomes one record, in sorted
  * key order, and the key is available as the virtual path `$key` (so `fields.identity: "$key"`
  * makes the id the identity) or as `{$key}` inside a `$root.` path. `"array"` (the default) is
- * today's behaviour. A property whose value is not an object is skipped; a non-object
+ * today's behaviour, and there the record's 0-based position in the array is the virtual path `$index` (a ranked
+ * list's order, e.g. Steam's top sellers). A property whose value is not an object is skipped; a non-object
  * `items_path` is a parse error, never an empty success.
  */
 const { parseXml, toText, toIsoDate, epochSecondsToIso, canonicalUrl, toId, ParseError } = require('./util');
@@ -189,6 +190,8 @@ function keyPathViolation(p, shape) {
     }
     if (hasBrace) return '{$key} is only valid inside a $root. path';
     if (p === '$key') return shape === 'map' ? null : '$key requires items_shape "map"';
+    if (p === '$index') return shape === 'map' ? '$index requires items_shape "array"' : null;
+    if (segs.includes('$index')) return 'an $index path is exactly "$index"';
     if (hasBare) return 'a $key path is exactly "$key"';
     return null;
 }
@@ -255,7 +258,7 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
         records = Object.keys(node).sort().map((key) => ({ key, value: node[key] }));
     } else {
         if (!Array.isArray(node)) throw new ParseError(`items_path "${itemsPath}" is not an array in the response`);
-        records = node.map((value) => ({ key: undefined, value }));
+        records = node.map((value, index) => ({ key: undefined, index, value }));
     }
     const f = endpoint.fields || {};
     const where = endpoint.where && typeof endpoint.where === 'object' && !Array.isArray(endpoint.where) ? endpoint.where : {};
@@ -264,11 +267,11 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
     let skipped = 0;
     let filtered = 0;
     const seen = new Set();
-    for (const { key, value: rec } of records) {
+    for (const { key, index, value: rec } of records) {
         if (!rec || typeof rec !== 'object' || (shape === 'map' && Array.isArray(rec))) { skipped++; continue; }
         if (filterKeys.length && !matchesWhere(body, rec, key, where)) { filtered++; continue; }
         if (items.length >= maxItems) { skipped++; continue; }
-        const get = (p) => getField(body, rec, key, p);
+        const get = (p) => (p === '$index' ? index : getField(body, rec, key, p));
         const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
         const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
         if (!identity || seen.has(identity)) { skipped++; continue; }

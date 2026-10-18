@@ -13,7 +13,7 @@ const { checkApiMapping } = require('./adapters');
 const extract = require('./adapters/extract');
 
 const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
-const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting', 'crowdfunding'];
+const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting', 'crowdfunding', 'games'];
 const SENSITIVITY = ['none', 'financial', 'health', 'political', 'legal', 'adult'];
 const AUTH_MODES = ['none', 'header', 'bearer', 'query'];
 const KEY_RE = /^[a-z0-9][a-z0-9-]{1,63}$/;

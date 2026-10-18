@@ -1438,6 +1438,102 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-top-sellers",
+      "name": "Steam: top sellers (the store's featured list)",
+      "type": "api",
+      "category": "games",
+      "homepage_url": "https://store.steampowered.com/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/api/featuredcategories?cc=us&l=english",
+          "format": "json",
+          "items_path": "top_sellers.items",
+          "item_kind": "steam_top_seller",
+          "fields": { "identity": "id", "title": "name" },
+          "extra": {
+            "appid": "id", "position": "$index", "final_price": "final_price", "original_price": "original_price", "discount_percent": "discount_percent",
+            "discounted": "discounted", "currency": "currency", "header_image": "header_image",
+            "windows": "windows_available", "mac": "mac_available", "linux": "linux_available", "discount_expiration": "discount_expiration"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 10800,
+      "stale_after_sec": 43200,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-new-releases",
+      "name": "Steam: new releases (the store's featured list)",
+      "type": "api",
+      "category": "games",
+      "homepage_url": "https://store.steampowered.com/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/api/featuredcategories?cc=us&l=english",
+          "format": "json",
+          "items_path": "new_releases.items",
+          "item_kind": "steam_new_release",
+          "fields": { "identity": "id", "title": "name" },
+          "extra": {
+            "appid": "id", "position": "$index", "final_price": "final_price", "original_price": "original_price", "discount_percent": "discount_percent",
+            "discounted": "discounted", "currency": "currency", "header_image": "header_image",
+            "windows": "windows_available", "mac": "mac_available", "linux": "linux_available", "discount_expiration": "discount_expiration"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 10800,
+      "stale_after_sec": 43200,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "steam-specials",
+      "name": "Steam: specials (the store's featured list)",
+      "type": "api",
+      "category": "games",
+      "homepage_url": "https://store.steampowered.com/",
+      "endpoints": [
+        {
+          "url": "https://store.steampowered.com/api/featuredcategories?cc=us&l=english",
+          "format": "json",
+          "items_path": "specials.items",
+          "item_kind": "steam_special",
+          "fields": { "identity": "id", "title": "name" },
+          "extra": {
+            "appid": "id", "position": "$index", "final_price": "final_price", "original_price": "original_price", "discount_percent": "discount_percent",
+            "discounted": "discounted", "currency": "currency", "header_image": "header_image",
+            "windows": "windows_available", "mac": "mac_available", "linux": "linux_available", "discount_expiration": "discount_expiration"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 10800,
+      "stale_after_sec": 43200,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

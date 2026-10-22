@@ -8,13 +8,13 @@
  */
 const { parseXml, toText, toIsoDate, canonicalUrl, toId, asArray, pick, ParseError } = require('./util');
 
-const PARSER_VERSION = 'feed@2';
+const PARSER_VERSION = 'feed@3';
 
 /**
  * Offer facts a deal feed states in its own elements (not read out of the headline): DealNews' namespace gives the
  * price (with its currency), the retailer and when the deal ends. They become fields.price / currency / seller /
  * valid_until, the names an `offer` item uses, exactly as stated; the item stays an article. Anything malformed is
- * left out, never guessed.
+ * left out, never guessed. Its category and editors' pick are kept too (statedPick, below).
  */
 const STATED_OFFER = [{ price: 'dealnews:price', seller: 'dealnews:retailer', valid_until: 'dealnews:expires' }];
 function statedOffer(it) {
@@ -33,6 +33,18 @@ function statedOffer(it) {
         };
         return Object.keys(out).length ? out : null;
     }
+    return null;
+}
+
+/**
+ * A deal feed's own labels (feed@3): DealNews states each deal's category (<dealnews:category>, kept in
+ * fields.categories when the item has no RSS <category>) and whether its editors picked it (<dealnews:staffPick>,
+ * fields.staff_pick true or false; absent when not stated).
+ */
+function statedPick(it) {
+    const raw = toText(it['dealnews:staffPick'], 10);
+    if (raw === 'true') return { staff_pick: true };
+    if (raw === 'false') return { staff_pick: false };
     return null;
 }
 
@@ -81,10 +93,11 @@ function rssItem(it, base, summaryMax) {
         published_at: toIsoDate(pick(it, 'pubDate', 'dc:date')),
         updated_at: toIsoDate(pick(it, 'atom:updated', 'dc:modified')),
         fields: {
-            categories: categoriesOf(it.category ?? it['dc:subject']),
+            categories: categoriesOf(it.category ?? it['dc:subject'] ?? it['dealnews:category']),
             enclosure: enclosure ? { url: canonicalUrl(enclosure['@_url'], base), type: toId(enclosure['@_type'], 100), length: /^\d{1,15}$/.test(String(enclosure['@_length'] || '')) ? Number(enclosure['@_length']) : null } : null,
             comments_url: canonicalUrl(pick(it, 'comments'), base),
             ...(statedOffer(it) || {}),
+            ...(statedPick(it) || {}),
         },
     };
 }

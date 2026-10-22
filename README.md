@@ -4,9 +4,10 @@
 > carries where it came from, when it was retrieved and on what terms, and a failed fetch is a
 > recorded failure — never replaced by invented content.
 
-**Status:** alpha (roadmap Wave 14). Deployed internally, not launched: it runs on the production host
-(127.0.0.1:4720 only, since 2026-09-23) with the six seeded sources **disabled**, so it has made 0 fetch
-runs and holds 0 items.  
+**Status:** alpha (roadmap Wave 14). Deployed internally: the API runs on the production host (127.0.0.1:4720 only,
+since 2026-09-23). On 2026-10-22, 43 of its 47 sources were enabled and it held 55,683 items from 4,762 fetch runs
+(the first on 2026-10-07; 431 in the last 24 hours), and none of the enabled sources was failing. The counts by category
+are under [Acceptance](#acceptance-tests).  
 **Domain:** `sources.openvibe.network` (a short "internal service" page and health on this
 repository's vhost; the API is loopback-only). Install steps: [Public host](#public-host).  
 **Plan:** OpenVibe End-to-End Realignment & Implementation Plan, revision 3 — roadmap §4.2 B, §15.12, §29, anti-goals 13, 26, 27.  
@@ -24,7 +25,7 @@ decide — under their own review and indexability rules — what, if anything, 
 ```bash
 npm install
 cp .env.example .env
-npm run seed           # six real sources, one per category, all disabled
+npm run seed           # the 47 sources in seeds/sources.json, created disabled
 npm run dev            # http://127.0.0.1:4720
 npm test               # every test/*.test.js against local stub sites; no internet
 ```
@@ -228,23 +229,22 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) — one real source per category, **all disabled**, robots
-checked by hand on 2026-09-22 (the fetcher re-checks on every run), terms to be re-verified by a
-person before enabling:
+[seeds/sources.json](seeds/sources.json) holds the 47 registered sources, each with its robots, terms and licence notes.
+`npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
+enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
+robots.txt on every run. Production on 2026-10-22:
 
-| Key | Category | Type | Endpoint |
-|---|---|---|---|
-| `nasa-news-releases` | news | rss | nasa.gov news-release feed |
-| `nodejs-blog` | blog | rss | nodejs.org blog feed |
-| `dealnews-coupon-codes` | coupons | rss | The DealNews feed with `extract`: only items that state a coupon code and the shop, as kind `coupon` (code, merchant, expires) |
-| `steam-reviews-portal-2` | reviews | api | Steam `appreviews` for app 620 — signals only, review text not mapped |
-| `steam-reviews-<game>` (18 more, 2026-10-14) | reviews | api | The same Steam endpoint, terms and mapping for Portal, Stardew Valley, Terraria, Hollow Knight, Hades, Slay the Spire, The Witcher 3, Baldur's Gate 3, Counter-Strike 2, Dota 2, Elden Ring, Celeste, Dead Cells, Valheim, Half-Life 2, Vampire Survivors, Outer Wilds and Lethal Company (app ids checked against Steam's appdetails) |
-| `dealnews-daily` | deals | rss | dealnews.com RSS (Crawl-delay 2) |
-| `staff-coupon-codes` | coupons | manual | codes a merchant published itself, entered with the evidence URL |
-| `lowendtalk-offers` (2026-10-14) | hosting | rss | LowEndTalk's Offers board feed: OpenVibe.Host's offers page (headline, poster, date, link, the stated price) |
-| `lowendbox-posts` (2026-10-14) | hosting | rss | LowEndBox's feed: Host keeps only the offer posts |
-| `sec-xbrl-filings` | trade | rss | SEC EDGAR XBRL filings RSS (`/cgi-bin` is robots-disallowed, so the getcurrent feed is not used) |
-| `sec-company-tickers` | trade | api | SEC's ticker, CIK and exchange list (`company_tickers_exchange.json`), one request a day; each row is an `instrument` item OpenVibe.Trade turns into a company page. Needs the per-fetch cap (`SOURCES_MAX_ITEMS_PER_FETCH`, default 12000) |
+| Category | Sources (type) | Enabled in production |
+|---|---|---|
+| news | `nasa-news-releases`, `eu-press-corner`, `fda-food-recalls`, `noaa-news` (rss); `govuk-news` (atom) | 4 of 5: `noaa-news` is off (NOAA's robots.txt answers 403 to our user agent, so its rules cannot be read) |
+| blog | `nodejs-blog` (rss) | 1 of 1 |
+| reviews | `steam-reviews-<game>` for 19 games (api: Steam `appreviews` signals only, review text not mapped); `cfpb-complaints-by-company`, `nyc-restaurant-inspections`, `nyc-hpd-open-violations` (api: official records) | 22 of 22 |
+| deals | `dealnews-daily` (rss, `feed@3`: the offer's price, retailer, end date, category and editors' pick) | 1 of 1 |
+| coupons | `dealnews-coupon-codes` (rss with `extract`: only items that state a code and the shop, as kind `coupon`); `staff-coupon-codes` (manual, with the evidence URL) | 2 of 2 |
+| trade | `sec-xbrl-filings`, `ecb-euro-reference-rates` (rss); `sec-company-tickers`, `frankfurter-eur-rates` (api) | 4 of 4 |
+| hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 8: `vultr-plans` is off (its API host's robots.txt disallows every path), and LowEndTalk's and LowEndBox's feeds answer 403 to the production host |
+| crowdfunding | `opencollective-accounts` (api) | 1 of 1 |
+| games | `steam-top-sellers`, `steam-new-releases`, `steam-specials` (api: the store's featured lists, in their order) | 3 of 3 |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its
 robots.txt) and EDGAR's `getcurrent` Atom feed (`/cgi-bin` disallowed). The seeded feeds were
@@ -317,16 +317,16 @@ through Events.
 - the public host shows only an honest "internal service" page, and the vhost keeps the API
   loopback-only (`test/public-host.test.js`)
 
-Demonstrated on production (2026-10-15):
-- 32 sources are enabled, each after its terms and robots were read: news 3, reviews 19, deals 1, coupons 2, trade 3,
-  hosting 3 and blog 1.
-- Their items are consumed by News (237 wire reports), Reviews (1,183 items), Deals (1,862), Trade (2,314 rates),
-  Coupons, and Host (135 plans across Linode, Amazon Lightsail and OVHcloud; the OVHcloud catalog is about 12 MB).
+Production on 2026-10-22 (counts read from `ov_sources`):
+- 43 of 47 sources enabled, each after its terms and robots were read (by category in [Seeds](#seeds)); none of them
+  failing. 4,762 fetch runs since the first on 2026-10-07, 431 in the last 24 hours.
+- 55,683 items, none removed: reviews 33,635, trade 15,736, deals 3,465, hosting 1,097, news 529, crowdfunding 504,
+  games 362, coupons 297 and blog 58; 58,355 item revisions. The database is 253 MB.
+- Their items feed News, Reviews (Steam signals and the CFPB, NYC Health and NYC HPD records), Deals (DealNews and
+  Open Collective for crowdfunding), Coupons, Trade (SEC, ECB and Frankfurter rates), Host (Porkbun, OVHcloud, Linode,
+  Lightsail and LowEndSpirit), Games (Steam's featured lists) and Blog's desks.
 
-Before that, every seed was disabled until a person verified its terms, and no product consumed real items. News and Reviews run
-loopback-only on the host and are subscribed to `sources.item.*` through Events (Deals, Coupons and
-Trade also run loopback-only and have Sources import clients), but with no enabled source none of them has
-received an item.
+The first production fetch run was on 2026-10-07; until then every seed stayed disabled.
 
 Restore drill: `ovhost drill sources` passed on the production host on 2026-09-23 (integrity check,
 readiness, row counts; see OpenVibe.Host `docs/restore-drills.md`).

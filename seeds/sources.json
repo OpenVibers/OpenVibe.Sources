@@ -1208,6 +1208,38 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "ovhcloud-domain-pricing",
+      "name": "OVHcloud domain prices (every TLD its international store sells, in US dollars)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://www.ovhcloud.com/en/domains/tld/",
+      "endpoints": [{
+        "url": "https://api.ca.ovhcloud.com/1.0/order/catalog/public/domain?ovhSubsidiary=WE",
+        "format": "json",
+        "items_path": "plans",
+        "item_kind": "tld_price",
+        "max_bytes": 33554432,
+        "timeout_ms": 120000,
+        "fields": { "identity": "planCode", "title": "invoiceName" },
+        "extra": {
+          "currency": "$root.locale.currencyCode",
+          "register": "pricings[mode=create-default,phase=0].price",
+          "renew": "pricings[mode=create-default,phase=1].price",
+          "transfer": "pricings[mode=transfer-default,phase=0].price"
+        }
+      }],
+      "robots_note": "robots.txt checked 2026-10-22 from the production host: https://api.ca.ovhcloud.com/robots.txt answers 404 (nginx), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). ca.api.ovh.com/robots.txt redirects there. The fetcher re-checks robots.txt on every run. (www.ovhcloud.com, the store, is a different host and is not fetched.)",
+      "terms_note": "OVHcloud's own API schema (https://api.ca.ovhcloud.com/1.0/order.json, read 2026-10-22) marks GET /order/catalog/public/domain 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve domain catalog'): the public catalog is meant to be read without an account, as the VPS catalog OpenVibe.Host already reads (ovhcloud-vps) is. The WE subsidiary is OVHcloud's international English store, priced in US dollars with no tax; api.us.ovhcloud.com does not sell domains ('product not found'). The terms page (https://www.ovhcloud.com/en/terms-and-conditions/contracts/) lists the service contracts; none found states a right to, or a ban on, republishing catalog prices, the same finding as ovhcloud-vps. One file a day of about 30 MB (950 endings with every price variant). Prices are the catalog's integers in hundred-millionths of a dollar (920000000 is $9.20): create-default phase 0 is the first year, phase 1 the renewal, transfer-default phase 0 the transfer; premium and aftermarket modes are not read. A first-year price of 0 (an ending sold only with conditions) or the 999999 sentinel means not sold that way, and OpenVibe.Host leaves those out. Show each price as an observation 'checked on <date>' with a link to https://www.ovhcloud.com/en/domains/tld/, never a quote, and imply no endorsement.",
+      "license_note": "Domain prices are OVHcloud's data (https://www.ovhcloud.com/en/domains/tld/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link its domain price page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 1200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "lowendtalk-offers",
       "name": "LowEndTalk: the Offers board",
       "type": "rss",

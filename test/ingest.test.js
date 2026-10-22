@@ -56,7 +56,7 @@ t('a good fetch creates items with full provenance and an ok run', async () => {
     assert.strictEqual(a.revision, 1);
     assert.match(a.content_hash, /^[0-9a-f]{64}$/);
     assert.match(a.raw_body_hash, /^[0-9a-f]{64}$/);
-    assert.strictEqual(a.parser_version, 'feed@2');
+    assert.strictEqual(a.parser_version, 'feed@3');
     assert.strictEqual(a.license_note, 'headlines only');
     assert.strictEqual(a.terms_note, 'fixture terms');
     assert.ok(a.retrieved_at > 0 && a.first_seen_at === a.retrieved_at);

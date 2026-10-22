@@ -7,7 +7,7 @@
   "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
-  "contracts": "openvibe-contracts v0.209.0",
+  "contracts": "openvibe-contracts v0.210.0",
   "sdk": "openvibe-sdk v0.60.0",
   "shared": "openvibe-shared v4.4.0",
   "capabilities": [
@@ -35,7 +35,7 @@
   "features": [
     "source registry with terms, robots and licence notes",
     "rss, atom, sitemap, jsonld, api and manual adapters",
-    "categories: news, blog, reviews, deals, coupons, trade, hosting, crowdfunding and games",
+    "categories: news, blog, reviews, deals, coupons, trade, hosting, crowdfunding, games, and since contracts 0.210.0 housing, food and jobs (read from sources.source@1)",
     "a deal feed's own offer elements kept as stated (feed@3: DealNews' price, currency, retailer, end date, category and editors' pick)",
     "api mappings: keyed maps, where conditions and patterns, $index for ranked lists; per-endpoint timeout_ms and max_bytes",
     "facts a feed states in prose (extract): coupon codes with the shop and expiry",

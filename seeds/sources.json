@@ -1,5 +1,5 @@
 {
-  "_about": "One real source per category in the original set, all DISABLED; further news and trade sources were added later, also all DISABLED with review_required. Robots notes were checked by hand on the date each one records (2026-09-22 for the original six, 2026-10-10 for those added later, 2026-10-11 for the two hosting seeds); terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
+  "_about": "One real source per category in the original set, all DISABLED; further news and trade sources were added later, also all DISABLED with review_required. Robots notes were checked by hand on the date each one records (2026-09-22 for the original six, 2026-10-10 for those added later, 2026-10-11 for the two hosting seeds, 2026-10-22 for the housing, food and jobs seeds); terms must be re-verified by a person before a source is enabled (PATCH enabled: true). Seeding never overwrites or enables an existing source.",
   "sources": [
     {
       "key": "nasa-news-releases",
@@ -1622,6 +1622,152 @@
       "poll_interval_sec": 10800,
       "stale_after_sec": 43200,
       "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "hud-fair-market-rents",
+      "name": "HUD Fair Market Rents by area (0 to 4 bedrooms)",
+      "type": "api",
+      "category": "housing",
+      "homepage_url": "https://www.huduser.gov/portal/datasets/fmr.html",
+      "endpoints": [
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Fair_Market_Rents/FeatureServer/0/query?where=1%3D1&outFields=FMR_CODE,FMR_AREANAME,FMR_0BDR,FMR_1BDR,FMR_2BDR,FMR_3BDR,FMR_4BDR&orderByFields=OBJECTID&resultOffset=0&resultRecordCount=1000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "rent_area",
+          "fields": {
+            "identity": "attributes.FMR_CODE",
+            "title": "attributes.FMR_AREANAME"
+          },
+          "extra": {
+            "fmr_0br": "attributes.FMR_0BDR",
+            "fmr_1br": "attributes.FMR_1BDR",
+            "fmr_2br": "attributes.FMR_2BDR",
+            "fmr_3br": "attributes.FMR_3BDR",
+            "fmr_4br": "attributes.FMR_4BDR"
+          }
+        },
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Fair_Market_Rents/FeatureServer/0/query?where=1%3D1&outFields=FMR_CODE,FMR_AREANAME,FMR_0BDR,FMR_1BDR,FMR_2BDR,FMR_3BDR,FMR_4BDR&orderByFields=OBJECTID&resultOffset=1000&resultRecordCount=1000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "rent_area",
+          "fields": {
+            "identity": "attributes.FMR_CODE",
+            "title": "attributes.FMR_AREANAME"
+          },
+          "extra": {
+            "fmr_0br": "attributes.FMR_0BDR",
+            "fmr_1br": "attributes.FMR_1BDR",
+            "fmr_2br": "attributes.FMR_2BDR",
+            "fmr_3br": "attributes.FMR_3BDR",
+            "fmr_4br": "attributes.FMR_4BDR"
+          }
+        },
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Fair_Market_Rents/FeatureServer/0/query?where=1%3D1&outFields=FMR_CODE,FMR_AREANAME,FMR_0BDR,FMR_1BDR,FMR_2BDR,FMR_3BDR,FMR_4BDR&orderByFields=OBJECTID&resultOffset=2000&resultRecordCount=1000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "rent_area",
+          "fields": {
+            "identity": "attributes.FMR_CODE",
+            "title": "attributes.FMR_AREANAME"
+          },
+          "extra": {
+            "fmr_0br": "attributes.FMR_0BDR",
+            "fmr_1br": "attributes.FMR_1BDR",
+            "fmr_2br": "attributes.FMR_2BDR",
+            "fmr_3br": "attributes.FMR_3BDR",
+            "fmr_4br": "attributes.FMR_4BDR"
+          }
+        }
+      ],
+      "robots_note": "services.arcgis.com serves no robots.txt (checked 2026-10-22); the fetcher re-checks it on every run. HUD's own ArcGIS layer, the one OpenVibe.Rent queries by area today.",
+      "terms_note": "HUD publishes Fair Market Rents as open data (hudgis-hud.opendata.arcgis.com); a US federal work. The layer allows 1000 records a request, so three pages cover its 2,622 areas. FMRs change once a year (October): a weekly poll is plenty. Re-verify before enabling.",
+      "license_note": "US federal government work (public domain in the US).",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "max_items": 3000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "openfda-food-enforcement",
+      "name": "FDA food recall enforcement reports (openFDA)",
+      "type": "api",
+      "category": "food",
+      "homepage_url": "https://open.fda.gov/apis/food/enforcement/",
+      "endpoints": [
+        {
+          "url": "https://api.fda.gov/food/enforcement.json?sort=report_date:desc&limit=100",
+          "format": "json",
+          "items_path": "results",
+          "item_kind": "recall",
+          "fields": {
+            "identity": "recall_number",
+            "title": "product_description",
+            "summary": "reason_for_recall"
+          },
+          "extra": {
+            "recalling_firm": "recalling_firm",
+            "classification": "classification",
+            "status": "status",
+            "state": "state",
+            "distribution_pattern": "distribution_pattern",
+            "voluntary_mandated": "voluntary_mandated",
+            "recall_initiation_date": "recall_initiation_date",
+            "report_date": "report_date"
+          }
+        }
+      ],
+      "robots_note": "api.fda.gov serves no robots.txt (404, checked 2026-10-22); the fetcher re-checks it on every run.",
+      "terms_note": "openFDA terms (open.fda.gov/terms): data are public domain (CC0, open.fda.gov/license); do not imply FDA endorsement; results are unvalidated and not for medical decisions (shown with that note). Without a key: 240 requests a minute and 1,000 a day per address; one request a day is used. The structured twin of the fda-food-recalls feed, for OpenVibe.Food. Re-verify before enabling.",
+      "license_note": "CC0 1.0 (openFDA); US federal government work.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "arbeitnow-job-board",
+      "name": "Arbeitnow job board API",
+      "type": "api",
+      "category": "jobs",
+      "homepage_url": "https://www.arbeitnow.com/",
+      "endpoints": [
+        {
+          "url": "https://www.arbeitnow.com/api/job-board-api",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "job",
+          "fields": {
+            "identity": "slug",
+            "url": "url",
+            "title": "title",
+            "published_at_epoch": "created_at"
+          },
+          "extra": {
+            "company": "company_name",
+            "location": "location",
+            "remote": "remote"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-22: User-agent * with an empty Disallow (only ?__hstc tracking URLs excluded). The fetcher re-checks it on every run.",
+      "terms_note": "Arbeitnow publishes its job board API free of charge (the terms OpenVibe.Work records today): attribute Arbeitnow by name and link every listing to its page on arbeitnow.com. The description HTML is deliberately not mapped. The source OpenVibe.Work fetches itself today; Work moves to it here. Re-verify before enabling.",
+      "license_note": null,
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 300,
       "enabled": false,
       "review_required": true,
       "sensitivity": "none",

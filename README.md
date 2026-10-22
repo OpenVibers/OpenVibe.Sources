@@ -54,7 +54,7 @@ start and flushes on stop.
 ## The registry
 
 A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|manual`), `category`
-(`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding`), `endpoints` (for `api`: a field mapping, no code per
+(`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding|games|housing|food|jobs`, read from `sources.source@1`; housing, food and jobs since contracts 0.210.0), `endpoints` (for `api`: a field mapping, no code per
 provider), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
 secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),
@@ -408,7 +408,7 @@ vhost serves it.
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.209.0
+- openvibe-contracts: v0.210.0
 - openvibe-sdk: v0.60.0
 - openvibe-shared: v4.4.0
 <!-- versions:end -->

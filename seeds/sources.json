@@ -941,6 +941,26 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "cdc-newsroom",
+      "name": "CDC Online Newsroom",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.cdc.gov/media/",
+      "endpoints": [
+        "https://tools.cdc.gov/api/v2/resources/media/132608.rss"
+      ],
+      "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: tools.cdc.gov's User-agent * group disallows only FrontPage folders (/_borders, /_vti_*, …) and TemplatePackage examples; /api/v2/resources/media/ is allowed (Disallow: / applies only to named scrapers such as Roverbot). No crawl-delay. The feed (CDC's own syndication API) answered 200 text/xml; it is large (about 1.4 MB, the whole newsroom), so max_items keeps the newest 50.",
+      "terms_note": "CDC's Use of Agency Materials page (https://www.cdc.gov/other/agencymaterials.html, read 2026-10-22): 'Most of the information on the CDC and ATSDR websites is not subject to copyright, is in the public domain, and may be freely used or reproduced without obtaining copyright permission', with attribution to the agency required and no implied endorsement. Store titles, links and the feed's short descriptions only; never full text or images; credit CDC and link each item back to cdc.gov.",
+      "license_note": "US government work: public domain (17 U.S.C. 105) for CDC's own text; attribution to CDC required; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "health",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "frankfurter-eur-rates",
       "name": "Frankfurter euro reference rates",
       "type": "api",

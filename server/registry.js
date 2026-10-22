@@ -13,7 +13,9 @@ const { checkApiMapping } = require('./adapters');
 const extract = require('./adapters/extract');
 
 const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
-const CATEGORIES = ['news', 'blog', 'reviews', 'deals', 'coupons', 'trade', 'hosting', 'crowdfunding', 'games'];
+// The categories are sources.source@1's (openvibe-contracts), read from the schema so the two never drift: housing, food
+// and jobs since contracts 0.210.0, for Rent and Homes, Food and Work (plan 2026-10-22, track F1).
+const CATEGORIES = Object.freeze([...require('openvibe-contracts/contracts/sources/source.v1.json').properties.category.enum]);
 const SENSITIVITY = ['none', 'financial', 'health', 'political', 'legal', 'adult'];
 const AUTH_MODES = ['none', 'header', 'bearer', 'query'];
 const KEY_RE = /^[a-z0-9][a-z0-9-]{1,63}$/;

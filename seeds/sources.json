@@ -921,6 +921,26 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "nist-news",
+      "name": "NIST news",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.nist.gov/news-events/news",
+      "endpoints": [
+        "https://www.nist.gov/news-events/news/rss.xml"
+      ],
+      "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: User-agent * disallows only Drupal's /core/ and /profiles/ folders, a few README and composer files and search/user paths; /news-events/news/rss.xml is allowed. No crawl-delay. The feed answered 200 application/rss+xml with 40 items. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "NIST's Copyrights & Disclaimers page (https://www.nist.gov/oism/copyrights, read 2026-10-22): 'With the exception of material marked as copyrighted, information presented on NIST sites are considered public information and may be distributed or copied.' Store titles, links and the feed's short descriptions only; never full text or images; credit NIST and link each item back to nist.gov. No implied endorsement by NIST or the US Government.",
+      "license_note": "US government work (17 U.S.C. 105): public information per NIST's copyright notice, except material marked as copyrighted; credit NIST.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "frankfurter-eur-rates",
       "name": "Frankfurter euro reference rates",
       "type": "api",

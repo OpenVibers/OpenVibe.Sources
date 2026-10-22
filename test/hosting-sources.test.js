@@ -91,6 +91,25 @@ t('Porkbun prices: one item per TLD from the keyed price list, the prices as Por
     assert.strictEqual(by['0zebra'].special_type, 'handshake', 'Handshake names are marked, for Host to leave out');
 });
 
+t('OVHcloud domain prices: one item per ending, the first year, renewal and transfer from the no-premium price modes', () => {
+    const s = seed('ovhcloud-domain-pricing');
+    assert.deepStrictEqual([s.type, s.category, s.enabled, s.review_required], ['api', 'hosting', false, true]);
+    const ep = endpoint('ovhcloud-domain-pricing');
+    assert.strictEqual(api.checkMapping(ep), null);
+    assert.strictEqual(validateSource(s).max_items, 1200, 'OVHcloud sells about 950 endings; the whole list fits');
+    assert.strictEqual(ep.max_bytes, 32 * 1024 * 1024, 'the whole catalog is about 30 MB');
+    const r = api.parse(fx('ovhcloud-domain-pricing.json'), { url: ep.url, endpoint: ep, maxItems: 1200 });
+    assert.strictEqual(r.skipped, 0);
+    assert.deepStrictEqual(r.items.map((i) => i.identity), ['family', 'io', 'shop', 'co.uk', 'dev', 'com']);
+    assert.ok(r.items.every((i) => i.kind === 'tld_price'));
+    assert.strictEqual(r.items.find((i) => i.identity === 'co.uk').title, '.co.uk');
+    const by = Object.fromEntries(r.items.map((i) => [i.identity, i.fields]));
+    // Hundred-millionths of a dollar, as the catalog gives them: $9.20 the first year, $16.49 a renewal.
+    assert.deepStrictEqual(by.com, { currency: 'USD', register: 920000000, renew: 1649000000, transfer: 920000000 });
+    assert.deepStrictEqual(by.io, { currency: 'USD', register: 6299000000, renew: 6269000000, transfer: 5069000000 }, 'never the premium sentinel');
+    assert.strictEqual(by['co.uk'].transfer, 0, 'a free transfer stays 0; Host decides what 0 means per field');
+});
+
 t('the registry accepts category hosting and refuses an unknown category', () => {
     const rec = validateSource(seed('vultr-plans'));
     assert.strictEqual(rec.category, 'hosting');

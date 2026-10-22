@@ -1,0 +1,586 @@
+{
+ "catalogId": 9886,
+ "locale": {
+  "currencyCode": "USD",
+  "subsidiary": "WE",
+  "taxRate": 0
+ },
+ "plans": [
+  {
+   "planCode": "family",
+   "invoiceName": ".family",
+   "product": "family-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .family domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 3069000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .family domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 3859000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .family domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .family domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .family domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 3789000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .family domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 3859000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  },
+  {
+   "planCode": "io",
+   "invoiceName": ".io",
+   "product": "io-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .io domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 6299000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .io domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 6269000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .io domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .io domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .io domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 5069000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .io domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 6269000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  },
+  {
+   "planCode": "shop",
+   "invoiceName": ".shop",
+   "product": "shop-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .shop domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 319000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .shop domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 4299000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .shop domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .shop domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .shop domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 3429000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .shop domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 4299000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  },
+  {
+   "planCode": "co.uk",
+   "invoiceName": ".co.uk",
+   "product": "co-uk-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .co.uk domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 849000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .co.uk domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 949000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .co.uk domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .co.uk domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .co.uk domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 0,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .co.uk domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 949000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  },
+  {
+   "planCode": "dev",
+   "invoiceName": ".dev",
+   "product": "dev-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .dev domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 1319000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .dev domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 1719000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .dev domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .dev domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .dev domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 1719000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .dev domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 1719000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  },
+  {
+   "planCode": "com",
+   "invoiceName": ".com",
+   "product": "com-product",
+   "pricings": [
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .com domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 0,
+     "price": 920000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .com domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-default",
+     "phase": 1,
+     "price": 1649000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Creation of a .com domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 0,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "dynamic",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .com domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "create-premium",
+     "phase": 1,
+     "price": 99999900000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "installation",
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Transfer request of a .com domain name",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 0,
+     "price": 920000000,
+     "strategy": "tiered",
+     "type": "rental"
+    },
+    {
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "Renewal of a .com domain name - 1 year",
+     "interval": 12,
+     "intervalUnit": "month",
+     "mode": "transfer-default",
+     "phase": 1,
+     "price": 1649000000,
+     "strategy": "tiered",
+     "type": "rental"
+    }
+   ]
+  }
+ ]
+}

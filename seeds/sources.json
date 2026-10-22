@@ -1356,6 +1356,26 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "federal-reserve-press",
+      "name": "Federal Reserve Board press releases",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.federalreserve.gov/newsevents/pressreleases.htm",
+      "endpoints": [
+        "https://www.federalreserve.gov/feeds/press_all.xml"
+      ],
+      "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: https://www.federalreserve.gov/robots.txt answers 404, so there are no crawl rules; the Board publishes this feed on its RSS feeds page for subscribers. The feed answered 200 text/xml with 20 items. One request an hour. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "The Board's website disclaimer (https://www.federalreserve.gov/disclaimer.htm, read 2026-10-22): 'Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission.' Material marked as a non-Board source's needs that source's permission. Store titles, links and the feed's short descriptions only; never full text or images; credit the Federal Reserve Board and link each release back to federalreserve.gov.",
+      "license_note": "US government work: public domain per the Board's website disclaimer, except material credited to non-Board sources; credit the Federal Reserve Board.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "opencollective-accounts",
       "name": "Open Collective: collectives, projects and funds",
       "type": "api",

@@ -79,6 +79,8 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             Object.assign(out, { format: e.format || 'json', items_shape: e.items_shape || 'array', items_path: e.items_path || '', item_kind: e.item_kind || 'record', fields: e.fields || {}, extra: e.extra || {} });
             // `where` is only copied when given, so records without conditions stay byte-identical.
             if (e.where) out.where = e.where;
+            // and `extra_lists` (tags, job types) the same way.
+            if (e.extra_lists) out.extra_lists = e.extra_lists;
             if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
             if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;
             if (e.request_content_type !== undefined) out.request_content_type = e.request_content_type;

@@ -205,4 +205,22 @@ t('an api summary from HTML longer than the 500-character cap keeps no half tag 
     assert.ok(!/[<>]/.test(item.summary), `no markup left: ${item.summary.slice(-60)}`);
 });
 
+t('api extra_lists keep an array of scalars as a list (tags, job types); extra still reads an array as null', () => {
+    const body = JSON.stringify({ data: [
+        { slug: 'a', url: 'https://www.arbeitnow.com/jobs/a', title: 'A', tags: ['Node.js', 'PostgreSQL', { x: 1 }, ''], job_types: ['full time'] },
+        { slug: 'b', url: 'https://www.arbeitnow.com/jobs/b', title: 'B', tags: 'Go', job_types: null },
+        { slug: 'c', url: 'https://www.arbeitnow.com/jobs/c', title: 'C', tags: Array.from({ length: 30 }, (_, i) => `t${i}`) },
+    ] });
+    const endpoint = { format: 'json', items_path: 'data', item_kind: 'job', fields: { identity: 'slug', url: 'url', title: 'title' },
+        extra: { tags_scalar: 'tags' }, extra_lists: { tags: 'tags', job_types: 'job_types' } };
+    assert.strictEqual(api.checkMapping(endpoint), null);
+    const [a, b, c] = api.parse(body, { url: 'https://www.arbeitnow.com/api/job-board-api', endpoint }).items;
+    assert.deepStrictEqual([a.fields.tags, a.fields.job_types, a.fields.tags_scalar], [['Node.js', 'PostgreSQL'], ['full time'], null]);
+    assert.deepStrictEqual([b.fields.tags, b.fields.job_types], [['Go'], []]);
+    assert.strictEqual(c.fields.tags.length, 20);
+    assert.match(api.checkMapping({ ...endpoint, extra: { tags: 'tags' } }), /also an extra field/);
+    assert.match(api.checkMapping({ ...endpoint, extra_lists: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [`l${i}`, 'tags'])) }), /at most 10/);
+    assert.match(api.checkMapping({ ...endpoint, extra_lists: ['tags'] }), /must be an object/);
+});
+
 t.run();

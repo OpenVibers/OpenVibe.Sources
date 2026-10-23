@@ -1,12 +1,9 @@
 'use strict';
 /** The Sources migration and SDK outbox, without a loopback server. */
 const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
 const { createServiceOutbox } = require('openvibe-sdk/events');
 const { createMockPlatform } = require('openvibe-sdk/testing');
 const { validate } = require('openvibe-contracts');
-const { createEnvelope } = require('../server/events/envelope');
 const { load } = require('../server/config');
 const { start } = require('../server/index');
 const { testDb } = require('./db');
@@ -14,8 +11,6 @@ const { suite } = require('./helpers');
 
 const t = suite('sdk-outbox');
 const types = require('../docs/service-manifest-proposal.json').eventsProduced;
-const args = { event_type: 'sources.item.created', subject: { type: 'item', id: 'itm_test', revision: 1 }, payload: { item_id: 'itm_test' } };
-const envelope = () => createEnvelope(args, { source: 'sources', now: () => Date.now() });
 const make = (db, platform, secret = 'test-secret') => createServiceOutbox({
     db, source: 'sources', eventsUrl: 'https://openvibe.events', networkInternalUrl: 'https://openvibe.network',
     clientId: 'sources', clientSecret: secret, table: 'service_outbox', eventTypes: types,
@@ -49,27 +44,11 @@ t('an event exists exactly when its change commits; rows wait while delivery is 
     } finally { if (svc) await svc.close(); await h.close(); }
 });
 
-t('the expand migration copies a legacy pending row and the SDK relays it with a service token', async () => {
+t('the legacy event_outbox is gone (0005, after the expand that moved its pending rows); service_outbox carries events', async () => {
     const h = await testDb();
     try {
-        const env = envelope();
-        await h.db.query('INSERT INTO event_outbox (event_id, event_type, envelope, created_at) VALUES ($1, $2, $3, $4)',
-            [env.event_id, env.event_type, JSON.stringify(env), Date.now()]);
-        // The harness already applied the migration (as the owner); re-run its copy step, the only DML in it, as the
-        // runtime role (the CI containers give that role no CREATE on the schema).
-        const migration = fs.readFileSync(path.join(__dirname, '..', 'migrations', '0002_sdk_outbox.sql'), 'utf8');
-        const copy = migration.slice(migration.indexOf('INSERT INTO service_outbox'));
-        assert.match(copy, /^INSERT INTO service_outbox[\s\S]*ON CONFLICT \(event_id\) DO NOTHING;/);
-        await h.db.query(copy);
-        const copied = await h.db.one('SELECT envelope FROM service_outbox WHERE event_id = $1', [env.event_id]);
-        assert.deepStrictEqual(copied.envelope, env);
-        const p = platform();
-        const out = make(h.db, p);
-        assert.strictEqual((await out.status()).pending, 1);
-        assert.deepStrictEqual(await out.outbox.flush(), { sent: 1, failed: 0, rejected: 0 });
-        assert.strictEqual((await out.status()).pending, 0);
-        assert.strictEqual(p.state.events[0].event.event_id, env.event_id);
-        assert.ok(p.stats.tokenRequests > 0);
+        assert.strictEqual(await h.db.value("SELECT to_regclass('public.event_outbox') IS NULL"), true, 'event_outbox was dropped');
+        assert.strictEqual(await h.db.value("SELECT to_regclass('public.service_outbox') IS NOT NULL"), true);
     } finally { await h.close(); }
 });
 

@@ -47,7 +47,7 @@ t('an event exists exactly when its change commits; rows wait while delivery is 
 t('service_outbox carries events; 0005 is the contract that drops the legacy event_outbox after 0002', async () => {
     const h = await testDb();
     try {
-        assert.strictEqual(await h.db.value("SELECT to_regclass('public.service_outbox') IS NOT NULL"), true);
+        assert.strictEqual(await h.db.value("SELECT to_regclass('service_outbox') IS NOT NULL"), true);
         // Whether the drop has run depends on the contract window (openvibe-sdk/db holds a contract for 7 days after its
         // expand on a fresh PostgreSQL database; PGlite runs it at once), so the migration itself is what is checked.
         const sql = require('fs').readFileSync(require('path').join(__dirname, '..', 'migrations', '0005_drop_event_outbox.sql'), 'utf8');

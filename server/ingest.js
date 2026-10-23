@@ -16,6 +16,10 @@
  * A failed run never creates or modifies an item: only the `ok` path calls items.ingest(), in the
  * same transaction as its run row. Validators (ETag/Last-Modified) are stored only after a good
  * parse, so a body that failed to parse is fetched and parsed again next time, not skipped as 304.
+ *
+ * A source with retire_after_sec (jobs, listings) retires what its feed stopped showing: after a run
+ * in which every endpoint answered (ok or 304) and none failed, its items not seen for that long are
+ * removed as gone_from_source. A 304 counts as seeing again what the endpoint's last good parse saw.
  */
 const { ids } = require('openvibe-contracts');
 const { ADAPTERS } = require('./adapters');
@@ -47,6 +51,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         touchEndpoint: db.prepare(`INSERT INTO endpoint_state (source_key, url, last_status, last_fetch_at) VALUES (@k, @u, @status, @at)
             ON CONFLICT(source_key, url) DO UPDATE SET last_status = excluded.last_status, last_fetch_at = excluded.last_fetch_at`),
         requested: db.prepare('UPDATE sources SET last_request_at = ? WHERE key = ?'),
+        lastOk: db.prepare(`SELECT id FROM fetch_runs WHERE source_key = ? AND endpoint_url = ? AND state = 'ok' ORDER BY rid DESC LIMIT 1`),
         finish: db.prepare(`UPDATE sources SET last_run_at = @at, last_state = @state, consecutive_failures = @failures,
             last_success_at = COALESCE(@success_at, last_success_at), next_due_at = @next_due, not_before = @not_before WHERE key = @key`),
     };
@@ -166,6 +171,10 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
 
         if (res.status === 304) {
             Object.assign(run, { state: 'not_modified' });
+            if (source.retire_after_sec) {
+                const last = await st.lastOk.get(source.key, endpoint.url);
+                if (last) await items.seenAgain(source, last.id, run.finished_at);
+            }
             return { run, failed: false, success: true };
         }
         if (res.status === 429) {
@@ -247,6 +256,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
 
             let anyFailure = false;
             let anySuccess = false;
+            let allAnswered = true;     // every endpoint ok or 304: what retirement needs to trust the feed
             let notBefore = 0;
             let failures = row.consecutive_failures;
             for (const endpoint of source.endpoints) {
@@ -262,10 +272,20 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
                 }
                 if (out.failed) { anyFailure = true; failures = row.consecutive_failures + 1; }
                 if (out.success) anySuccess = true;
+                else allAnswered = false;
                 if (out.notBefore) notBefore = Math.max(notBefore, out.notBefore);
                 if (!out.recorded) await recordNoItems(source, out.run, { countsAsFailure: out.failed, failures });
                 runs.push(out.run);
                 if (out.run.state === 'rate_limited') break;   // the site asked us to stop
+            }
+
+            if (source.retire_after_sec && anySuccess && allAnswered && !anyFailure) {
+                try {
+                    const retired = await items.retireUnseen(source, now() - source.retire_after_sec * 1000);
+                    if (retired) log.log(`[ingest] ${key}: retired ${retired} item(s) the feed stopped showing`);
+                } catch (err) {
+                    log.error(`[ingest] ${key}: retiring unseen items failed: ${err.stack || err}`);
+                }
             }
 
             const finishedAt = now();

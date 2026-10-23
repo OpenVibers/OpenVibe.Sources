@@ -59,7 +59,7 @@ provider), `auth` (`none|header|bearer|query` with the **name** of an environmen
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
 secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),
 `poll_interval_sec`, `stale_after_sec`, `max_items`, `enabled`, `review_required`,
-`sensitivity`, `default_indexability` and `search_visibility`.
+`sensitivity`, `default_indexability`, `search_visibility` and `retire_after_sec` (since contracts 0.211.0).
 
 A source cannot be enabled without a terms note (and a robots note if it is fetched): an adapter
 existing is not permission to ingest (anti-goal 26). A source with items cannot be deleted —
@@ -177,7 +177,13 @@ fragments removed), `title`, `summary`, `authors`, `published_at`, `source_updat
 `revision`, and `provenance` (`retrieved_at`, `first_seen_at`, `content_hash`, `raw_body_hash`,
 `parser_version`, `fetch_run_id`, `license_note`, `terms_note`, `entered_by`). Earlier revisions
 are kept in `item_revisions`. Removal (takedown, licence) is explicit, needs a reason, and is
-sticky: a later fetch that still lists the item does not bring it back. Contract (released in openvibe-contracts v0.12.0):
+sticky: a later fetch that still lists the item does not bring it back.
+
+A source of jobs or listings sets `retire_after_sec` (an hour to a year; null, the default, keeps every item, as news
+and datasets should). After a run in which every endpoint answered (`ok` or `not_modified`) and none failed, an item
+the feed has not shown for that long is removed with reason `gone_from_source`. That is a change like any removal, so a
+consumer following `GET /api/v1/items?include_removed=1` learns that the job is gone. A 304 counts as seeing again what
+the endpoint's last good parse saw. At most 500 items are retired a run; the rest go on the next. Contract (released in openvibe-contracts v0.12.0):
 [`sources.item@1`](docs/contracts-proposal/).
 
 ## API (service tokens, one capability per route)
@@ -408,7 +414,7 @@ vhost serves it.
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.210.0
+- openvibe-contracts: v0.211.0
 - openvibe-sdk: v0.60.0
 - openvibe-shared: v4.8.0
 <!-- versions:end -->

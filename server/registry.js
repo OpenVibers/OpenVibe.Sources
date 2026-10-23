@@ -57,7 +57,7 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw new RegistryError('body must be a source object');
     const known = new Set(['key', 'name', 'type', 'category', 'homepage_url', 'endpoints', 'auth', 'robots_note', 'terms_note', 'license_note',
         'min_interval_ms', 'poll_interval_sec', 'stale_after_sec', 'max_items', 'enabled', 'review_required', 'sensitivity',
-        'default_indexability', 'search_visibility']);
+        'default_indexability', 'search_visibility', 'retire_after_sec']);
     for (const k of Object.keys(input)) if (!known.has(k)) throw new RegistryError(`unknown field ${k}`);
     if (!KEY_RE.test(String(input.key || ''))) throw new RegistryError('key must match ^[a-z0-9][a-z0-9-]{1,63}$');
     const name = text(input.name, 200, 'name');
@@ -134,6 +134,8 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
         sensitivity: input.sensitivity == null ? 'none' : input.sensitivity,
         default_indexability: input.default_indexability == null ? 'noindex' : input.default_indexability,
         search_visibility: input.search_visibility == null ? null : input.search_visibility,
+        // Retire what the feed stopped showing (jobs, listings): an hour to a year, or null to keep every item (server/ingest.js).
+        retire_after_sec: intIn(input.retire_after_sec, 3600, 365 * 86400, null, 'retire_after_sec'),
     };
     if (!SENSITIVITY.includes(record.sensitivity)) throw new RegistryError(`sensitivity must be one of ${SENSITIVITY.join('|')}`);
     if (!['index', 'noindex'].includes(record.default_indexability)) throw new RegistryError('default_indexability must be index or noindex');
@@ -152,15 +154,15 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         all: db.prepare('SELECT * FROM sources ORDER BY key'),
         insert: db.prepare(`INSERT INTO sources (key, name, type, category, homepage_url, endpoints, auth, robots_note, terms_note, license_note,
             min_interval_ms, poll_interval_sec, stale_after_sec, max_items, enabled, review_required, sensitivity, default_indexability,
-            search_visibility, created_at, updated_at, updated_by, next_due_at)
+            search_visibility, retire_after_sec, created_at, updated_at, updated_by, next_due_at)
             VALUES (@key, @name, @type, @category, @homepage_url, @endpoints, @auth, @robots_note, @terms_note, @license_note,
             @min_interval_ms, @poll_interval_sec, @stale_after_sec, @max_items, @enabled, @review_required, @sensitivity, @default_indexability,
-            @search_visibility, @created_at, @updated_at, @updated_by, 0)`),
+            @search_visibility, @retire_after_sec, @created_at, @updated_at, @updated_by, 0)`),
         update: db.prepare(`UPDATE sources SET name = @name, type = @type, category = @category, homepage_url = @homepage_url, endpoints = @endpoints,
             auth = @auth, robots_note = @robots_note, terms_note = @terms_note, license_note = @license_note, min_interval_ms = @min_interval_ms,
             poll_interval_sec = @poll_interval_sec, stale_after_sec = @stale_after_sec, max_items = @max_items, enabled = @enabled,
             review_required = @review_required, sensitivity = @sensitivity, default_indexability = @default_indexability,
-            search_visibility = @search_visibility, updated_at = @updated_at, updated_by = @updated_by WHERE key = @key`),
+            search_visibility = @search_visibility, retire_after_sec = @retire_after_sec, updated_at = @updated_at, updated_by = @updated_by WHERE key = @key`),
         del: db.prepare('DELETE FROM sources WHERE key = ?'),
         itemCount: db.prepare('SELECT COUNT(*) AS n FROM items WHERE source_key = ?'),
     };
@@ -187,6 +189,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
             min_interval_ms: row.min_interval_ms, poll_interval_sec: row.poll_interval_sec, stale_after_sec: row.stale_after_sec,
             max_items: row.max_items, enabled: Boolean(row.enabled), review_required: Boolean(row.review_required),
             sensitivity: row.sensitivity, default_indexability: row.default_indexability, search_visibility: row.search_visibility,
+            retire_after_sec: row.retire_after_sec == null ? null : Number(row.retire_after_sec),
         };
     }
 

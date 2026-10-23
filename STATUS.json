@@ -7,7 +7,7 @@
   "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
-  "contracts": "openvibe-contracts v0.210.0",
+  "contracts": "openvibe-contracts v0.211.0",
   "sdk": "openvibe-sdk v0.60.0",
   "shared": "openvibe-shared v4.8.0",
   "capabilities": [
@@ -43,6 +43,7 @@
     "SSRF-guarded fetcher",
     "failed fetches recorded, never fabricated",
     "item revisions and sticky removals with provenance",
+    "retire_after_sec: items a feed stopped showing are removed as gone_from_source (jobs, listings)",
     "cursor item API by capability",
     "openvibe-sdk transactional outbox to Events (service_outbox)",
     "staff-only index documents for Search",

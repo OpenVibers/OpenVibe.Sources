@@ -1768,6 +1768,7 @@
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 300,
+      "retire_after_sec": 604800,
       "enabled": false,
       "review_required": true,
       "sensitivity": "none",

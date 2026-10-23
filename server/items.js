@@ -8,7 +8,8 @@
  * version and the source's license/terms notes as they were at ingestion. A changed content hash
  * is a new revision (the previous one stays in item_revisions); an unchanged item only has its
  * retrieval time refreshed. Removal (a takedown, a licence problem) is explicit, audited and
- * sticky: a later fetch that still lists the item does not bring it back.
+ * sticky: a later fetch that still lists the item does not bring it back. A source with
+ * retire_after_sec also removes, as gone_from_source, what its feed has not shown for that long.
  *
  * Only successful fetches reach ingest(); nothing in this module runs for a failed fetch.
  */
@@ -45,6 +46,9 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
         revision: db.prepare(`INSERT INTO item_revisions (item_id, revision, content_hash, raw_body_hash, parser_version, fetch_run_id, retrieved_at, snapshot)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
         revisions: db.prepare('SELECT * FROM item_revisions WHERE item_id = ? ORDER BY revision'),
+        unseen: db.prepare(`SELECT * FROM items WHERE source_key = ? AND removed_at IS NULL AND retrieved_at < ?
+            ORDER BY retrieved_at, id LIMIT ?`),
+        seenAgain: db.prepare('UPDATE items SET retrieved_at = ? WHERE source_key = ? AND last_fetch_run_id = ? AND removed_at IS NULL'),
     };
 
     function view(row) {
@@ -192,20 +196,49 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
         return counts;
     }
 
+    // One removal: the row, its revision, sources.item.removed and the Search delete. Inside a transaction.
+    async function markRemoved(source, cur, reason, stored, t) {
+        await st.remove.run(t, stored.slice(0, 500), await nextSeq(db, 'items'), cur.id);
+        const saved = await st.byId.get(cur.id);
+        await st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, null, t, JSON.stringify({ removed: true, reason }));
+        await itemEvent('sources.item.removed', saved, { reason });
+        await indexEvent(source, saved, true);
+        return saved;
+    }
+
     /** Remove an item (takedown, licence, error). Sticky; emits sources.item.removed. */
     async function remove(source, id, reason, by) {
         return await db.tx(async () => {
             const cur = await st.byId.get(id);
             if (!cur || cur.source_key !== source.key) return null;
             if (cur.removed_at) return view(cur);
-            const t = now();
-            await st.remove.run(t, `${reason}${by ? ` (by ${by})` : ''}`.slice(0, 500), await nextSeq(db, 'items'), id);
-            const saved = await st.byId.get(id);
-            await st.revision.run(saved.id, saved.revision, saved.content_hash, saved.raw_body_hash, saved.parser_version, null, t, JSON.stringify({ removed: true, reason }));
-            await itemEvent('sources.item.removed', saved, { reason });
-            await indexEvent(source, saved, true);
-            return view(saved);
+            return view(await markRemoved(source, cur, reason, `${reason}${by ? ` (by ${by})` : ''}`, now()));
         });
+    }
+
+    /**
+     * Retire what the source stopped showing (sources.source@1 retire_after_sec): its live items not seen since `cutoff`
+     * are removed with reason gone_from_source, a change in the feed like any removal, so a consumer following it learns
+     * the job or listing is gone. Called after a fetch of the source succeeded; at most `limit` items a run, the rest
+     * on the next. Sticky like any removal. → the number retired
+     */
+    async function retireUnseen(source, cutoff, { limit = 500 } = {}) {
+        return await db.tx(async () => {
+            const rows = await st.unseen.all(source.key, cutoff, limit);
+            const t = now();
+            for (const cur of rows) await markRemoved(source, cur, 'gone_from_source', 'gone_from_source', t);
+            return rows.length;
+        });
+    }
+
+    /**
+     * A 304 says the endpoint still lists what its last good parse (`runId`) saw: those items count as seen at `at`, so
+     * retirement does not take them for gone. Only for a source that retires; the others keep the parse's time.
+     */
+    async function seenAgain(source, runId, at) {
+        if (!runId) return 0;
+        const r = await st.seenAgain.run(at, source.key, runId);
+        return r && r.changes != null ? r.changes : 0;
     }
 
     async function get(id, { revisions = false } = {}) {
@@ -233,7 +266,7 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
         return { items: page.map(view), next_after: page.length ? page[page.length - 1].change_seq : after, more };
     }
 
-    return { ingest, remove, get, list, view, indexDocument, contentHash };
+    return { ingest, remove, retireUnseen, seenAgain, get, list, view, indexDocument, contentHash };
 }
 
 module.exports = { createItems, contentHash, STAFF_GROUPS };

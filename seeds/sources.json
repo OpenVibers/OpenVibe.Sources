@@ -1753,6 +1753,43 @@
             "identity": "slug",
             "url": "url",
             "title": "title",
+            "summary": "description",
+            "published_at_epoch": "created_at"
+          },
+          "extra": {
+            "company": "company_name",
+            "location": "location",
+            "remote": "remote"
+          }
+        },
+        {
+          "url": "https://www.arbeitnow.com/api/job-board-api?page=2",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "job",
+          "fields": {
+            "identity": "slug",
+            "url": "url",
+            "title": "title",
+            "summary": "description",
+            "published_at_epoch": "created_at"
+          },
+          "extra": {
+            "company": "company_name",
+            "location": "location",
+            "remote": "remote"
+          }
+        },
+        {
+          "url": "https://www.arbeitnow.com/api/job-board-api?page=3",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "job",
+          "fields": {
+            "identity": "slug",
+            "url": "url",
+            "title": "title",
+            "summary": "description",
             "published_at_epoch": "created_at"
           },
           "extra": {
@@ -1763,7 +1800,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-22: User-agent * with an empty Disallow (only ?__hstc tracking URLs excluded). The fetcher re-checks it on every run.",
-      "terms_note": "Arbeitnow publishes its job board API free of charge (the terms OpenVibe.Work records today): attribute Arbeitnow by name and link every listing to its page on arbeitnow.com. The description HTML is deliberately not mapped. The source OpenVibe.Work fetches itself today; Work moves to it here. Re-verify before enabling.",
+      "terms_note": "Arbeitnow publishes its job board API free of charge (the terms OpenVibe.Work records today): attribute Arbeitnow by name and link every listing to its page on arbeitnow.com. The first three pages are read, as Work read them. The description is kept only as a short plain-text excerpt (the summary, as Work shows it); every listing links to arbeitnow.com for the full text. A job the board stops listing is retired after a week. Work moves to this source from its own fetch.",
       "license_note": null,
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,

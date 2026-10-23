@@ -196,4 +196,13 @@ t('helpers: charset decoding, date and URL strictness', () => {
     assert.strictEqual(canonicalUrl('HTTPS://Example.COM:443/a?gclid=1&b=2#x'), 'https://example.com/a?b=2');
 });
 
+t('an api summary from HTML longer than the 500-character cap keeps no half tag (Arbeitnow descriptions)', () => {
+    const description = `<p><strong>About us</strong></p><p>${'We build things. '.repeat(26)}</p><p><a href="https://example.org/apply">Apply</a></p>`;
+    const body = JSON.stringify({ data: [{ slug: 'dev-1', url: 'https://www.arbeitnow.com/jobs/dev-1', title: 'Developer', description, created_at: 1761177600 }] });
+    const endpoint = { format: 'json', items_path: 'data', item_kind: 'job', fields: { identity: 'slug', url: 'url', title: 'title', summary: 'description', published_at_epoch: 'created_at' } };
+    const [item] = api.parse(body, { url: 'https://www.arbeitnow.com/api/job-board-api', endpoint }).items;
+    assert.match(item.summary, /^About us We build things\./);
+    assert.ok(!/[<>]/.test(item.summary), `no markup left: ${item.summary.slice(-60)}`);
+});
+
 t.run();

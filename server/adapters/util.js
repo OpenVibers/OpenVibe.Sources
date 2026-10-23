@@ -59,7 +59,8 @@ function toText(value, max = 1000) {
     s = decodeEntities(String(s))
         .replace(/<(script|style|noscript)[\s\S]*?<\/\1>/gi, ' ')
         .replace(/<br\s*\/?>|<\/p>|<\/li>|<\/h\d>/gi, ' ')
-        .replace(/<[^>]*>/g, ' ');
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/<[^>]*$/, ' ');   // a tag cut off where a capped value ended
     s = decodeEntities(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim();
     if (!s) return null;
     return s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;

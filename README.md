@@ -25,7 +25,7 @@ decide — under their own review and indexability rules — what, if anything, 
 ```bash
 npm install
 cp .env.example .env
-npm run seed           # the 47 sources in seeds/sources.json, created disabled
+npm run seed           # the 54 sources in seeds/sources.json, created disabled
 npm run dev            # http://127.0.0.1:4720
 npm test               # every test/*.test.js against local stub sites; no internet
 ```
@@ -235,7 +235,7 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 47 registered sources, each with its robots, terms and licence notes.
+[seeds/sources.json](seeds/sources.json) holds the 54 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
 robots.txt on every run. Production on 2026-10-22:

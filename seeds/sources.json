@@ -9,7 +9,7 @@
       "homepage_url": "https://www.nasa.gov/",
       "endpoints": ["https://www.nasa.gov/news-release/feed/"],
       "robots_note": "robots.txt checked 2026-09-22: User-agent * Allow /. The fetcher re-checks it on every run.",
-      "terms_note": "NASA's media usage guidelines say NASA material is generally not subject to copyright in the US; logos, insignia and third-party material are excluded. Store titles, links and short summaries; link back. Re-verify before enabling.",
+      "terms_note": "Verified 2026-10-07: NASA media usage guidelines - NASA material is generally not subject to copyright in the US; logos, insignia and third-party (credited) material excluded. Store titles, links and short summaries only; link back. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US federal government work in general; per-item credits may restrict reuse.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 1800,
@@ -27,7 +27,7 @@
       "homepage_url": "https://nodejs.org/en/blog",
       "endpoints": ["https://nodejs.org/en/feed/blog.xml"],
       "robots_note": "robots.txt checked 2026-09-22: only /dist/ and /docs/ are disallowed; the feed path is allowed.",
-      "terms_note": "Content of the OpenJS Foundation and contributors; read the site's terms before enabling. Titles, links and short summaries only.",
+      "terms_note": "Verified 2026-10-07: OpenJS Foundation blog feed offered for syndication; titles, links and short summaries only, attributed and linked back; robots allows the feed path. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
       "max_items": 50,
@@ -55,7 +55,7 @@
         }
       }],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Verified 2026-10-07: documented public store endpoint (partner.steamgames.com/doc/store/getreviews). Review text belongs to its authors and is deliberately not mapped: aggregate signals only (recommendation, votes, playtime, dates), each linked to the store page. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -95,7 +95,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -135,7 +135,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -175,7 +175,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -215,7 +215,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -255,7 +255,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -295,7 +295,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -335,7 +335,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -375,7 +375,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -415,7 +415,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -455,7 +455,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -495,7 +495,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -535,7 +535,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -575,7 +575,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -615,7 +615,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -655,7 +655,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -695,7 +695,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -735,7 +735,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -775,7 +775,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: /appreviews is not disallowed.",
-      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling.",
+      "terms_note": "Documented store endpoint (partner.steamgames.com/doc/store/getreviews); Steam's terms apply. Review text belongs to its authors and is deliberately not mapped: signals only (recommendation, votes, playtime, dates). Verify terms before enabling. Reviewed 2026-10-23 (plan F3): verified: Valve documents the store endpoint (partner.steamgames.com/doc/store/getreviews) with no key and no usage terms on the page, and marks it deprecated in favour of IUserReviewsService/GetAppReviews (the Steam Web API, which needs a key and its Terms of Use). Signals only, never review text. Keep while it answers; moving to the Web API needs a key first.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
       "max_items": 20,
@@ -792,7 +792,7 @@
       "homepage_url": "https://www.dealnews.com/",
       "endpoints": ["https://www.dealnews.com/?rss=1"],
       "robots_note": "robots.txt checked 2026-09-22: Crawl-delay 2 (honoured); the feed URL is not disallowed.",
-      "terms_note": "Copyright DealNews, all rights reserved (feed <copyright>). Headlines, prices exactly as stated and links only; a price is an observation at retrieval time, never a current price. Verify terms before enabling.",
+      "terms_note": "Verified 2026-10-07: DealNews permits public use of its feeds with attribution, without adding or removing content and without modifying links or referral codes, never in a browser extension (dealnews.com/pages/rss.html). OpenVibe.Deals keeps this source's links verbatim, shows Deal via DealNews on card, page and feeds, and never serves its offers to a browser extension (Deals#11, server/domain/source-policy.js). Reviewed 2026-10-23 (plan F3): keep as noted; DealNews' terms forbid use in a public browser extension, so OpenVibe.Coupons leaves DealNews items out of the Companion's answers (Coupons#80).",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
       "max_items": 100,
@@ -806,7 +806,7 @@
       "name": "Coupon codes published by merchants, entered by staff",
       "type": "manual",
       "category": "coupons",
-      "terms_note": "Only codes a merchant published itself, entered with the URL of that page as evidence. Validity and expiry stay unknown unless the merchant states them; no code is 'working' because it was entered.",
+      "terms_note": "Only codes a merchant published itself, entered with the URL of that page as evidence. Validity and expiry stay unknown unless the merchant states them; no code is 'working' because it was entered. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "enabled": false,
       "review_required": true,
       "sensitivity": "none",
@@ -820,7 +820,7 @@
       "homepage_url": "https://www.sec.gov/structureddata/rss-feeds",
       "endpoints": ["https://www.sec.gov/Archives/edgar/xbrlrss.all.xml"],
       "robots_note": "robots.txt checked 2026-09-22: /Archives/edgar is allowed; /cgi-bin is disallowed, so the EDGAR 'getcurrent' Atom feed is deliberately not used.",
-      "terms_note": "Public EDGAR data. SEC fair-access policy: a User-Agent that names the requester and a contact (ours does) and at most 10 requests per second. Informational context only — no advice, no execution.",
+      "terms_note": "Verified 2026-10-07: public EDGAR data under the SEC fair-access policy (a User-Agent naming the requester and a contact; at most 10 requests per second; ours is far below). Informational context only - no advice, no execution. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "min_interval_ms": 10000,
       "poll_interval_sec": 900,
       "max_items": 200,
@@ -855,7 +855,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-15: https://www.sec.gov/robots.txt does not disallow /files/; this is SEC's own published mapping of tickers to CIKs, linked from 'Accessing EDGAR Data'.",
-      "terms_note": "Public EDGAR data. SEC fair-access policy: a User-Agent that names the requester and a contact (ours does) and at most 10 requests per second; this is one request a day. Each row [cik, name, ticker, exchange] becomes one instrument item: the company's name, ticker, exchange and CIK as SEC lists them. Informational only: no advice, no execution (ADR-025). Needs SOURCES_MAX_ITEMS_PER_FETCH of at least 11000 (about 10,450 rows in October 2026).",
+      "terms_note": "Public EDGAR data. SEC fair-access policy: a User-Agent that names the requester and a contact (ours does) and at most 10 requests per second; this is one request a day. Each row [cik, name, ticker, exchange] becomes one instrument item: the company's name, ticker, exchange and CIK as SEC lists them. Informational only: no advice, no execution (ADR-025). Needs SOURCES_MAX_ITEMS_PER_FETCH of at least 11000 (about 10,450 rows in October 2026). Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US government work: public domain (17 U.S.C. 105). Cite 'U.S. Securities and Exchange Commission'.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -874,7 +874,7 @@
       "homepage_url": "https://www.gov.uk/",
       "endpoints": ["https://www.gov.uk/search/news-and-communications.atom"],
       "robots_note": "robots.txt checked 2026-10-10: User-agent * disallows /*/print$ and /search/all*; the .atom feed at /search/news-and-communications.atom matches neither, so it is allowed. No crawl-delay for *.",
-      "terms_note": "Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/): copy, publish, distribute and exploit commercially, with acknowledgement and, where possible, a link to the licence. Credit the provider's attribution statement where given, otherwise the fallback 'Contains public sector information licensed under the Open Government Licence v3.0.' No implied official status or endorsement. Store titles, links and short summaries only; never full text or images; drop items marked 'except where otherwise stated' (third-party rights, logos, personal data). Re-verify before enabling.",
+      "terms_note": "Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/): copy, publish, distribute and exploit commercially, with acknowledgement and, where possible, a link to the licence. Credit the provider's attribution statement where given, otherwise the fallback 'Contains public sector information licensed under the Open Government Licence v3.0.' No implied official status or endorsement. Store titles, links and short summaries only; never full text or images; drop items marked 'except where otherwise stated' (third-party rights, logos, personal data). Re-verify before enabling. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "Contains public sector information licensed under the Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -892,7 +892,7 @@
       "homepage_url": "https://ec.europa.eu/commission/presscorner/",
       "endpoints": ["https://ec.europa.eu/commission/presscorner/api/rss?language=en"],
       "robots_note": "robots.txt checked 2026-10-10: User-agent * lists many disallowed paths but none for /commission/presscorner/ or its /api/; the feed path is allowed. No crawl-delay.",
-      "terms_note": "Content owned by the EU is licensed under CC BY 4.0: reuse allowed with appropriate credit and an indication of changes; per-item notices ('unless otherwise indicated') override. Credit 'European Commission' and link the licence (https://creativecommons.org/licenses/by/4.0/). EU logos and names are excluded from the reuse policy. Store titles, links and short summaries only; never full text or images; drop third-party-credited items. Re-verify before enabling.",
+      "terms_note": "Content owned by the EU is licensed under CC BY 4.0: reuse allowed with appropriate credit and an indication of changes; per-item notices ('unless otherwise indicated') override. Credit 'European Commission' and link the licence (https://creativecommons.org/licenses/by/4.0/). EU logos and names are excluded from the reuse policy. Store titles, links and short summaries only; never full text or images; drop third-party-credited items. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/. EU logos excluded.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -930,7 +930,7 @@
         "https://www.nist.gov/news-events/news/rss.xml"
       ],
       "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: User-agent * disallows only Drupal's /core/ and /profiles/ folders, a few README and composer files and search/user paths; /news-events/news/rss.xml is allowed. No crawl-delay. The feed answered 200 application/rss+xml with 40 items. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "NIST's Copyrights & Disclaimers page (https://www.nist.gov/oism/copyrights, read 2026-10-22): 'With the exception of material marked as copyrighted, information presented on NIST sites are considered public information and may be distributed or copied.' Store titles, links and the feed's short descriptions only; never full text or images; credit NIST and link each item back to nist.gov. No implied endorsement by NIST or the US Government.",
+      "terms_note": "NIST's Copyrights & Disclaimers page (https://www.nist.gov/oism/copyrights, read 2026-10-22): 'With the exception of material marked as copyrighted, information presented on NIST sites are considered public information and may be distributed or copied.' Store titles, links and the feed's short descriptions only; never full text or images; credit NIST and link each item back to nist.gov. No implied endorsement by NIST or the US Government. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US government work (17 U.S.C. 105): public information per NIST's copyright notice, except material marked as copyrighted; credit NIST.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -950,7 +950,7 @@
         "https://tools.cdc.gov/api/v2/resources/media/132608.rss"
       ],
       "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: tools.cdc.gov's User-agent * group disallows only FrontPage folders (/_borders, /_vti_*, …) and TemplatePackage examples; /api/v2/resources/media/ is allowed (Disallow: / applies only to named scrapers such as Roverbot). No crawl-delay. The feed (CDC's own syndication API) answered 200 text/xml; it is large (about 1.4 MB, the whole newsroom), so max_items keeps the newest 50.",
-      "terms_note": "CDC's Use of Agency Materials page (https://www.cdc.gov/other/agencymaterials.html, read 2026-10-22): 'Most of the information on the CDC and ATSDR websites is not subject to copyright, is in the public domain, and may be freely used or reproduced without obtaining copyright permission', with attribution to the agency required and no implied endorsement. Store titles, links and the feed's short descriptions only; never full text or images; credit CDC and link each item back to cdc.gov.",
+      "terms_note": "CDC's Use of Agency Materials page (https://www.cdc.gov/other/agencymaterials.html, read 2026-10-22): 'Most of the information on the CDC and ATSDR websites is not subject to copyright, is in the public domain, and may be freely used or reproduced without obtaining copyright permission', with attribution to the agency required and no implied endorsement. Store titles, links and the feed's short descriptions only; never full text or images; credit CDC and link each item back to cdc.gov. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US government work: public domain (17 U.S.C. 105) for CDC's own text; attribution to CDC required; no endorsement implied.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -983,7 +983,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-10: https://frankfurter.dev/robots.txt and https://api.frankfurter.dev/robots.txt both say User-agent * Allow /; the /v2/rates path is allowed. No crawl-delay.",
-      "terms_note": "Frankfurter is MIT-licensed software, free for commercial use, with no API key and no quota (only anti-abuse rate limiting). The rates themselves fall under each provider's terms, so attribute the contributing provider (ECB, TCMB, ...) and link https://frankfurter.dev/ and the provider's terms; for ECB-sourced rates cite 'European Central Bank'. The legacy object endpoint https://api.frankfurter.app/latest cannot be mapped by the api adapter (it requires an array at items_path), so the array endpoint https://api.frankfurter.dev/v2/rates is used and each row (date, base, quote, rate) becomes one item. Rates are informational observations only, never advice (ADR-025). Re-verify before enabling.",
+      "terms_note": "Frankfurter is MIT-licensed software, free for commercial use, with no API key and no quota (only anti-abuse rate limiting). The rates themselves fall under each provider's terms, so attribute the contributing provider (ECB, TCMB, ...) and link https://frankfurter.dev/ and the provider's terms; for ECB-sourced rates cite 'European Central Bank'. The legacy object endpoint https://api.frankfurter.app/latest cannot be mapped by the api adapter (it requires an array at items_path), so the array endpoint https://api.frankfurter.dev/v2/rates is used and each row (date, base, quote, rate) becomes one item. Rates are informational observations only, never advice (ADR-025). Re-verify before enabling. Reviewed 2026-10-23 (plan F3): verified as noted (MIT software; ECB-sourced rates cited to the European Central Bank). Keep.",
       "license_note": "Frankfurter software: MIT. Underlying rates: per provider (ECB reference rates reusable with attribution); see https://frankfurter.dev/license/.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1001,7 +1001,7 @@
       "homepage_url": "https://www.ecb.europa.eu/stats/eurofxref/",
       "endpoints": ["https://www.ecb.europa.eu/rss/fxref-usd.html"],
       "robots_note": "robots.txt checked 2026-10-10: User-agent * with Crawl-delay 5 (honoured; min_interval_ms is well above it) and disallows only *_content.<lang>.html and a few video/data paths; the /rss/fxref-usd.html feed path is not disallowed.",
-      "terms_note": "ECB statistics may be used freely and must be reproduced accurately with the ECB cited as the source; where incorporated into a sold product, buyers must be told the information is available free of charge from the ECB website. Cite 'European Central Bank' and link https://www.ecb.europa.eu/services/disclaimer/html/index.en.html; no framing or logos. Store published rates as retrieved observations only — informational, never advice (ADR-025). Re-verify before enabling.",
+      "terms_note": "ECB statistics may be used freely and must be reproduced accurately with the ECB cited as the source; where incorporated into a sold product, buyers must be told the information is available free of charge from the ECB website. Cite 'European Central Bank' and link https://www.ecb.europa.eu/services/disclaimer/html/index.en.html; no framing or logos. Store published rates as retrieved observations only — informational, never advice (ADR-025). Re-verify before enabling. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "ECB copyright and disclaimer: free use with citation; see https://www.ecb.europa.eu/services/disclaimer/html/index.en.html.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1077,7 +1077,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-11: https://api.linode.com/robots.txt answers 301 to https://api.linode.com/v4/, which answers 404 (a JSON 'Not found'), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow), so /v4/linode/types is allowed. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Akamai's Linode API documentation says 'Some of this API's operations are publicly accessible and don't require authentication'; /v4/linode/types answered with type data to our keyless fetcher. https://www.linode.com/legal-tos/ answers 404 and https://www.linode.com/legal redirects to https://www.akamai.com/legal, where the governing documents are Akamai's Acceptable Use Policy and the Akamai Cloud (Linode) Master Services Agreement; none of those pages states a right to, or a clear ban on, republishing plan or price data (the AUP forbids using the network to build a competitive service and IP infringement), so a person must read them before enabling. Attribute Akamai/Linode by linking https://www.linode.com/pricing/; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Re-verify before enabling.",
+      "terms_note": "Akamai's Linode API documentation says 'Some of this API's operations are publicly accessible and don't require authentication'; /v4/linode/types answered with type data to our keyless fetcher. https://www.linode.com/legal-tos/ answers 404 and https://www.linode.com/legal redirects to https://www.akamai.com/legal, where the governing documents are Akamai's Acceptable Use Policy and the Akamai Cloud (Linode) Master Services Agreement; none of those pages states a right to, or a clear ban on, republishing plan or price data (the AUP forbids using the network to build a competitive service and IP infringement), so a person must read them before enabling. Attribute Akamai/Linode by linking https://www.linode.com/pricing/; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): read. Akamai's Acceptable Use Policy (2026) binds Akamai customers and their users; its one relevant clause bars using Akamai's network or services to develop or inform a competitive product. A price comparison that reads one public, keyless endpoint a day is not that, and only facts are kept (plan specifications and prices), attributed and dated. Keep.",
       "license_note": "Plan specifications and prices are Akamai/Linode's data (https://www.linode.com/pricing/); the terms hub is https://www.akamai.com/legal. No licence to republish them was found. Attribute Akamai/Linode and link the pricing page; no endorsement implied.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1122,7 +1122,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-12: https://pricing.us-east-1.amazonaws.com/robots.txt answers 404 (an S3 NoSuchKey error), so the price list host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
-      "terms_note": "This is the AWS Price List bulk API, AWS's documented keyless way to read its prices by program. Every file carries its own disclaimer: 'This pricing list is for informational purposes only. All prices are subject to the additional terms included in the pricing pages on http://aws.amazon.com.' Show each price as an observation 'checked on <date>' with a link to https://aws.amazon.com/lightsail/pricing/, never as a quote, and imply no endorsement. One file (about 230 KB) a day. Re-verify before enabling.",
+      "terms_note": "This is the AWS Price List bulk API, AWS's documented keyless way to read its prices by program. Every file carries its own disclaimer: 'This pricing list is for informational purposes only. All prices are subject to the additional terms included in the pricing pages on http://aws.amazon.com.' Show each price as an observation 'checked on <date>' with a link to https://aws.amazon.com/lightsail/pricing/, never as a quote, and imply no endorsement. One file (about 230 KB) a day. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): verified as noted: the Price List bulk API is AWS's documented keyless way to read prices, with its informational disclaimer shown. Keep.",
       "license_note": "Prices and bundle specifications are Amazon Web Services' data. No licence to republish them was found beyond the informational disclaimer above. Attribute AWS and link the Lightsail pricing page.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1170,7 +1170,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-15: https://api.us.ovhcloud.com/robots.txt answers 404 (nginx), and api.ovh.com/robots.txt redirects to https://api.eu.ovhcloud.com/robots.txt, also 404, so the API hosts publish no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run. (us.ovhcloud.com, the marketing site, is a different host and is not fetched.)",
-      "terms_note": "OVHcloud's own API schema (https://api.us.ovhcloud.com/1.0/order.json) marks GET /order/catalog/public/vps 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve VPS catalog'): the public catalog is meant to be read without an account, and it answered our keyless fetcher. OVHcloud's general terms (https://us.ovhcloud.com/legal/) govern its services; no page found states a right to, or a ban on, republishing catalog prices, so a person reads them before enabling. One file (about 12 MB, mostly operating-system options) a day. Prices are the catalog's integers in hundred-millionths of the currency (535000000 is $5.35); show each as an observation 'checked on <date>' with a link to https://us.ovhcloud.com/vps/, never a quote, and imply no endorsement. Only the current plan codes (vps-<year>-model<n>, US datacenters) are kept: the -eu/-ca region copies, local-zone (.LZ) plans, commitment discounts and legacy upgrade codes are filtered out. Re-verify before enabling.",
+      "terms_note": "OVHcloud's own API schema (https://api.us.ovhcloud.com/1.0/order.json) marks GET /order/catalog/public/vps 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve VPS catalog'): the public catalog is meant to be read without an account, and it answered our keyless fetcher. OVHcloud's general terms (https://us.ovhcloud.com/legal/) govern its services; no page found states a right to, or a ban on, republishing catalog prices, so a person reads them before enabling. One file (about 12 MB, mostly operating-system options) a day. Prices are the catalog's integers in hundred-millionths of the currency (535000000 is $5.35); show each as an observation 'checked on <date>' with a link to https://us.ovhcloud.com/vps/, never a quote, and imply no endorsement. Only the current plan codes (vps-<year>-model<n>, US datacenters) are kept: the -eu/-ca region copies, local-zone (.LZ) plans, commitment discounts and legacy upgrade codes are filtered out. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): OVHcloud publishes no API terms; its website terms (ovhcloud.com/en/terms-and-conditions) forbid reproducing the site or its components without consent. Only facts are kept (plan codes, plan names, specifications, prices, currency), never OVHcloud's text or images, each linked to OVHcloud's page as a dated observation. Keep; disable on any request from OVHcloud.",
       "license_note": "Plan specifications and prices are OVHcloud's data (https://us.ovhcloud.com/vps/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link the VPS page; no endorsement implied.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1197,7 +1197,7 @@
         "extra": { "registration": "registration", "renewal": "renewal", "transfer": "transfer", "special_type": "specialType" }
       }],
       "robots_note": "robots.txt checked 2026-10-16: https://api.porkbun.com/robots.txt answers 404 (openresty), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). porkbun.com's own robots.txt disallows /api/* on porkbun.com, a different host that is not fetched. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Porkbun's API v3 documentation (https://porkbun.com/llms/pricing, https://porkbun.com/api/json/v3/documentation) names GET /api/json/v3/pricing/get 'Retrieve domain pricing (public)' and says it 'does not require authentication'; prices are in US dollars. The legal hub (https://porkbun.com/legal) lists no API agreement, and the Product Terms of Service (https://porkbun.com/legal/agreement/product_terms_of_service) has no clause on automated access, API use or republishing prices (read 2026-10-16). One request a day. Attribute Porkbun by linking https://porkbun.com/products/domains; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Handshake names (specialType 'handshake') are not ICANN TLDs; OpenVibe.Host leaves them out.",
+      "terms_note": "Porkbun's API v3 documentation (https://porkbun.com/llms/pricing, https://porkbun.com/api/json/v3/documentation) names GET /api/json/v3/pricing/get 'Retrieve domain pricing (public)' and says it 'does not require authentication'; prices are in US dollars. The legal hub (https://porkbun.com/legal) lists no API agreement, and the Product Terms of Service (https://porkbun.com/legal/agreement/product_terms_of_service) has no clause on automated access, API use or republishing prices (read 2026-10-16). One request a day. Attribute Porkbun by linking https://porkbun.com/products/domains; show each price as an observation 'checked on <date>', never a current price, and imply no endorsement. Handshake names (specialType 'handshake') are not ICANN TLDs; OpenVibe.Host leaves them out. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "Domain prices are Porkbun's data (https://porkbun.com/products/domains). No licence to republish them was found; attribute Porkbun and link the price list; no endorsement implied.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1229,7 +1229,7 @@
         }
       }],
       "robots_note": "robots.txt checked 2026-10-22 from the production host: https://api.ca.ovhcloud.com/robots.txt answers 404 (nginx), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). ca.api.ovh.com/robots.txt redirects there. The fetcher re-checks robots.txt on every run. (www.ovhcloud.com, the store, is a different host and is not fetched.)",
-      "terms_note": "OVHcloud's own API schema (https://api.ca.ovhcloud.com/1.0/order.json, read 2026-10-22) marks GET /order/catalog/public/domain 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve domain catalog'): the public catalog is meant to be read without an account, as the VPS catalog OpenVibe.Host already reads (ovhcloud-vps) is. The WE subsidiary is OVHcloud's international English store, priced in US dollars with no tax; api.us.ovhcloud.com does not sell domains ('product not found'). The terms page (https://www.ovhcloud.com/en/terms-and-conditions/contracts/) lists the service contracts; none found states a right to, or a ban on, republishing catalog prices, the same finding as ovhcloud-vps. One file a day of about 30 MB (950 endings with every price variant). Prices are the catalog's integers in hundred-millionths of a dollar (920000000 is $9.20): create-default phase 0 is the first year, phase 1 the renewal, transfer-default phase 0 the transfer; premium and aftermarket modes are not read. A first-year price of 0 (an ending sold only with conditions) or the 999999 sentinel means not sold that way, and OpenVibe.Host leaves those out. Show each price as an observation 'checked on <date>' with a link to https://www.ovhcloud.com/en/domains/tld/, never a quote, and imply no endorsement.",
+      "terms_note": "OVHcloud's own API schema (https://api.ca.ovhcloud.com/1.0/order.json, read 2026-10-22) marks GET /order/catalog/public/domain 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve domain catalog'): the public catalog is meant to be read without an account, as the VPS catalog OpenVibe.Host already reads (ovhcloud-vps) is. The WE subsidiary is OVHcloud's international English store, priced in US dollars with no tax; api.us.ovhcloud.com does not sell domains ('product not found'). The terms page (https://www.ovhcloud.com/en/terms-and-conditions/contracts/) lists the service contracts; none found states a right to, or a ban on, republishing catalog prices, the same finding as ovhcloud-vps. One file a day of about 30 MB (950 endings with every price variant). Prices are the catalog's integers in hundred-millionths of a dollar (920000000 is $9.20): create-default phase 0 is the first year, phase 1 the renewal, transfer-default phase 0 the transfer; premium and aftermarket modes are not read. A first-year price of 0 (an ending sold only with conditions) or the 999999 sentinel means not sold that way, and OpenVibe.Host leaves those out. Show each price as an observation 'checked on <date>' with a link to https://www.ovhcloud.com/en/domains/tld/, never a quote, and imply no endorsement. Reviewed 2026-10-23 (plan F3): OVHcloud publishes no API terms; its website terms (ovhcloud.com/en/terms-and-conditions) forbid reproducing the site or its components without consent. Only facts are kept (plan codes, plan names, specifications, prices, currency), never OVHcloud's text or images, each linked to OVHcloud's page as a dated observation. Keep; disable on any request from OVHcloud.",
       "license_note": "Domain prices are OVHcloud's data (https://www.ovhcloud.com/en/domains/tld/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link its domain price page; no endorsement implied.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1283,7 +1283,7 @@
       "homepage_url": "https://lowendspirit.com/categories/offers",
       "endpoints": ["https://lowendspirit.com/categories/offers/feed.rss"],
       "robots_note": "robots.txt checked 2026-10-18: User-agent * Allow / with only /dashboard/* disallowed, so /categories/offers/feed.rss is allowed. The feed answers 200 to the production host. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "The feed is LowEndSpirit's own RSS of its Offers board, where hosting providers post their offers (the poster is the provider's account). The forum publishes rules (https://lowendspirit.com/page/rules, read 2026-10-18) for posting and provider tags, with nothing on automated reading, feeds or reposting, and no separate terms page (/page/terms, /terms and /page/tos answer 404). OpenVibe.Host shows only each post's headline, poster, date and link, plus the price the headline (or the post's opening) states, and links every offer to its post; no post text is republished.",
+      "terms_note": "The feed is LowEndSpirit's own RSS of its Offers board, where hosting providers post their offers (the poster is the provider's account). The forum publishes rules (https://lowendspirit.com/page/rules, read 2026-10-18) for posting and provider tags, with nothing on automated reading, feeds or reposting, and no separate terms page (/page/terms, /terms and /page/tos answer 404). OpenVibe.Host shows only each post's headline, poster, date and link, plus the price the headline (or the post's opening) states, and links every offer to its post; no post text is republished. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "Posts are their authors' (hosting providers'); LowEndSpirit hosts them. Headlines and links only, attributed to LowEndSpirit and the poster.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -1327,7 +1327,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-09-22: Crawl-delay 2 (honoured); the feed URL is not disallowed.",
-      "terms_note": "The same feed and terms as dealnews-daily (Copyright DealNews, all rights reserved). Only items whose text states a coupon code and the shop are kept, as kind coupon with the code, the shop's name and the stated end date exactly as written, plus the headline and link; never a claim that a code works. Verify terms before enabling.",
+      "terms_note": "The same feed and terms as dealnews-daily (Copyright DealNews, all rights reserved). Only items whose text states a coupon code and the shop are kept, as kind coupon with the code, the shop's name and the stated end date exactly as written, plus the headline and link; never a claim that a code works. Verify terms before enabling. Reviewed 2026-10-23 (plan F3): keep as noted; DealNews' terms forbid use in a public browser extension, so OpenVibe.Coupons leaves DealNews items out of the Companion's answers (Coupons#80).",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
       "max_items": 100,
@@ -1344,7 +1344,7 @@
       "homepage_url": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts",
       "endpoints": ["https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/food-safety-recalls/rss.xml"],
       "robots_note": "robots.txt checked 2026-10-15: User-agent * disallows only /health (plus the /core/ and /profiles/ asset folders) and asks Crawl-Delay 30; /about-fda/contact-fda/stay-informed/rss-feeds/ is allowed. One request an hour is far inside the delay. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "FDA's own RSS feed of the recall, market withdrawal and safety alert notices companies post through FDA ('Food Safety Recalls' on FDA's Stay Informed page). Store titles, links and the feed's short descriptions; link each notice back to fda.gov. FDA posts company announcements as a public service and does not endorse the product or the company. OpenVibe.Blog's Food desk summarises the notices with citations and tells readers to read the notice itself.",
+      "terms_note": "FDA's own RSS feed of the recall, market withdrawal and safety alert notices companies post through FDA ('Food Safety Recalls' on FDA's Stay Informed page). Store titles, links and the feed's short descriptions; link each notice back to fda.gov. FDA posts company announcements as a public service and does not endorse the product or the company. OpenVibe.Blog's Food desk summarises the notices with citations and tells readers to read the notice itself. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US government work: public domain (17 U.S.C. 105) for FDA's own text; the notices are the companies' press releases, kept only as titles and short descriptions with a link.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -1365,7 +1365,7 @@
         "https://www.federalreserve.gov/feeds/press_all.xml"
       ],
       "robots_note": "robots.txt checked 2026-10-22 from the production host with Sources' User-Agent: https://www.federalreserve.gov/robots.txt answers 404, so there are no crawl rules; the Board publishes this feed on its RSS feeds page for subscribers. The feed answered 200 text/xml with 20 items. One request an hour. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "The Board's website disclaimer (https://www.federalreserve.gov/disclaimer.htm, read 2026-10-22): 'Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission.' Material marked as a non-Board source's needs that source's permission. Store titles, links and the feed's short descriptions only; never full text or images; credit the Federal Reserve Board and link each release back to federalreserve.gov.",
+      "terms_note": "The Board's website disclaimer (https://www.federalreserve.gov/disclaimer.htm, read 2026-10-22): 'Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission.' Material marked as a non-Board source's needs that source's permission. Store titles, links and the feed's short descriptions only; never full text or images; credit the Federal Reserve Board and link each release back to federalreserve.gov. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US government work: public domain per the Board's website disclaimer, except material credited to non-Board sources; credit the Federal Reserve Board.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 3600,
@@ -1434,7 +1434,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-15: https://api.opencollective.com/robots.txt answers 404, so the API host publishes no robots rules (a 404 is treated as no restrictions, never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Open Collective's public GraphQL API v2 (documented at https://graphql-docs-v2.opencollective.com) answers anonymous reads of public accounts; a GET must carry Content-Type: application/json (its CSRF guard). Two requests every six hours: the 100 most active collectives, projects and funds and the 100 newest. Each becomes a campaign item: name, description, type, currency, the total received and yearly budget in cents, the number of contributors, logo URL, website and first tag, as Open Collective states them; the profile is https://opencollective.com/<slug>. Show amounts as observations with their fetch date, link each to its Open Collective page, and imply no endorsement.",
+      "terms_note": "Open Collective's public GraphQL API v2 (documented at https://graphql-docs-v2.opencollective.com) answers anonymous reads of public accounts; a GET must carry Content-Type: application/json (its CSRF guard). Two requests every six hours: the 200 most active collectives, projects and funds and the 100 newest. Each becomes a campaign item: name, description, type, currency, the total received and yearly budget in cents, the number of contributors, logo URL, website and first tag, as Open Collective states them; the profile is https://opencollective.com/<slug>. Show amounts as observations with their fetch date, link each to its Open Collective page, and imply no endorsement. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "Public account data published by Open Collective; the descriptions are the collectives' own words (short summaries only, linked back).",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
@@ -1461,7 +1461,7 @@
         "extra": { "company": "key", "complaints": "doc_count" }
       }],
       "robots_note": "robots.txt checked 2026-10-17: https://www.consumerfinance.gov/robots.txt does not disallow /data-research/consumer-complaints/search/api/.",
-      "terms_note": "The CFPB publishes the database for public use through this documented API (cfpb.github.io/api/ccdb/). One request a week (the counts move slowly; a daily poll would rewrite thousands of items a day). Each company bucket (the company's name and how many complaints the database holds about it, every year since 2011) becomes one complaint_tally item. Complaints are what consumers sent, not findings: the CFPB says it does not verify them, and Reviews shows that next to the number. Narratives are never read.",
+      "terms_note": "The CFPB publishes the database for public use through this documented API (cfpb.github.io/api/ccdb/). One request a week (the counts move slowly; a daily poll would rewrite thousands of items a day). Each company bucket (the company's name and how many complaints the database holds about it, every year since 2011) becomes one complaint_tally item. Complaints are what consumers sent, not findings: the CFPB says it does not verify them, and Reviews shows that next to the number. Narratives are never read. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "CC0 (the API's _meta.license). Cite 'Consumer Financial Protection Bureau, Consumer Complaint Database'.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 604800,
@@ -1493,7 +1493,7 @@
         }
       }],
       "robots_note": "robots.txt checked 2026-10-17: https://data.cityofnewyork.us/robots.txt does not disallow /resource/ (Crawl-delay 1; this is one request a poll).",
-      "terms_note": "NYC Open Data's SODA API, dataset 43nn-pn8j, published by the Department of Health and Mental Hygiene for public use under the NYC Open Data Terms of Use. Each row is one violation cited at one inspection (or an inspection with none), as the inspector recorded it that day; a letter grade is given only on some inspections. The newest 4,000 rows each poll; rows dated 1900-01-01 (not yet inspected) are left out.",
+      "terms_note": "NYC Open Data's SODA API, dataset 43nn-pn8j, published by the Department of Health and Mental Hygiene for public use under the NYC Open Data Terms of Use. Each row is one violation cited at one inspection (or an inspection with none), as the inspector recorded it that day; a letter grade is given only on some inspections. The newest 4,000 rows each poll; rows dated 1900-01-01 (not yet inspected) are left out. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "NYC Open Data Terms of Use: free to use. Cite 'NYC Department of Health and Mental Hygiene, via NYC Open Data'.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,
@@ -1520,7 +1520,7 @@
         "extra": { "buildingid": "buildingid", "boro": "boro", "housenumber": "housenumber", "streetname": "streetname", "zip": "zip", "open": "open", "c": "c", "b": "b", "a": "a", "last": "last" }
       }],
       "robots_note": "robots.txt checked 2026-10-17: https://data.cityofnewyork.us/robots.txt does not disallow /resource/ (Crawl-delay 1; this is one request a week).",
-      "terms_note": "NYC Open Data's SODA API, dataset wvxf-dwi5, published by the Department of Housing Preservation and Development for public use under the NYC Open Data Terms of Use. One aggregate query a week: for every building with 10 or more open class C (immediately hazardous) violations, how many violations HPD lists as open, by class (C immediately hazardous, B hazardous, A non-hazardous), and the latest inspection day. The 4,000 buildings with the most class C. Open means HPD has not recorded the violation as corrected; Reviews says so beside the numbers. NYC computes the aggregate in 12 to 60 seconds, hence the endpoint's own deadline.",
+      "terms_note": "NYC Open Data's SODA API, dataset wvxf-dwi5, published by the Department of Housing Preservation and Development for public use under the NYC Open Data Terms of Use. One aggregate query a week: for every building with 10 or more open class C (immediately hazardous) violations, how many violations HPD lists as open, by class (C immediately hazardous, B hazardous, A non-hazardous), and the latest inspection day. The 4,000 buildings with the most class C. Open means HPD has not recorded the violation as corrected; Reviews says so beside the numbers. NYC computes the aggregate in 12 to 60 seconds, hence the endpoint's own deadline. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "NYC Open Data Terms of Use: free to use. Cite 'NYC Department of Housing Preservation and Development, via NYC Open Data'.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 604800,
@@ -1552,7 +1552,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve. Reviewed 2026-10-23 (plan F3): keep as noted: a public store endpoint robots.txt allows, dated observations of name, price, discount and Steam's header image (loaded from Steam's CDN), every game linked to its store page.",
       "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 10800,
@@ -1584,7 +1584,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve. Reviewed 2026-10-23 (plan F3): keep as noted: a public store endpoint robots.txt allows, dated observations of name, price, discount and Steam's header image (loaded from Steam's CDN), every game linked to its store page.",
       "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 10800,
@@ -1616,7 +1616,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-18 (https://store.steampowered.com/robots.txt): User-agent * disallows /share/, /news/externalpost/, account and email paths, /login and /join with tokens, /account/ackgift/, /email/ and /widget/; /api/ is not disallowed, so /api/featuredcategories is allowed. It answers 200 to the production host without a key. The fetcher re-checks robots.txt on every run.",
-      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve.",
+      "terms_note": "Steam's storefront endpoint is public and unauthenticated (no key, unlike api.steampowered.com's Web API, whose robots.txt disallows everything and which is never fetched). It is read once every 3 hours (the same response for all three lists). OpenVibe.Games shows each game's name, price, discount and Steam's header image as observed at that time, labelled 'From the Steam store, checked <time>', and links every game to its store page; it sells nothing and implies no endorsement by Valve. Reviewed 2026-10-23 (plan F3): keep as noted: a public store endpoint robots.txt allows, dated observations of name, price, discount and Steam's header image (loaded from Steam's CDN), every game linked to its store page.",
       "license_note": "Game names, prices and images are Valve's and the publishers' (Steam store data). Shown as dated observations with a link to each game's Steam store page; no licence to republish was found, so only these fields are kept and the images are loaded from Steam's own CDN.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 10800,
@@ -1687,7 +1687,7 @@
         }
       ],
       "robots_note": "services.arcgis.com serves no robots.txt (checked 2026-10-22); the fetcher re-checks it on every run. HUD's own ArcGIS layer, the one OpenVibe.Rent queries by area today.",
-      "terms_note": "HUD publishes Fair Market Rents as open data (hudgis-hud.opendata.arcgis.com); a US federal work. The layer allows 1000 records a request, so three pages cover its 2,622 areas. FMRs change once a year (October): a weekly poll is plenty. Re-verify before enabling.",
+      "terms_note": "HUD publishes Fair Market Rents as open data (hudgis-hud.opendata.arcgis.com); a US federal work. The layer allows 1000 records a request, so three pages cover its 2,622 areas. FMRs change once a year (October): a weekly poll is plenty. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "US federal government work (public domain in the US).",
       "min_interval_ms": 60000,
       "poll_interval_sec": 604800,
@@ -1727,7 +1727,7 @@
         }
       ],
       "robots_note": "api.fda.gov serves no robots.txt (404, checked 2026-10-22); the fetcher re-checks it on every run.",
-      "terms_note": "openFDA terms (open.fda.gov/terms): data are public domain (CC0, open.fda.gov/license); do not imply FDA endorsement; results are unvalidated and not for medical decisions (shown with that note). Without a key: 240 requests a minute and 1,000 a day per address; one request a day is used. The structured twin of the fda-food-recalls feed, for OpenVibe.Food. Re-verify before enabling.",
+      "terms_note": "openFDA terms (open.fda.gov/terms): data are public domain (CC0, open.fda.gov/license); do not imply FDA endorsement; results are unvalidated and not for medical decisions (shown with that note). Without a key: 240 requests a minute and 1,000 a day per address; one request a day is used. The structured twin of the fda-food-recalls feed, for OpenVibe.Food. Re-verify before enabling. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": "CC0 1.0 (openFDA); US federal government work.",
       "min_interval_ms": 60000,
       "poll_interval_sec": 86400,
@@ -1800,7 +1800,7 @@
         }
       ],
       "robots_note": "robots.txt checked 2026-10-22: User-agent * with an empty Disallow (only ?__hstc tracking URLs excluded). The fetcher re-checks it on every run.",
-      "terms_note": "Arbeitnow publishes its job board API free of charge (the terms OpenVibe.Work records today): attribute Arbeitnow by name and link every listing to its page on arbeitnow.com. The first three pages are read, as Work read them. The description is kept only as a short plain-text excerpt (the summary, as Work shows it); every listing links to arbeitnow.com for the full text. A job the board stops listing is retired after a week. Work moves to this source from its own fetch.",
+      "terms_note": "Arbeitnow publishes its job board API free of charge (the terms OpenVibe.Work records today): attribute Arbeitnow by name and link every listing to its page on arbeitnow.com. The first three pages are read, as Work read them. The description is kept only as a short plain-text excerpt (the summary, as Work shows it); every listing links to arbeitnow.com for the full text. A job the board stops listing is retired after a week. Work moves to this source from its own fetch. Reviewed 2026-10-23 (plan F3): the note above is the decision; keep.",
       "license_note": null,
       "min_interval_ms": 60000,
       "poll_interval_sec": 21600,

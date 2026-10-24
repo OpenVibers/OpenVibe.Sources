@@ -13,7 +13,7 @@ const ADAPTERS = {
     atom: { parse: feed.parse, version: feed.PARSER_VERSION, accept: 'application/atom+xml, application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1' },
     sitemap: { parse: sitemap.parse, version: sitemap.PARSER_VERSION, accept: 'application/xml, text/xml;q=0.9, */*;q=0.1' },
     jsonld: { parse: jsonld.parse, version: jsonld.PARSER_VERSION, accept: 'text/html, application/xhtml+xml;q=0.9, */*;q=0.1' },
-    api: { parse: api.parse, version: api.PARSER_VERSION, accept: 'application/json, application/xml;q=0.9, */*;q=0.1' },
+    api: { parse: api.parse, version: api.PARSER_VERSION, accept: 'application/json, application/xml;q=0.9, text/tab-separated-values;q=0.9, text/plain;q=0.8, */*;q=0.1' },
 };
 
 const MANUAL_VERSION = 'manual@1';

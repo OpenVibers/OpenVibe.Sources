@@ -66,6 +66,16 @@
  * today's behaviour, and there the record's 0-based position in the array is the virtual path `$index` (a ranked
  * list's order, e.g. Steam's top sellers). A property whose value is not an object is skipped; a non-object
  * `items_path` is a parse error, never an empty success.
+ *
+ * `"format": "tsv"` reads a tab-separated file whose first line names the columns: each further line is one record,
+ * its values trimmed text keyed by those names, and the body is that array (so `items_path` is ""). The Bureau of
+ * Labor Statistics publishes its series this way (download.bls.gov/pub/time.series/…: series_id, year, period,
+ * value). A line with a different number of values than the header is skipped; a file without a header is a parse
+ * error.
+ *
+ * Two records with the same identity keep the first (`"duplicates": "first"`, the default). `"duplicates": "last"`
+ * keeps the last instead, in the first one's place: a file that lists each series oldest to newest then yields its
+ * newest value.
  */
 const { parseXml, toText, toIsoDate, epochSecondsToIso, canonicalUrl, toId, ParseError } = require('./util');
 
@@ -214,7 +224,9 @@ function keyPathViolation(p, shape) {
 
 /** Validate an endpoint mapping (registry side). Returns an error string or null. */
 function checkMapping(ep) {
-    if (!['json', 'xml'].includes(ep.format || 'json')) return 'format must be json or xml';
+    if (!['json', 'xml', 'tsv'].includes(ep.format || 'json')) return 'format must be json, xml or tsv';
+    if ((ep.format || 'json') === 'tsv' && ep.items_path) return 'a tsv body is the array itself: items_path is ""';
+    if (ep.duplicates !== undefined && !['first', 'last'].includes(ep.duplicates)) return 'duplicates must be first or last';
     const shape = ep.items_shape || 'array';
     if (!['array', 'map'].includes(shape)) return 'items_shape must be array or map';
     if (ep.items_path !== undefined && ep.items_path !== '' && !PATH_RE.test(ep.items_path)) return 'items_path is malformed';
@@ -267,10 +279,30 @@ function checkMapping(ep) {
     return null;
 }
 
+/** A tab-separated body as records keyed by its header line's names (values trimmed); malformed lines are counted. */
+function parseTsv(text) {
+    const lines = String(text).split(/\r?\n/).filter((l) => l.trim() !== '');
+    if (!lines.length) throw new ParseError('tsv body has no header line');
+    const names = lines[0].split('\t').map((s) => s.trim());
+    if (names.some((n) => !n) || new Set(names).size !== names.length) throw new ParseError('tsv header names must be present and distinct');
+    const records = [];
+    let bad = 0;
+    for (const line of lines.slice(1)) {
+        const values = line.split('\t');
+        if (values.length !== names.length) { bad++; continue; }
+        const rec = {};
+        names.forEach((n, i) => { rec[n] = values[i].trim(); });
+        records.push(rec);
+    }
+    return { records, bad };
+}
+
 function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } = {}) {
     const format = endpoint.format || 'json';
     let body;
+    let malformed = 0;
     if (format === 'xml') body = parseXml(text);
+    else if (format === 'tsv') ({ records: body, bad: malformed } = parseTsv(text));
     else {
         try { body = JSON.parse(text); } catch { throw new ParseError('body is not valid JSON'); }
     }
@@ -289,22 +321,24 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
     const where = endpoint.where && typeof endpoint.where === 'object' && !Array.isArray(endpoint.where) ? endpoint.where : {};
     const filterKeys = Object.keys(where);
     const items = [];
-    let skipped = 0;
+    let skipped = malformed;
     let filtered = 0;
-    const seen = new Set();
+    const seen = new Map();   // identity → its index in items
+    const keepLast = endpoint.duplicates === 'last';
     for (const { key, index, value: rec } of records) {
         if (!rec || typeof rec !== 'object' || (shape === 'map' && Array.isArray(rec))) { skipped++; continue; }
         if (filterKeys.length && !matchesWhere(body, rec, key, where)) { filtered++; continue; }
-        if (items.length >= maxItems) { skipped++; continue; }
         const get = (p) => (p === '$index' ? index : getField(body, rec, key, p));
         const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
         const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
-        if (!identity || seen.has(identity)) { skipped++; continue; }
-        seen.add(identity);
+        const again = identity && seen.has(identity);
+        if (!identity || (again && !keepLast)) { skipped++; continue; }
+        if (!again && items.length >= maxItems) { skipped++; continue; }
+        if (again) skipped++;   // the earlier record it replaces
         const extra = {};
         for (const [k, p] of Object.entries(endpoint.extra || {})) extra[k] = scalar(get(p));
         for (const [k, p] of Object.entries(endpoint.extra_lists || {})) extra[k] = scalars(get(p));
-        items.push({
+        const item = {
             identity: String(identity),
             kind: endpoint.item_kind || 'record',
             canonical_url: link,
@@ -314,7 +348,9 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
             published_at: f.published_at ? toIsoDate(scalar(get(f.published_at))) : f.published_at_epoch ? epochSecondsToIso(scalar(get(f.published_at_epoch))) : null,
             updated_at: f.updated_at ? toIsoDate(scalar(get(f.updated_at))) : f.updated_at_epoch ? epochSecondsToIso(scalar(get(f.updated_at_epoch))) : null,
             fields: extra,
-        });
+        };
+        if (again) items[seen.get(identity)] = item;
+        else { seen.set(identity, items.length); items.push(item); }
     }
     return { items, skipped, meta: { format, filtered } };
 }

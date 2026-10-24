@@ -1822,6 +1822,60 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "bls-average-prices",
+      "name": "BLS average retail food prices (US city average)",
+      "type": "api",
+      "category": "food",
+      "homepage_url": "https://www.bls.gov/cpi/factsheets/average-prices.htm",
+      "endpoints": [
+        {
+          "url": "https://download.bls.gov/pub/time.series/ap/ap.data.0.Current",
+          "format": "tsv",
+          "items_path": "",
+          "item_kind": "price",
+          "duplicates": "last",
+          "max_bytes": 16777216,
+          "timeout_ms": 60000,
+          "where": {
+            "series_id": [
+              "APU0000708111",
+              "APU0000FF1101",
+              "APU0000703112",
+              "APU0000702111",
+              "APU0000701312",
+              "APU0000701322",
+              "APU0000714233",
+              "APU0000711211",
+              "APU0000711311",
+              "APU0000711415",
+              "APU0000712112",
+              "APU0000709112",
+              "APU0000710212"
+            ]
+          },
+          "fields": {
+            "identity": "series_id",
+            "title": "series_id"
+          },
+          "extra": {
+            "value": "value",
+            "year": "year",
+            "period": "period"
+          }
+        }
+      ],
+      "robots_note": "download.bls.gov serves no robots.txt (404, checked 2026-10-23); the fetcher re-checks it on every run. api.bls.gov disallows every path in its robots.txt, so the API is not used: this is BLS's published flat file of the Average Price series (ap.data.0.Current, about 9 MB, every series oldest to newest). One request a day.",
+      "terms_note": "BLS data are US federal works in the public domain; BLS asks that it be cited as the source and notes that it cannot vouch for data or analyses after they leave BLS.gov (bls.gov/bls/linksite.htm). Food shows each price as 'US city average, BLS' with its month and that note. Kept: the 13 US city average (area 0000) series that match items on OpenVibe.Food's food list (series_id: APU0000708111 Eggs, grade A, large, per dozen, APU0000FF1101 Chicken breast, boneless, per lb, APU0000703112 Ground beef, 100% beef, per lb, APU0000702111 Bread, white, pan, per lb, APU0000701312 Rice, white, long grain, uncooked, per lb, APU0000701322 Spaghetti and macaroni, per lb, APU0000714233 Beans, dried, any type, per lb, APU0000711211 Bananas, per lb, APU0000711311 Oranges, Navel, per lb, APU0000711415 Strawberries, dry pint, per 12 oz, APU0000712112 Potatoes, white, per lb, APU0000709112 Milk, fresh, whole, fortified, per gallon, APU0000710212 Cheddar cheese, natural, per lb), each series' newest month. Monthly data: a daily poll is plenty. Re-verify before enabling.",
+      "license_note": "US federal government work (public domain in the US), BLS cited as the source.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 50,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

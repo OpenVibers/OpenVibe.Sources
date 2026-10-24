@@ -30,6 +30,17 @@ t('every seed validates, is disabled, and keys only https endpoints', () => {
     }
 });
 
+t('the registry keeps every endpoint field a seed sets (it dropped duplicates: last, 2026-10-24)', () => {
+    // bls-average-prices was created without "duplicates": "last", so every BLS series kept its 1995 price.
+    for (const s of seeds) {
+        const rec = validateSource(s);
+        (s.endpoints || []).forEach((ep, i) => {
+            if (!ep || typeof ep !== 'object') return;
+            for (const k of Object.keys(ep)) assert.deepStrictEqual(rec.endpoints[i][k], ep[k], `${s.key} endpoints[${i}].${k} was dropped or changed by the registry`);
+        });
+    }
+});
+
 t('every seed creates through the registry and stays disabled', async () => {
     const fresh = await require('./db').testDb();
     try {

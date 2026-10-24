@@ -168,6 +168,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
             search_visibility = @search_visibility, retire_after_sec = @retire_after_sec, updated_at = @updated_at, updated_by = @updated_by WHERE key = @key`),
         del: db.prepare('DELETE FROM sources WHERE key = ?'),
         itemCount: db.prepare('SELECT COUNT(*) AS n FROM items WHERE source_key = ?'),
+        resetValidators: db.prepare('DELETE FROM endpoint_state WHERE source_key = ?'),
     };
 
     function toRow(rec, by) {
@@ -241,7 +242,11 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         }
         const merged = { ...fromRow(row), ...(changes || {}), key };
         const rec = validateSource(merged, { maxItemsCap });
-        await st.update.run({ ...toRow(rec, by) });
+        const next = toRow(rec, by);
+        await st.update.run({ ...next });
+        // New endpoint settings must reach the next fetch: the stored ETag/Last-Modified would make it a 304 that parses
+        // nothing until the upstream file changes (bls-average-prices' duplicates: last waited on BLS's monthly file).
+        if (next.endpoints !== row.endpoints) await st.resetValidators.run(key);
         return await st.get.get(key);
     }
 

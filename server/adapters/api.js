@@ -13,6 +13,10 @@
  * the array. `extra` values are copied as the API gave them (scalars only, strings capped):
  * a missing field is null, never a default. A record without an identity is skipped.
  *
+ * `extra_lists` maps a field to a list the API gives (tags, job types): an array of scalars is kept
+ * as up to 20 of them (a lone scalar is a list of one, a missing one an empty list). It is separate
+ * from `extra` so a mapping that points `extra` at an array keeps reading null, as it always did.
+ *
  * A path segment `*` steps into the single child of an object: when the current value is a
  * non-array object with exactly one own property it steps into that property, and otherwise the
  * path resolves to undefined (so the field is null). It may appear anywhere in a path.
@@ -144,6 +148,18 @@ function at(obj, path) {
     return walk(obj, path, undefined);
 }
 
+/** A list the API gives → up to 20 of its scalars (a lone scalar → a list of one; nothing → []). */
+function scalars(v) {
+    const all = Array.isArray(v) ? v : v == null ? [] : [v];
+    const out = [];
+    for (const x of all) {
+        const s = scalar(x);
+        if (s != null && s !== '') out.push(s);
+        if (out.length >= 20) break;
+    }
+    return out;
+}
+
 function scalar(v) {
     if (v == null) return null;
     if (typeof v === 'number' || typeof v === 'boolean') return Number.isFinite(v) || typeof v === 'boolean' ? v : null;
@@ -217,6 +233,15 @@ function checkMapping(ep) {
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `extra.${k}: ${kerr}`;
     }
+    const lists = ep.extra_lists == null ? {} : ep.extra_lists;
+    if (typeof lists !== 'object' || Array.isArray(lists)) return 'extra_lists must be an object of field -> path';
+    if (Object.keys(lists).length > 10) return 'at most 10 extra_lists fields';
+    for (const [k, p] of Object.entries(lists)) {
+        if (!/^[a-z][a-z0-9_]{0,39}$/.test(k) || typeof p !== 'string' || !PATH_RE.test(p)) return `extra_lists.${k} is malformed`;
+        if (Object.prototype.hasOwnProperty.call(extra, k)) return `extra_lists.${k} is also an extra field`;
+        const kerr = keyPathViolation(p, shape);
+        if (kerr) return `extra_lists.${k}: ${kerr}`;
+    }
     const where = ep.where == null ? {} : ep.where;
     if (typeof where !== 'object' || Array.isArray(where)) return 'where must be an object of path -> expected';
     if (Object.keys(where).length > 10) return 'at most 10 where conditions';
@@ -278,6 +303,7 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
         seen.add(identity);
         const extra = {};
         for (const [k, p] of Object.entries(endpoint.extra || {})) extra[k] = scalar(get(p));
+        for (const [k, p] of Object.entries(endpoint.extra_lists || {})) extra[k] = scalars(get(p));
         items.push({
             identity: String(identity),
             kind: endpoint.item_kind || 'record',

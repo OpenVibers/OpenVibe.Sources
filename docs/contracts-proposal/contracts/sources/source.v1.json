@@ -82,8 +82,17 @@
           "format": {
             "enum": [
               "json",
-              "xml"
-            ]
+              "xml",
+              "tsv"
+            ],
+            "description": "json (default), xml, or tsv: a tab-separated file whose first line names the columns, read as an array of records keyed by those names (items_path is \"\"; BLS series files, Sources 2026-10-24)."
+          },
+          "duplicates": {
+            "enum": [
+              "first",
+              "last"
+            ],
+            "description": "Two records with the same identity: first (default) keeps the first, last keeps the last in the first one's place (a file listing each series oldest to newest then yields its newest value; Sources, 2026-10-24)."
           },
           "items_path": {
             "type": "string"
@@ -169,6 +178,14 @@
               "type": "string"
             },
             "description": "Extra fields copied as the API gave them (scalars). A path is relative to the record; $key is the map key; $root.<path> reads the response from its root, where a {$key} segment is the record's map key; * steps into an object's single child; key[field=value,...] (one to four conditions) steps into the first element of the array key whose fields equal the values, compared as text, where a value is literal text or $rec.<path> read from the record (Sources#51)."
+          },
+          "extra_lists": {
+            "type": "object",
+            "maxProperties": 10,
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Lists the API gives (tags, job types): each field maps to a path whose array of scalars is kept as up to 20 of them; a lone scalar is a list of one and a missing value an empty list. Separate from extra, which reads an array as null (Sources, 2026-10-24)."
           },
           "extract": {
             "type": "object",

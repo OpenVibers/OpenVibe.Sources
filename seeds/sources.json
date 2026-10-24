@@ -1760,6 +1760,10 @@
             "company": "company_name",
             "location": "location",
             "remote": "remote"
+          },
+          "extra_lists": {
+            "tags": "tags",
+            "job_types": "job_types"
           }
         },
         {
@@ -1778,6 +1782,10 @@
             "company": "company_name",
             "location": "location",
             "remote": "remote"
+          },
+          "extra_lists": {
+            "tags": "tags",
+            "job_types": "job_types"
           }
         },
         {
@@ -1796,6 +1804,10 @@
             "company": "company_name",
             "location": "location",
             "remote": "remote"
+          },
+          "extra_lists": {
+            "tags": "tags",
+            "job_types": "job_types"
           }
         }
       ],

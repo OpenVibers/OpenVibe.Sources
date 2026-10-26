@@ -9,7 +9,7 @@
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
   "contracts": "openvibe-contracts v0.213.0",
   "sdk": "openvibe-sdk v0.64.0",
-  "shared": "openvibe-shared v4.12.0",
+  "shared": "openvibe-shared v4.13.0",
   "capabilities": [
     "sources.source.read",
     "sources.item.read",
@@ -49,5 +49,5 @@
     "staff-only index documents for Search",
     "per-actor limits (openvibe-sdk/limits)"
   ],
-  "updated": "2026-10-25"
+  "updated": "2026-10-26"
 }

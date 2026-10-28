@@ -10,6 +10,8 @@
  *     complete disallow ("unreachable") — never guessed as allowed
  *   - cached per origin for SOURCES_ROBOTS_TTL_MS (24 h); Crawl-delay is honoured as a minimum
  *     gap between requests (non-standard, but a clear wish of the site)
+ *   - Sitemap lines (RFC 9309 §2.3.5, outside any group) are kept with the rules: a crawl source
+ *     starts from the sitemaps the site names (server/crawl.js)
  * A source-adapter name is never permission to fetch (roadmap anti-goal 26): if robots says no,
  * the fetch run is `robots_denied` and nothing is requested.
  */
@@ -17,6 +19,7 @@
 function parseRobots(text, agent) {
     const token = String(agent).toLowerCase();
     const groups = [];
+    const sitemaps = [];
     let current = null;
     let lastWasAgent = false;
     for (const rawLine of String(text).split(/\r\n|\r|\n/)) {
@@ -36,6 +39,11 @@ function parseRobots(text, agent) {
             continue;
         }
         lastWasAgent = false;
+        if (key === 'sitemap') {
+            // Absolute http(s) URLs only, at most 50: a robots.txt cannot hand the crawler an unbounded list.
+            if (/^https?:\/\//i.test(value) && value.length <= 2048 && sitemaps.length < 50 && !sitemaps.includes(value)) sitemaps.push(value);
+            continue;
+        }
         if (!current) continue;
         // Bounded: a hostile robots.txt cannot make matching expensive.
         if ((key === 'allow' || key === 'disallow') && value.length <= 512 && current.rules.length < 1000) {
@@ -54,6 +62,7 @@ function parseRobots(text, agent) {
         // An empty Disallow (or Allow) path matches nothing: "allow everything".
         rules: chosen.flatMap(g => g.rules).filter(r => r.path !== ''),
         crawlDelaySec: delays.length ? Math.max(...delays) : null,
+        sitemaps,
     };
 }
 
@@ -70,29 +79,38 @@ function normalizePath(p) {
     try { return encodeURI(decodeURI(p)); } catch { return p; }
 }
 
+/** The parsed rules as one function, each rule's pattern compiled once: (pathWithQuery) → allowed. */
+function compileRules(rules) {
+    const compiled = rules.map(r => ({ re: ruleRegex(normalizePath(r.path)), len: r.path.length, allow: r.allow }));
+    return (pathWithQuery) => {
+        const target = normalizePath(pathWithQuery || '/');
+        let best = null;
+        for (const r of compiled) {
+            if (!r.re.test(target)) continue;
+            if (!best || r.len > best.len || (r.len === best.len && r.allow && !best.allow)) best = r;
+        }
+        return best ? best.allow : true;
+    };
+}
+
 /** Is `pathWithQuery` allowed by the parsed rules? */
 function isAllowed(parsed, pathWithQuery) {
-    const target = normalizePath(pathWithQuery || '/');
-    let best = null;
-    for (const r of parsed.rules) {
-        const re = ruleRegex(normalizePath(r.path));
-        if (!re.test(target)) continue;
-        const len = r.path.length;
-        if (!best || len > best.len || (len === best.len && r.allow && !best.allow)) best = { len, allow: r.allow };
-    }
-    return best ? best.allow : true;
+    return compileRules(parsed.rules)(pathWithQuery);
 }
 
 /**
  * createRobots({ db, fetcher, agent, ttlMs, maxBytes, now, beforeRequest(host) })
  *   check(url) → { allowed, reason, crawlDelaySec, source: 'cache'|'fetched' }
+ *   matcher(url) → (pathWithQuery) → allowed, for the url's origin (a crawl filtering a sitemap's thousands of URLs)
+ *   sitemaps(url) → the Sitemap URLs the origin's robots.txt names
  */
 function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.now(), beforeRequest = async () => {} }) {
     const get = db.prepare('SELECT * FROM robots_cache WHERE origin = ?');
-    const put = db.prepare(`INSERT INTO robots_cache (origin, fetched_at, expires_at, status, outcome, rules, crawl_delay_sec, detail)
-        VALUES (@origin, @fetched_at, @expires_at, @status, @outcome, @rules, @crawl_delay_sec, @detail)
+    const put = db.prepare(`INSERT INTO robots_cache (origin, fetched_at, expires_at, status, outcome, rules, crawl_delay_sec, detail, sitemaps)
+        VALUES (@origin, @fetched_at, @expires_at, @status, @outcome, @rules, @crawl_delay_sec, @detail, @sitemaps)
         ON CONFLICT(origin) DO UPDATE SET fetched_at = excluded.fetched_at, expires_at = excluded.expires_at, status = excluded.status,
-        outcome = excluded.outcome, rules = excluded.rules, crawl_delay_sec = excluded.crawl_delay_sec, detail = excluded.detail`);
+        outcome = excluded.outcome, rules = excluded.rules, crawl_delay_sec = excluded.crawl_delay_sec, detail = excluded.detail,
+        sitemaps = excluded.sitemaps`);
     const inflight = new Map();
     const warned = new Set();
 
@@ -104,15 +122,15 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
             const r = await fetcher.fetchUrl(`${origin}/robots.txt`, { headers: { Accept: 'text/plain' }, capBytes: maxBytes });
             if (r.status >= 200 && r.status < 300) {
                 const parsed = parseRobots(r.body.toString('utf8'), agent);
-                row = { status: r.status, outcome: 'parsed', rules: JSON.stringify(parsed.rules), crawl_delay_sec: parsed.crawlDelaySec, detail: null };
+                row = { status: r.status, outcome: 'parsed', rules: JSON.stringify(parsed.rules), crawl_delay_sec: parsed.crawlDelaySec, detail: null, sitemaps: JSON.stringify(parsed.sitemaps) };
             } else if (r.status >= 400 && r.status < 500 && r.status !== 429) {
-                row = { status: r.status, outcome: 'unavailable', rules: '[]', crawl_delay_sec: null, detail: `HTTP ${r.status}: no restrictions` };
+                row = { status: r.status, outcome: 'unavailable', rules: '[]', crawl_delay_sec: null, detail: `HTTP ${r.status}: no restrictions`, sitemaps: '[]' };
             } else {
-                row = { status: r.status, outcome: 'unreachable', rules: '[]', crawl_delay_sec: null, detail: `HTTP ${r.status}: complete disallow` };
+                row = { status: r.status, outcome: 'unreachable', rules: '[]', crawl_delay_sec: null, detail: `HTTP ${r.status}: complete disallow`, sitemaps: '[]' };
             }
         } catch (err) {
             // Network error, timeout, refused address or an oversized file: refuse, never guess.
-            row = { status: null, outcome: 'unreachable', rules: '[]', crawl_delay_sec: null, detail: `${err.code || 'error'}: ${err.message}`.slice(0, 300) };
+            row = { status: null, outcome: 'unreachable', rules: '[]', crawl_delay_sec: null, detail: `${err.code || 'error'}: ${err.message}`.slice(0, 300), sitemaps: '[]' };
         }
         // An unreachable robots.txt is retried sooner than a parsed one.
         const ttl = row.outcome === 'unreachable' ? Math.min(ttlMs, 15 * 60 * 1000) : ttlMs;
@@ -128,6 +146,35 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
         return { row: await inflight.get(origin), source: 'fetched' };
     }
 
+    function storedRules(row) {
+        try {
+            const rules = JSON.parse(row.rules);
+            return Array.isArray(rules) ? rules : [];
+        } catch (err) {
+            // A corrupt stored row must not throw: treat it as no rules and warn once per origin.
+            if (!warned.has(row.origin)) {
+                warned.add(row.origin);
+                console.warn(`[robots] unreadable stored rules for ${row.origin}: ${err.message}`);
+            }
+            return [];
+        }
+    }
+
+    async function matcher(input) {
+        const { row } = await entry(new URL(input).origin);
+        if (row.outcome === 'unreachable') return () => false;
+        if (row.outcome === 'unavailable') return () => true;
+        return compileRules(storedRules(row));
+    }
+
+    async function sitemaps(input) {
+        const { row } = await entry(new URL(input).origin);
+        try {
+            const list = JSON.parse(row.sitemaps || '[]');
+            return Array.isArray(list) ? list.filter(u => typeof u === 'string') : [];
+        } catch { return []; }
+    }
+
     async function check(input) {
         const url = new URL(input);
         const { row, source } = await entry(url.origin);
@@ -137,23 +184,11 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
             return { allowed: false, reason: `robots.txt unreachable (${row.detail})`, crawlDelaySec: null, source, refusedCode: ['address_refused', 'port_refused', 'bad_url'].includes(code) ? code : null };
         }
         if (row.outcome === 'unavailable') return { allowed: true, reason: null, crawlDelaySec: null, source };
-        let rules;
-        try {
-            rules = JSON.parse(row.rules);
-        } catch (err) {
-            // A corrupt stored row must not throw: treat it as no rules and warn once per origin.
-            if (!warned.has(row.origin)) {
-                warned.add(row.origin);
-                console.warn(`[robots] unreadable stored rules for ${row.origin}: ${err.message}`);
-            }
-            rules = [];
-        }
-        const parsed = { rules: Array.isArray(rules) ? rules : [] };
-        const allowed = isAllowed(parsed, url.pathname + url.search);
+        const allowed = isAllowed({ rules: storedRules(row) }, url.pathname + url.search);
         return { allowed, reason: allowed ? null : `disallowed by ${url.origin}/robots.txt`, crawlDelaySec: row.crawl_delay_sec, source };
     }
 
-    return { check, forget: async (origin) => await db.prepare('DELETE FROM robots_cache WHERE origin = ?').run(origin) };
+    return { check, matcher, sitemaps, forget: async (origin) => await db.prepare('DELETE FROM robots_cache WHERE origin = ?').run(origin) };
 }
 
-module.exports = { parseRobots, isAllowed, createRobots };
+module.exports = { parseRobots, isAllowed, compileRules, createRobots };

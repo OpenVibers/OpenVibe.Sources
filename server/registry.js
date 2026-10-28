@@ -7,12 +7,13 @@
  * SOURCES_CRED_ so a registry entry can never point at this service's own secrets), robots and
  * terms notes, the rate limit, whether it is enabled, review/sensitivity flags and the default
  * indexability downstream products start from. A source cannot be enabled without a terms note:
- * an adapter existing is not permission to ingest (roadmap anti-goal 26).
+ * an adapter existing is not permission to ingest (roadmap anti-goal 26). A crawl source also
+ * carries how it walks its site (`crawl`, server/crawl.js); its endpoints are the seeds.
  */
 const { checkApiMapping } = require('./adapters');
 const extract = require('./adapters/extract');
 
-const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'manual'];
+const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'crawl', 'manual'];
 // The categories are sources.source@1's (openvibe-contracts), read from the schema so the two never drift: housing, food
 // and jobs since contracts 0.210.0, for Rent and Homes, Food and Work (plan 2026-10-22, track F1).
 const CATEGORIES = Object.freeze([...require('openvibe-contracts/contracts/sources/source.v1.json').properties.category.enum]);
@@ -52,12 +53,41 @@ const bool = (v, d, what) => {
     return v;
 };
 
+const CRAWL_FIELDS = ['sitemaps', 'follow_links', 'include', 'exclude', 'max_pages', 'pages_per_run', 'recrawl_sec', 'max_depth', 'require_structured'];
+
+/** A crawl source's walk (sources.source@1 `crawl`), every default filled in so the crawler reads one shape. */
+function validateCrawl(c) {
+    const v = c == null ? {} : c;
+    if (typeof v !== 'object' || Array.isArray(v)) throw new RegistryError('crawl must be an object');
+    for (const k of Object.keys(v)) if (!CRAWL_FIELDS.includes(k)) throw new RegistryError(`unknown crawl field ${k}`);
+    const patterns = (list, what) => {
+        if (list == null) return [];
+        if (!Array.isArray(list) || list.length > 20) throw new RegistryError(`${what} must be an array of at most 20 patterns`);
+        return list.map((p, i) => {
+            if (typeof p !== 'string' || !p || p.length > 200) throw new RegistryError(`${what}[${i}] must be a pattern of 1 to 200 characters`);
+            try { new RegExp(p); } catch (err) { throw new RegistryError(`${what}[${i}] is not a regular expression: ${err.message}`); }
+            return p;
+        });
+    };
+    return {
+        sitemaps: bool(v.sitemaps, true, 'crawl.sitemaps'),
+        follow_links: bool(v.follow_links, false, 'crawl.follow_links'),
+        include: patterns(v.include, 'crawl.include'),
+        exclude: patterns(v.exclude, 'crawl.exclude'),
+        max_pages: intIn(v.max_pages, 1, 200000, 5000, 'crawl.max_pages'),
+        pages_per_run: intIn(v.pages_per_run, 1, 1000, 100, 'crawl.pages_per_run'),
+        recrawl_sec: intIn(v.recrawl_sec, 3600, 30 * 86400, 86400, 'crawl.recrawl_sec'),
+        max_depth: intIn(v.max_depth, 0, 10, 2, 'crawl.max_depth'),
+        require_structured: bool(v.require_structured, true, 'crawl.require_structured'),
+    };
+}
+
 /** Validate a full source definition → normalized record (no runtime state). */
 function validateSource(input, { maxItemsCap = 12000 } = {}) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw new RegistryError('body must be a source object');
     const known = new Set(['key', 'name', 'type', 'category', 'homepage_url', 'endpoints', 'auth', 'robots_note', 'terms_note', 'license_note',
         'min_interval_ms', 'poll_interval_sec', 'stale_after_sec', 'max_items', 'enabled', 'review_required', 'sensitivity',
-        'default_indexability', 'search_visibility', 'retire_after_sec']);
+        'default_indexability', 'search_visibility', 'retire_after_sec', 'crawl']);
     for (const k of Object.keys(input)) if (!known.has(k)) throw new RegistryError(`unknown field ${k}`);
     if (!KEY_RE.test(String(input.key || ''))) throw new RegistryError('key must match ^[a-z0-9][a-z0-9-]{1,63}$');
     const name = text(input.name, 200, 'name');
@@ -139,7 +169,12 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
         search_visibility: input.search_visibility == null ? null : input.search_visibility,
         // Retire what the feed stopped showing (jobs, listings): an hour to a year, or null to keep every item (server/ingest.js).
         retire_after_sec: intIn(input.retire_after_sec, 3600, 365 * 86400, null, 'retire_after_sec'),
+        crawl: input.type === 'crawl' ? validateCrawl(input.crawl) : null,
     };
+    if (input.type !== 'crawl' && input.crawl != null) throw new RegistryError('crawl is only for crawl sources');
+    // A crawl reaches a page again only when its turn comes, so "not seen for a while" says nothing about a product: a crawl
+    // retires a page's items when the page is gone (404 or 410 twice, server/crawl.js) or asks not to be indexed.
+    if (input.type === 'crawl' && record.retire_after_sec != null) throw new RegistryError('a crawl source retires a page\'s items when the page is gone; retire_after_sec is for feeds');
     if (!SENSITIVITY.includes(record.sensitivity)) throw new RegistryError(`sensitivity must be one of ${SENSITIVITY.join('|')}`);
     if (!['index', 'noindex'].includes(record.default_indexability)) throw new RegistryError('default_indexability must be index or noindex');
     if (record.sensitivity !== 'none' && record.default_indexability === 'index' && record.review_required === false) {
@@ -157,17 +192,19 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         all: db.prepare('SELECT * FROM sources ORDER BY key'),
         insert: db.prepare(`INSERT INTO sources (key, name, type, category, homepage_url, endpoints, auth, robots_note, terms_note, license_note,
             min_interval_ms, poll_interval_sec, stale_after_sec, max_items, enabled, review_required, sensitivity, default_indexability,
-            search_visibility, retire_after_sec, created_at, updated_at, updated_by, next_due_at)
+            search_visibility, retire_after_sec, crawl, created_at, updated_at, updated_by, next_due_at)
             VALUES (@key, @name, @type, @category, @homepage_url, @endpoints, @auth, @robots_note, @terms_note, @license_note,
             @min_interval_ms, @poll_interval_sec, @stale_after_sec, @max_items, @enabled, @review_required, @sensitivity, @default_indexability,
-            @search_visibility, @retire_after_sec, @created_at, @updated_at, @updated_by, 0)`),
+            @search_visibility, @retire_after_sec, @crawl, @created_at, @updated_at, @updated_by, 0)`),
         update: db.prepare(`UPDATE sources SET name = @name, type = @type, category = @category, homepage_url = @homepage_url, endpoints = @endpoints,
             auth = @auth, robots_note = @robots_note, terms_note = @terms_note, license_note = @license_note, min_interval_ms = @min_interval_ms,
             poll_interval_sec = @poll_interval_sec, stale_after_sec = @stale_after_sec, max_items = @max_items, enabled = @enabled,
             review_required = @review_required, sensitivity = @sensitivity, default_indexability = @default_indexability,
-            search_visibility = @search_visibility, retire_after_sec = @retire_after_sec, updated_at = @updated_at, updated_by = @updated_by WHERE key = @key`),
+            search_visibility = @search_visibility, retire_after_sec = @retire_after_sec, crawl = @crawl, updated_at = @updated_at, updated_by = @updated_by
+            WHERE key = @key`),
         del: db.prepare('DELETE FROM sources WHERE key = ?'),
         itemCount: db.prepare('SELECT COUNT(*) AS n FROM items WHERE source_key = ?'),
+        dropFrontier: db.prepare('DELETE FROM crawl_frontier WHERE source_key = ?'),
         resetValidators: db.prepare('DELETE FROM endpoint_state WHERE source_key = ?'),
     };
 
@@ -176,6 +213,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
             ...rec,
             endpoints: JSON.stringify(rec.endpoints),
             auth: JSON.stringify(rec.auth),
+            crawl: rec.crawl ? JSON.stringify(rec.crawl) : null,
             enabled: rec.enabled ? 1 : 0,
             review_required: rec.review_required ? 1 : 0,
             created_at: now(),
@@ -194,6 +232,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
             max_items: row.max_items, enabled: Boolean(row.enabled), review_required: Boolean(row.review_required),
             sensitivity: row.sensitivity, default_indexability: row.default_indexability, search_visibility: row.search_visibility,
             retire_after_sec: row.retire_after_sec == null ? null : Number(row.retire_after_sec),
+            crawl: row.crawl ? JSON.parse(row.crawl) : null,
         };
     }
 
@@ -256,10 +295,11 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         if (!row) return null;
         if ((await st.itemCount.get(key)).n) throw new RegistryError('the source has items; disable it instead (provenance must stay resolvable)', 'sources.has_items');
         await st.del.run(key);
+        await st.dropFrontier.run(key);
         return true;
     }
 
     return { get: async (k) => await st.get.get(k), all: async () => await st.all.all(), create, patch, remove, view, fromRow, health };
 }
 
-module.exports = { createRegistry, validateSource, RegistryError, TYPES, CATEGORIES };
+module.exports = { createRegistry, validateSource, validateCrawl, RegistryError, TYPES, CATEGORIES };

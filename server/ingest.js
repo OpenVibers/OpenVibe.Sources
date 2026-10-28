@@ -20,10 +20,15 @@
  * A source with retire_after_sec (jobs, listings) retires what its feed stopped showing: after a run
  * in which every endpoint answered (ok or 304) and none failed, its items not seen for that long are
  * removed as gone_from_source. A 304 counts as seeing again what the endpoint's last good parse saw.
+ *
+ * A crawl source (type crawl) walks its site's frontier instead of a list of endpoints (server/crawl.js): one fetch_runs
+ * row per page, a page's own failure stays the page's, and the source fails only when the site does. While pages are
+ * still due after a run, the next one comes sooner (SOURCES_CRAWL_SOON_MS) than poll_interval_sec.
  */
 const { ids } = require('openvibe-contracts');
 const { ADAPTERS } = require('./adapters');
 const extract = require('./adapters/extract');
+const { createCrawler } = require('./crawl');
 const { sha256, decodeBody } = require('./adapters/util');
 
 const FAILURE_STATES = new Set(['http_error', 'timeout', 'robots_denied', 'parse_error', 'rate_limited']);
@@ -39,6 +44,7 @@ function retryAfterMs(value, now) {
 function createIngest({ db, config, registry, items, robots, fetcher, spacer, emitEvent, now = () => Date.now(), log = console, outbox = null }) {
     const inflight = new Set();
     const { space, setCrawlDelay } = spacer;
+    let stopping = false;
 
     const st = {
         insertRun: db.prepare(`INSERT INTO fetch_runs (id, source_key, endpoint_url, trigger, started_at, finished_at, state, http_status,
@@ -223,6 +229,61 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         return { run, failed: false, success: true, recorded: true };
     }
 
+    const crawler = createCrawler({
+        db, config, items, robots, fetcher, spacer, now, log,
+        record: { baseRun, insertRun: (r) => st.insertRun.run(r), requested: (t, key) => st.requested.run(t, key) },
+    });
+
+    /** Every endpoint in order (feeds, sitemaps, JSON-LD pages, APIs). */
+    async function fetchEndpoints(source, row, trigger, t) {
+        const runs = [];
+        let anyFailure = false;
+        let anySuccess = false;
+        let allAnswered = true;     // every endpoint ok or 304: what retirement needs to trust the feed
+        let notBefore = 0;
+        let failures = row.consecutive_failures;
+        for (const endpoint of source.endpoints) {
+            let out;
+            try {
+                out = await fetchEndpoint(source, endpoint, trigger);
+            } catch (err) {
+                // Anything unexpected is still a recorded failure, never a silent gap.
+                const r = baseRun(source, endpoint.url, trigger, t);
+                Object.assign(r, { state: 'http_error', error_code: 'internal', detail: String(err.message).slice(0, 300), finished_at: now() });
+                log.error(`[ingest] ${source.key}: ${err.stack || err}`);
+                out = { run: r, failed: true };
+            }
+            if (out.failed) { anyFailure = true; failures = row.consecutive_failures + 1; }
+            if (out.success) anySuccess = true;
+            else allAnswered = false;
+            if (out.notBefore) notBefore = Math.max(notBefore, out.notBefore);
+            if (!out.recorded) await recordNoItems(source, out.run, { countsAsFailure: out.failed, failures });
+            runs.push(out.run);
+            if (out.run.state === 'rate_limited') break;   // the site asked us to stop
+        }
+
+        if (source.retire_after_sec && anySuccess && allAnswered && !anyFailure) {
+            try {
+                const retired = await items.retireUnseen(source, now() - source.retire_after_sec * 1000);
+                if (retired) log.log(`[ingest] ${source.key}: retired ${retired} item(s) the feed stopped showing`);
+            } catch (err) {
+                log.error(`[ingest] ${source.key}: retiring unseen items failed: ${err.stack || err}`);
+            }
+        }
+        const lastState = runs.map(r => r.state).find(s => FAILURE_STATES.has(s)) || runs[runs.length - 1].state;
+        return { runs, anyFailure, anySuccess, notBefore, lastState, more: false };
+    }
+
+    /** The site's frontier, up to pages_per_run pages; one sources.fetch.failed when the site fails, never one per page. */
+    async function crawl(source, row, trigger) {
+        const out = await crawler.run(source, { trigger, stopping: () => stopping });
+        if (out.failedRun) {
+            const failed = out.failedRun;
+            await db.tx(async () => { await failedEvent(source, failed, row.consecutive_failures + 1); });
+        }
+        return { ...out, lastState: out.failedRun ? out.failedRun.state : 'ok' };
+    }
+
     // ── One source ───────────────────────────────────────────
 
     /**
@@ -254,46 +315,17 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
                 return { runs, rateLimitedUntil: until };
             }
 
-            let anyFailure = false;
-            let anySuccess = false;
-            let allAnswered = true;     // every endpoint ok or 304: what retirement needs to trust the feed
-            let notBefore = 0;
-            let failures = row.consecutive_failures;
-            for (const endpoint of source.endpoints) {
-                let out;
-                try {
-                    out = await fetchEndpoint(source, endpoint, trigger);
-                } catch (err) {
-                    // Anything unexpected is still a recorded failure, never a silent gap.
-                    const r = baseRun(source, endpoint.url, trigger, t);
-                    Object.assign(r, { state: 'http_error', error_code: 'internal', detail: String(err.message).slice(0, 300), finished_at: now() });
-                    log.error(`[ingest] ${key}: ${err.stack || err}`);
-                    out = { run: r, failed: true };
-                }
-                if (out.failed) { anyFailure = true; failures = row.consecutive_failures + 1; }
-                if (out.success) anySuccess = true;
-                else allAnswered = false;
-                if (out.notBefore) notBefore = Math.max(notBefore, out.notBefore);
-                if (!out.recorded) await recordNoItems(source, out.run, { countsAsFailure: out.failed, failures });
-                runs.push(out.run);
-                if (out.run.state === 'rate_limited') break;   // the site asked us to stop
-            }
-
-            if (source.retire_after_sec && anySuccess && allAnswered && !anyFailure) {
-                try {
-                    const retired = await items.retireUnseen(source, now() - source.retire_after_sec * 1000);
-                    if (retired) log.log(`[ingest] ${key}: retired ${retired} item(s) the feed stopped showing`);
-                } catch (err) {
-                    log.error(`[ingest] ${key}: retiring unseen items failed: ${err.stack || err}`);
-                }
-            }
+            const { runs: done, anyFailure, anySuccess, notBefore, lastState, more } = source.type === 'crawl'
+                ? await crawl(source, row, trigger)
+                : await fetchEndpoints(source, row, trigger, t);
+            runs.push(...done);
 
             const finishedAt = now();
             const newFailures = anyFailure ? row.consecutive_failures + 1 : 0;
+            const poll = source.poll_interval_sec * 1000;
             const backoff = anyFailure
-                ? Math.min(source.poll_interval_sec * 1000 * 2 ** Math.min(newFailures - 1, 10), Math.max(config.worker.maxBackoffMs, source.poll_interval_sec * 1000))
-                : source.poll_interval_sec * 1000;
-            const lastState = runs.map(r => r.state).find(s => FAILURE_STATES.has(s)) || runs[runs.length - 1].state;
+                ? Math.min(poll * 2 ** Math.min(newFailures - 1, 10), Math.max(config.worker.maxBackoffMs, poll))
+                : more ? Math.min(poll, config.crawl.soonMs) : poll;
             await st.finish.run({
                 key, at: finishedAt, state: lastState, failures: newFailures,
                 success_at: anySuccess ? finishedAt : null, next_due: finishedAt + backoff, not_before: notBefore,
@@ -305,7 +337,18 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         }
     }
 
-    return { run, inflight: () => [...inflight] };
+    /** Status of a crawl source's frontier (GET /api/v1/sources/:key/crawl). */
+    async function crawlStatus(key) {
+        const row = await registry.get(key);
+        if (!row) return null;
+        const source = registry.fromRow(row);
+        return source.type === 'crawl' ? await crawler.status(source) : { not_crawl: true };
+    }
+
+    /** Shutting down: a crawl ends after the page in flight instead of working through its budget. */
+    function stop() { stopping = true; }
+
+    return { run, crawlStatus, stop, inflight: () => [...inflight] };
 }
 
 module.exports = { createIngest, FAILURE_STATES, retryAfterMs };

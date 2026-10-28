@@ -38,6 +38,7 @@
         "sitemap",
         "jsonld",
         "api",
+        "crawl",
         "manual"
       ]
     },
@@ -151,7 +152,9 @@
             "pattern": "^[a-z][a-z0-9_]{1,39}$"
           },
           "request_content_type": {
-            "enum": ["application/json"],
+            "enum": [
+              "application/json"
+            ],
             "description": "Sent as the request's Content-Type on this endpoint's GET (no body). Open Collective's GraphQL API answers a GET only with it, as its CSRF guard (Sources#65)."
           },
           "max_bytes": {
@@ -249,6 +252,72 @@
         }
       }
     },
+    "crawl": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "type crawl only: how the crawler walks one site from its endpoints (the seeds). Every request still passes the site's robots.txt (RFC 9309) and the per-host spacing, a page that says noindex is not kept, and only what a page publishes for machines is read (schema.org JSON-LD: products and offers for deals, articles, reviews). A crawl adds pages to its frontier from the site's own sitemaps and, if asked, its links; each run fetches the pages that are due and schedules them again after recrawl_sec, so a price seen twice becomes a history.",
+      "additionalProperties": false,
+      "properties": {
+        "sitemaps": {
+          "type": "boolean",
+          "description": "Find pages from the site's sitemaps: the Sitemap lines of its robots.txt, else /sitemap.xml, following sitemap indexes (default true)."
+        },
+        "follow_links": {
+          "type": "boolean",
+          "description": "Also follow links on crawled pages to pages of the same host that match include (default false)."
+        },
+        "include": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": "Regular expressions over a URL's path and query; a page must match one (none given: every page of the host)."
+        },
+        "exclude": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": "Regular expressions over a URL's path and query; a page matching one is never fetched."
+        },
+        "max_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200000,
+          "description": "The most pages the frontier holds for this site (default 5000)."
+        },
+        "pages_per_run": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Pages fetched in one run (default 100); the host spacing still applies between them."
+        },
+        "recrawl_sec": {
+          "type": "integer",
+          "minimum": 3600,
+          "maximum": 2592000,
+          "description": "How long after a fetch a page is due again (default 86400, a day)."
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "With follow_links, how many links away from a seed or sitemap page a page may be (default 2)."
+        },
+        "require_structured": {
+          "type": "boolean",
+          "description": "Keep only pages that publish schema.org JSON-LD the adapter reads (default true); a page without it is fetched once and dropped from the frontier."
+        }
+      }
+    },
     "auth": {
       "type": "object",
       "required": [
@@ -314,7 +383,10 @@
       "minimum": 1
     },
     "retire_after_sec": {
-      "type": ["integer", "null"],
+      "type": [
+        "integer",
+        "null"
+      ],
       "minimum": 3600,
       "maximum": 31536000,
       "description": "Retire what the feed stopped showing (jobs, listings): once a fetch of this source succeeds, an item it has not seen for this many seconds is removed with reason \"gone_from_source\" (a change, so consumers following the change feed learn it). null (the default): items stay, as a news archive or a dataset should."

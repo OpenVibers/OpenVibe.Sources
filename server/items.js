@@ -49,6 +49,7 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
         unseen: db.prepare(`SELECT * FROM items WHERE source_key = ? AND removed_at IS NULL AND retrieved_at < ?
             ORDER BY retrieved_at, id LIMIT ?`),
         seenAgain: db.prepare('UPDATE items SET retrieved_at = ? WHERE source_key = ? AND last_fetch_run_id = ? AND removed_at IS NULL'),
+        ofRun: db.prepare('SELECT * FROM items WHERE source_key = ? AND last_fetch_run_id = ? AND removed_at IS NULL ORDER BY id LIMIT 500'),
     };
 
     function view(row) {
@@ -232,6 +233,20 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
     }
 
     /**
+     * A crawled page that is gone (404/410 twice) or turned noindex takes its items with it: the live items its last good
+     * read (`runId`) saw are removed with `reason`, sticky like any removal (server/crawl.js). → the number retired
+     */
+    async function retireRun(source, runId, reason) {
+        if (!runId) return 0;
+        return await db.tx(async () => {
+            const rows = await st.ofRun.all(source.key, runId);
+            const t = now();
+            for (const cur of rows) await markRemoved(source, cur, reason, reason, t);
+            return rows.length;
+        });
+    }
+
+    /**
      * A 304 says the endpoint still lists what its last good parse (`runId`) saw: those items count as seen at `at`, so
      * retirement does not take them for gone. Only for a source that retires; the others keep the parse's time.
      */
@@ -266,7 +281,7 @@ function createItems({ db, emitEvent, now = () => Date.now() }) {
         return { items: page.map(view), next_after: page.length ? page[page.length - 1].change_seq : after, more };
     }
 
-    return { ingest, remove, retireUnseen, seenAgain, get, list, view, indexDocument, contentHash };
+    return { ingest, remove, retireUnseen, retireRun, seenAgain, get, list, view, indexDocument, contentHash };
 }
 
 module.exports = { createItems, contentHash, STAFF_GROUPS };

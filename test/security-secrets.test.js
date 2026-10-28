@@ -63,7 +63,8 @@ t('every route, as every kind of caller, with real and nonsense ids: the client 
             for (const id of ['keyed', '1', 'nope', "'\"<x>", 'x'.repeat(300)]) {
                 const p = fill(route.path, id);
                 for (const [who, token] of Object.entries(callers)) {
-                    const r = await request(svc.base, method.toUpperCase(), `${p}${method === 'get' ? '?q=x&limit=-1' : ''}`, { token, ...(method === 'get' ? {} : { headers: { 'content-type': 'application/json' } }) });
+                    // manual redirects: /merchant/login points at OpenVibe.Network, and this test must not call the internet.
+                    const r = await request(svc.base, method.toUpperCase(), `${p}${method === 'get' ? '?q=x&limit=-1' : ''}`, { token, redirect: 'manual', ...(method === 'get' ? {} : { headers: { 'content-type': 'application/json' } }) });
                     const text = r.text + JSON.stringify([...r.headers.entries()]);
                     if (text.includes(SECRET)) found.push(`${who}: ${method} ${p} → ${r.status} carries the client secret`);
                     if (text.includes(FEED_KEY) && who !== 'source reader') found.push(`${who}: ${method} ${p} → ${r.status} carries the feed key`);

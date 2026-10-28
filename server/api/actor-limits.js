@@ -43,6 +43,10 @@ const BUDGETS = {
     // Creating, changing or deleting a source is a staff decision recorded with its terms and robots
     // notes: a form every few seconds at most.
     'sources.source.manage': { minute: 30, hour: 300 },
+    // Merchant opt-in reads (the page and the JSON read Report calls): a person refreshing their small list.
+    'sources.merchant.read': { minute: 120, hour: 3000 },
+    // Claiming a domain, checking the proof, withdrawing: a handful of decisions, not a polling loop.
+    'sources.merchant.manage': { minute: 30, hour: 300 },
     // A manual fetch requests every endpoint of the source now (the per-host spacing still applies):
     // the scheduler already polls each source, so a person's "fetch now" is a rare nudge.
     'sources.source.fetch': { minute: 10, hour: 100 },

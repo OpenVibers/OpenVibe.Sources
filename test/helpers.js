@@ -30,11 +30,23 @@ function serviceToken(slug, cap, { aud = 'openvibe.sources', exp = Math.floor(Da
     }, key);
 }
 
+/** A person's Network session token: user id in `sub`, the canonical usr_… id in `subject_id`, no principal/typed claims. */
+function userToken(subject, { username = 'merchant', exp = Math.floor(Date.now() / 1000) + 300, key = privateKey, extra = {} } = {}) {
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const claims = {
+        iss: ISSUER, sub: String(now % 1000000), subject_id: subject, username, display_name: username,
+        aud: ['openvibe.network'], iat: now, exp, jti: `usr_tok_${crypto.randomBytes(8).toString('hex')}`, ...extra,
+    };
+    const input = `${Buffer.from(JSON.stringify(header)).toString('base64url')}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}`;
+    return `${input}.${crypto.sign('RSA-SHA256', Buffer.from(input), key).toString('base64url')}`;
+}
+
 /**
  * Boot Sources; the scheduler is off unless worker: 'on'. Loopback is allowlisted for the stubs.
  * log: Sources' logger (default silent); limitsNow: the per-actor limiter's clock (default the wall clock).
  */
-async function boot({ env = {}, worker = 'off', lookupImpl, now, log = silent, limitsNow = null } = {}) {
+async function boot({ env = {}, worker = 'off', lookupImpl, resolver = null, now, log = silent, limitsNow = null } = {}) {
     // A stub Network JWKS serving the generated signing key, so the SDK's JWKS client has something real
     // to fetch and verify against (no test touches the internet). Its URL is overridable via env.
     const jwksSite = await site({ '/api/.well-known/jwks': () => ({ body: JSON.stringify({ keys: [publicJwk] }) }) });
@@ -47,20 +59,28 @@ async function boot({ env = {}, worker = 'off', lookupImpl, now, log = silent, l
         SOURCES_HOST_MIN_INTERVAL_MS: '0',
         SOURCES_FETCH_TIMEOUT_MS: '1500',
         SOURCES_TICK_MS: '50',
+        SOURCES_MERCHANT_RECHECK_MS: '0',
         ...env,
     });
     // One database per boot (PGlite, or SOURCES_TEST_STORE=pg: the containers), dropped when the boot stops.
     const testdb = await require('./db').testDb();
-    const h = await start({ config, db: testdb.db, log, lookupImpl, limitsNow, ...(now ? { now } : {}) });
+    const h = await start({ config, db: testdb.db, log, lookupImpl, merchantResolver: resolver, limitsNow, ...(now ? { now } : {}) });
     const base = `http://127.0.0.1:${h.server.address().port}`;
     return { ...h, base, jwksSite, async stop() { await h.close(); await testdb.close(); await jwksSite.close(); } };
 }
 
-async function request(base, method, p, { token, body, headers = {} } = {}) {
+async function request(base, method, p, { token, body, form, headers = {}, redirect = 'follow' } = {}) {
     const h = { ...headers };
     if (token) h.Authorization = `Bearer ${token}`;
-    if (body !== undefined) h['Content-Type'] = 'application/json';
-    const res = await fetch(base + p, { method, headers: h, body: body !== undefined ? JSON.stringify(body) : undefined });
+    let payload;
+    if (form !== undefined) {
+        h['Content-Type'] = 'application/x-www-form-urlencoded';
+        payload = new URLSearchParams(form).toString();
+    } else if (body !== undefined) {
+        h['Content-Type'] = 'application/json';
+        payload = JSON.stringify(body);
+    }
+    const res = await fetch(base + p, { method, headers: h, body: payload, redirect });
     const text = await res.text();
     let json = null;
     try { json = text ? JSON.parse(text) : null; } catch { json = null; }
@@ -135,4 +155,4 @@ function suite(name) {
     return t;
 }
 
-module.exports = { ISSUER, privateKey, publicKey, silent, serviceToken, boot, request, site, sourceDef, rss, fixture, sleep, suite };
+module.exports = { ISSUER, privateKey, publicKey, silent, serviceToken, userToken, boot, request, site, sourceDef, rss, fixture, sleep, suite };

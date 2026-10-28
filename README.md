@@ -248,13 +248,15 @@ the endpoint's last good parse saw. At most 500 items are retired a run; the res
 
 ## API (service tokens, one capability per route)
 
-Callers use an OpenVibe.Network client-credentials token for audience `openvibe.sources`.
+Callers use an OpenVibe.Network client-credentials token for audience `openvibe.sources`. The merchant routes also
+accept a signed-in person's session (see [Merchant opt-in](#merchant-opt-in-list-your-store-on-openvibe)); a first-party
+service calls them with its service token and `X-OV-Subject: usr_…`.
 
 | Capability | Routes |
 |---|---|
-| `sources.source.read` | `GET /api/v1/sources`, `/api/v1/sources/:key`, `/api/v1/sources/:key/runs?before=`, `/api/v1/runs?state=failed&after=`, `/api/v1/health` |
+| `sources.source.read` | `GET /api/v1/sources`, `/api/v1/sources/:key`, `/api/v1/sources/:key/runs?before=`, `/api/v1/runs?state=failed&after=`, `/api/v1/health`; `GET /api/v1/merchant/sources[/:id]` |
 | `sources.item.read` | `GET /api/v1/items?source=&category=&after=<change_seq>&include_removed=1`, `GET /api/v1/items/:id?revisions=1` |
-| `sources.source.manage` | `POST /api/v1/sources`, `PATCH`/`DELETE /api/v1/sources/:key`, `POST /api/v1/sources/:key/fetch`, `POST /api/v1/sources/:key/items` (manual), `DELETE /api/v1/items/:id` `{reason}` |
+| `sources.source.manage` | `POST /api/v1/sources`, `PATCH`/`DELETE /api/v1/sources/:key`, `POST /api/v1/sources/:key/fetch`, `POST /api/v1/sources/:key/items` (manual), `DELETE /api/v1/items/:id` `{reason}`; `POST /api/v1/merchant/sources`, `/:id/verify`, `/:id/withdraw` |
 
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
 removals); resume from `next_after`. Every page carries the status and staleness of the sources
@@ -275,12 +277,54 @@ problem+json `rate_limited` with `Retry-After`, one `[limits]` log line and
 | `POST`, `PATCH`, `DELETE /api/v1/sources[/:key]` | 30 / 300 |
 | `POST /api/v1/sources/:key/fetch` | 10 / 100 |
 | `POST /api/v1/sources/:key/items` (manual) | 60 / 1200 |
+| `GET /api/v1/merchant/sources[/:id]` (a merchant or a service acting for one) | 120 / 3000 |
+| `POST /api/v1/merchant/sources`, `/:id/verify`, `/:id/withdraw` | 30 / 300 |
 | `DELETE /api/v1/items/:id` (a takedown may cover many items) | 120 / 3000 |
 
 A first-party service (`svc:…`) is not counted on reads: News, Reviews and Trade pull cursor pages
 for all their readers, and Wiki asks about every item its editors cite. Sources' own workers (the
 scheduler, fetches, the outbox relay) run in-process and never pass through HTTP. Never limited:
 `/api/health`, `/api/ready`, `/release.json`, `/metrics` and the home page. `test/actor-limits.test.js`.
+
+## Merchant opt-in ("List your store on OpenVibe")
+
+The first permitted channel in plan §4.4. A signed-in merchant claims a domain, proves control of it, and names the
+sitemap or product feed Sources may read. **Nothing is created in `sources` before the proof is found**: a pending claim
+is only a `merchant_sources` row (migration `0007_merchant_sources.sql`). Verification creates one enabled source in the
+same transaction, and withdrawal disables it while keeping the note.
+
+- **Proof.** One of two challenges, the OpenVibe.Space pattern:
+  - DNS: `_openvibe-sources.<domain>  TXT  "openvibe-sources-verification=<token>"`.
+  - Meta: `<meta name="openvibe-sources-verification" content="<token>">` on `https://<domain>/` (or the `meta_url` the
+    merchant names, on the same site). Redirects off the domain are refused.
+- **Fetched politely.** A sitemap becomes a `crawl` source seeded with that sitemap (no guessed sitemaps); a product feed
+  becomes an `rss`/`atom` source. Either way the ordinary fetcher runs: robots.txt on every request and redirect hop,
+  per-host spacing, SSRF guard, conditional GETs. Explicit permission is not a robots override.
+- **The terms note** records the merchant subject (and display name when the token carries one), the UTC verification
+  time, the domain, the named sitemap/feed, and how control was verified ("DNS TXT record at _openvibe-sources.…" or
+  "meta tag at …"); it also says the merchant may withdraw and that robots.txt is still obeyed.
+- **Withdrawal** sets the claim to `withdrawn`, disables the source, and leaves `terms_note` and the claim row intact.
+  The domain is free to claim again (a new claim, a new source key). Unlike a *served* custom domain (Space's daily
+  recheck), the permission persists until the merchant withdraws: removing the TXT/meta record later does not silently
+  disable the source.
+- **Pending proofs** are rechecked by a slow in-process pass (`SOURCES_MERCHANT_RECHECK_MS`, default 10 min; `0` turns
+  it off) and fail after `SOURCES_MERCHANT_PENDING_DAYS` (14). A merchant can also press "Check now".
+- **Pages.** `GET /merchant` (guest explanation, or the signed-in merchant's list and add form),
+  `GET /merchant/sources/:id` (challenge, status, terms note, last crawl), the POST actions
+  `/merchant/sources`, `/:id/verify`, `/:id/withdraw`, and `/merchant/login|callback|logout`. Forms carry an HMAC CSRF
+  token; the session is the Sources `ov_token` cookie, verified offline with `verifyUserToken`.
+- **JSON read for Report.** `GET /api/v1/merchant/sources` (alias `/claims`) returns each claim with its source, health,
+  last run, recent runs and — for a crawl — `last_crawl` (`pages`, `due`, `next_due_at`, state counts, recent pages).
+  Report uses its service token and `X-OV-Subject: usr_…`; a merchant's own session needs no extra header. The read is
+  the contract for the Report dashboard (which is not built here).
+- **Identity.** The OAuth client is `OV_OAUTH_CLIENT_ID` (default `sources`) with
+  `OV_OAUTH_REDIRECT_URI` defaulting to `<BASE_URL>/merchant/callback`; Network must register that exact redirect. A
+  first-party service token may act for a merchant only with `X-OV-Subject` (an app/module token cannot). The merchant
+  routes reuse the released `sources.source.read` / `sources.source.manage` capabilities; no new contract id is needed.
+- **Config.** `SOURCES_SESSION_SECRET` (defaults to `OV_OAUTH_CLIENT_SECRET`), `SOURCES_COOKIE_SECURE`,
+  `SOURCES_MERCHANT_PENDING_DAYS`, `SOURCES_MERCHANT_RECHECK_MS`, `SOURCES_MERCHANT_META_MAX_BYTES`,
+  `SOURCES_MERCHANT_DNS_SERVERS`, and the source-shape knobs `SOURCES_MERCHANT_*` documented in
+  [.env.example](.env.example). Tests: `test/merchant-optin.test.js`, `test/merchant-pages.test.js`.
 
 ## Events (transactional outbox → OpenVibe.Events when `EVENTS_URL` is set)
 
@@ -383,6 +427,7 @@ publishes another's output.
 ## Owns
 
 - the source registry (`sources`, `endpoint_state`, `robots_cache`) and the source/item contracts
+- the merchant opt-in claims (`merchant_sources`), their proof checks and the pages/JSON read
 - ingestion: `fetch_runs`, `items`, `item_revisions`, the scheduler, robots and rate-limit state
 - `sources.*` events
 
@@ -397,7 +442,7 @@ publishes another's output.
 
 - PostgreSQL 18 (OpenVibe.Host `roles/data/`, ADR-035): every read and write is async through `openvibe-sdk/db`
 - OpenVibe.Contracts (service tokens, problem details, ids, the event envelope)
-- OpenVibe.Network (signing key; service principal `sources`)
+- OpenVibe.Network (signing key; service principal `sources`; OAuth client `sources` for merchant sign-in)
 - OpenVibe.Events (outbound events)
 
 ## Capabilities
@@ -427,8 +472,11 @@ through Events.
 - parsers against fixtures (`test/adapters.test.js`); API, registry rules, paging, manual items,
   removal (`test/api.test.js`); scheduler, backoff, relay to Events (`test/scheduler-events.test.js`);
   proposals and seeds (`test/proposals.test.js`)
-- the public host shows only an honest "internal service" page, and the vhost keeps the API
-  loopback-only (`test/public-host.test.js`)
+- the public host shows only an honest "internal service" page and the merchant opt-in pages, and the vhost keeps the
+  API loopback-only (`test/public-host.test.js`)
+- merchant opt-in: no source before the DNS/meta proof, the terms note records who/when/how, robots.txt is still obeyed,
+  withdrawal disables and keeps the note, and the JSON read carries last crawl stats (`test/merchant-optin.test.js`,
+  `test/merchant-pages.test.js`)
 
 Production on 2026-10-22 (counts read from `ov_sources`):
 - 43 of 47 sources enabled, each after its terms and robots were read (by category in [Seeds](#seeds)); none of them
@@ -449,8 +497,10 @@ readiness, row counts; see OpenVibe.Host `docs/restore-drills.md`).
 Reporting: [SECURITY.md](SECURITY.md). The rules the code keeps:
 
 - **Auth.** Every `/api/v1` route needs an OpenVibe.Network service token for audience
-  `openvibe.sources` with that route's capability, then passes the per-actor limits. There are no user
-  sessions and no public API: the vhost keeps `/api/v1/*` loopback-only.
+  `openvibe.sources` with that route's capability, then passes the per-actor limits. The merchant API and pages are the
+  one person-facing exception: a Network person session (Bearer on the API, the first-party `ov_token` cookie on the
+  pages) owns its claims, and a first-party service may act for a person only with `X-OV-Subject`. There is still no
+  public JSON API: the vhost keeps `/api/v1/*` loopback-only, and only `/merchant*` and `/shared/*` are public.
 - **Egress.** Sources fetches outside URLs by design, only through its guard: http(s) on ports 80/443,
   every resolved address public at connect time (no DNS rebinding), each redirect re-checked, robots.txt
   obeyed, per-host spacing, one deadline and a byte cap per response (`test/robots-ssrf.test.js`,
@@ -488,6 +538,8 @@ the Network wildcard certificate and answers only:
 | Path | Answer |
 |---|---|
 | `/` | a short page: an internal ingestion service, nothing to browse (HTML for browsers, the text route index otherwise; noindex, no-store) |
+| `/merchant`, `/merchant/*` | the merchant opt-in pages (guest explanation, signed-in claims, proof/withdraw forms; noindex, no-store) |
+| `/shared/*` | this release's pinned `theme-loader.js`, `kit.css`, `kit-web.js` (served by `openvibe-shared/serve`) |
 | `/api/health`, `/api/ready`, `/release.json` | proxied |
 | `/robots.txt` | `Disallow: /` |
 | `/metrics` | 404 (Prometheus scrapes `127.0.0.1:4720/metrics` directly) |
@@ -503,6 +555,8 @@ sudo ln -sf /etc/nginx/sites-available/sources.openvibe.network.conf /etc/nginx/
 sudo nginx -t && sudo systemctl reload nginx
 # check
 curl -sS -H 'Accept: text/html' https://sources.openvibe.network/ | grep -o '<title>[^<]*'   # OpenVibe.Sources
+curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/merchant           # 200
+curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/shared/kit.css     # 200
 curl -sS https://sources.openvibe.network/api/health
 curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/api/v1/sources    # 403
 curl -sS -o /dev/null -w '%{http_code}\n' https://sources.openvibe.network/metrics           # 404
@@ -512,9 +566,9 @@ curl -sS https://sources.openvibe.network/admin                                 
 
 ## Launch rule
 
-Sources has no public pages by design, so it never "launches" as a site. The domain is not in
-[OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); this repository's own
-vhost serves it.
+Sources has no public product pages by design: the only person-facing pages are the merchant opt-in flow (`/merchant`),
+which exist so a merchant can prove a domain and name a sitemap/feed. It never "launches" as a site. The domain is not
+in [OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); this repository's own vhost serves it.
 
 ---
 

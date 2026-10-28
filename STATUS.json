@@ -6,7 +6,7 @@
   "plan": "OpenVibe End-to-End Realignment & Implementation Plan, revision 3 (20 Sep 2026)",
   "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
-  "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, health and JSON 404s; the API is loopback-only; README \"Public host\")",
+  "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, the merchant opt-in pages, health and JSON 404s; the JSON API is loopback-only; README \"Public host\")",
   "contracts": "openvibe-contracts v0.224.0",
   "sdk": "openvibe-sdk v0.67.0",
   "shared": "openvibe-shared v4.33.0",
@@ -26,7 +26,8 @@
     "sitemap",
     "jsonld",
     "api",
-    "manual"
+    "manual",
+    "crawl"
   ],
   "seededSources": 47,
   "enabledSources": 43,
@@ -34,7 +35,8 @@
   "deployment": "Deployed with `sudo ovhost deploy sources`: /opt/openvibe.sources, unit openvibe-sources, 127.0.0.1:4720, principal sources. On 2026-10-22, 43 of the 47 sources were enabled in production (reviews 22, hosting 5, news 4, trade 4, games 3, coupons 2, and blog, crowdfunding and deals 1 each; none failing), with 55,683 items from 4,762 fetch runs since the first on 2026-10-07; they feed OpenVibe.News, Reviews, Deals (with its crowdfunding search), Coupons, Trade, Host, Games and Blog's desks. Restore drill passed 2026-09-23.",
   "features": [
     "source registry with terms, robots and licence notes",
-    "rss, atom, sitemap, jsonld, api and manual adapters",
+    "rss, atom, sitemap, jsonld, api, manual and crawl adapters",
+    "merchant opt-in: a signed-in merchant proves a domain by DNS TXT or meta tag, names a sitemap or product feed, and a source is created only on verification with the explicit permission in its terms note; withdrawal disables it and keeps the note; /api/v1/merchant/sources is the JSON read for Report",
     "categories: news, blog, reviews, deals, coupons, trade, hosting, crowdfunding, games, and since contracts 0.210.0 housing, food and jobs (read from sources.source@1)",
     "a deal feed's own offer elements kept as stated (feed@3: DealNews' price, currency, retailer, end date, category and editors' pick)",
     "api mappings: keyed maps, where conditions and patterns, $index for ranked lists; per-endpoint timeout_ms and max_bytes",

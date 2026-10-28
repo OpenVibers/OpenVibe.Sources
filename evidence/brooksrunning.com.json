@@ -1,0 +1,43 @@
+{
+  "domain": "brooksrunning.com",
+  "at": "2026-10-28T10:17:57.626Z",
+  "attempted": [
+    {
+      "url": "https://brooksrunning.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 389
+    },
+    {
+      "url": "https://brooksrunning.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 390
+    },
+    {
+      "url": "https://brooksrunning.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 392
+    },
+    {
+      "url": "https://brooksrunning.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 387
+    },
+    {
+      "url": "https://brooksrunning.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 383
+    },
+    {
+      "url": "https://brooksrunning.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 375
+    }
+  ],
+  "verdict": "queued"
+}

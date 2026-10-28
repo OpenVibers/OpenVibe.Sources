@@ -1,0 +1,43 @@
+{
+  "domain": "woot.com",
+  "at": "2026-10-28T10:18:29.235Z",
+  "attempted": [
+    {
+      "url": "https://woot.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 306
+    },
+    {
+      "url": "https://woot.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 21152
+    },
+    {
+      "url": "https://woot.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 4815
+    },
+    {
+      "url": "https://woot.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 4815
+    },
+    {
+      "url": "https://woot.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 4815
+    },
+    {
+      "url": "https://woot.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 31697
+    }
+  ],
+  "verdict": "ok"
+}

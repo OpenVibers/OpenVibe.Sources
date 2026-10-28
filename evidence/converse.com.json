@@ -1,0 +1,43 @@
+{
+  "domain": "converse.com",
+  "at": "2026-10-28T10:18:00.177Z",
+  "attempted": [
+    {
+      "url": "https://converse.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 384
+    },
+    {
+      "url": "https://converse.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 385
+    },
+    {
+      "url": "https://converse.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 387
+    },
+    {
+      "url": "https://converse.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 382
+    },
+    {
+      "url": "https://converse.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 378
+    },
+    {
+      "url": "https://converse.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 370
+    }
+  ],
+  "verdict": "queued"
+}

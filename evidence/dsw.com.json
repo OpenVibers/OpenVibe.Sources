@@ -1,0 +1,43 @@
+{
+  "domain": "dsw.com",
+  "at": "2026-10-28T10:18:02.761Z",
+  "attempted": [
+    {
+      "url": "https://dsw.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1617
+    },
+    {
+      "url": "https://dsw.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 1515
+    },
+    {
+      "url": "https://dsw.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 248626
+    },
+    {
+      "url": "https://dsw.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 1515
+    },
+    {
+      "url": "https://dsw.com/api/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 20054
+    },
+    {
+      "url": "https://dsw.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 704259
+    }
+  ],
+  "verdict": "ok"
+}

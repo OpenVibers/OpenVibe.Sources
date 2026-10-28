@@ -1,0 +1,43 @@
+{
+  "domain": "newbalance.com",
+  "at": "2026-10-28T10:18:16.312Z",
+  "attempted": [
+    {
+      "url": "https://newbalance.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    },
+    {
+      "url": "https://newbalance.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    },
+    {
+      "url": "https://newbalance.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    },
+    {
+      "url": "https://newbalance.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    },
+    {
+      "url": "https://newbalance.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    },
+    {
+      "url": "https://newbalance.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 633
+    }
+  ],
+  "verdict": "queued"
+}

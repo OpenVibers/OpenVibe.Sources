@@ -1,0 +1,37 @@
+{
+  "domain": "runningwarehouse.com",
+  "at": "2026-10-28T10:18:22.204Z",
+  "attempted": [
+    {
+      "url": "https://runningwarehouse.com/robots.txt",
+      "status": 0,
+      "error": "TypeError"
+    },
+    {
+      "url": "https://runningwarehouse.com/sitemap.xml",
+      "status": 0,
+      "error": "TypeError"
+    },
+    {
+      "url": "https://runningwarehouse.com/products.json",
+      "status": 0,
+      "error": "TypeError"
+    },
+    {
+      "url": "https://runningwarehouse.com/llms.txt",
+      "status": 0,
+      "error": "TypeError"
+    },
+    {
+      "url": "https://runningwarehouse.com/api/",
+      "status": 0,
+      "error": "TypeError"
+    },
+    {
+      "url": "https://runningwarehouse.com/",
+      "status": 0,
+      "error": "TypeError"
+    }
+  ],
+  "verdict": "queued"
+}

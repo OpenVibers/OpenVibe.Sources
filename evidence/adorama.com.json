@@ -1,0 +1,43 @@
+{
+  "domain": "adorama.com",
+  "at": "2026-10-28T10:16:54.379Z",
+  "attempted": [
+    {
+      "url": "https://adorama.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 5529
+    },
+    {
+      "url": "https://adorama.com/sitemap.xml",
+      "status": 404,
+      "challenged": true,
+      "bytes": 105248
+    },
+    {
+      "url": "https://adorama.com/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 771
+    },
+    {
+      "url": "https://adorama.com/llms.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 771
+    },
+    {
+      "url": "https://adorama.com/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 771
+    },
+    {
+      "url": "https://adorama.com/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 771
+    }
+  ],
+  "verdict": "structured-only"
+}

@@ -9,6 +9,7 @@
  * summary is the description the page wrote for search results, never its body.
  */
 const { toText, toIsoDate, canonicalUrl, decodeEntities } = require('./util');
+const { agentTokens } = require('../robots');
 
 const PARSER_VERSION = 'page@1';
 const MAX_LINKS = 1000;
@@ -39,7 +40,7 @@ function directives(value) {
 
 /**
  * X-Robots-Tag: "noindex", "noindex, nofollow", or scoped to one crawler ("otherbot: noindex"). A directive scoped to
- * another crawler does not apply to us; one scoped to our product token does.
+ * another crawler does not apply to us; one scoped to any of our product tokens does.
  */
 function headerDirectives(header, agent) {
     const out = { noindex: false, nofollow: false };
@@ -47,7 +48,7 @@ function headerDirectives(header, agent) {
         let value = String(line);
         const m = /^\s*([a-z0-9_-]+)\s*:\s*(.*)$/i.exec(value);
         if (m && !['unavailable_after', 'max-snippet', 'max-image-preview', 'max-video-preview'].includes(m[1].toLowerCase())) {
-            if (m[1].toLowerCase() !== String(agent).toLowerCase()) continue;
+            if (!agentTokens(agent).includes(m[1].toLowerCase())) continue;
             value = m[2];
         }
         const d = directives(value);
@@ -61,17 +62,17 @@ function headerDirectives(header, agent) {
  * read(html, { url, agent, headers, links }) → { noindex, nofollow, canonical, base, title, description, image, site_name,
  * og_type, language, published_at, updated_at, author, links: [absolute urls] }
  */
-function read(html, { url, agent = 'OpenVibeSources', headers = {}, links = false } = {}) {
+function read(html, { url, agent = 'OpenVibeBot,OpenVibeSources', headers = {}, links = false } = {}) {
     const head = html.slice(0, 512 * 1024);
     const meta = {};
     let noindex = false;
     let nofollow = false;
-    const token = String(agent).toLowerCase();
+    const tokens = agentTokens(agent);
     for (const t of tags(head, 'meta')) {
         const a = attrs(t);
         const key = (a.name || a.property || '').toLowerCase();
         if (!key || a.content == null) continue;
-        if (key === 'robots' || key === token) {
+        if (key === 'robots' || tokens.includes(key)) {
             const d = directives(a.content);
             noindex = noindex || d.noindex;
             nofollow = nofollow || d.nofollow;

@@ -1,0 +1,43 @@
+{
+  "domain": "ikea.com",
+  "at": "2026-10-28T10:18:14.069Z",
+  "attempted": [
+    {
+      "url": "https://ikea.com/robots.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    },
+    {
+      "url": "https://ikea.com/sitemap.xml",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    },
+    {
+      "url": "https://ikea.com/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    },
+    {
+      "url": "https://ikea.com/llms.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    },
+    {
+      "url": "https://ikea.com/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    },
+    {
+      "url": "https://ikea.com/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 4555
+    }
+  ],
+  "verdict": "queued"
+}

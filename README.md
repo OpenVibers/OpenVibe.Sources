@@ -318,6 +318,53 @@ downloaded once by hand and parsed offline with these adapters (NASA 10 items, N
 Steam 20, DealNews 50, SEC 200); that check is not part of the test suite and proves nothing about
 the terms.
 
+## Source access (ADR 0007)
+
+Whether a site may be read, and how, is computed from evidence, never judged:
+[docs/adr/0007-source-access.md](docs/adr/0007-source-access.md). `node scripts/probe.mjs <domain>` (run from the
+production host, whose egress is the crawler's) writes `evidence/<domain>.json`: robots.txt, sitemap.xml,
+/products.json, llms.txt, /api/ and the home page, with statuses and challenge markers, and a verdict.
+`node scripts/adapters-from-evidence.mjs` turns evidence into adapters (`ok` → an enabled crawl source,
+`structured-only` → a disabled one, Lane 1) or a row in [compliance/review-queue.yaml](compliance/review-queue.yaml)
+(`queued`); `node scripts/register-adapters.js` brings the registry to the adapters. The crawler identifies itself as
+`Mozilla/5.0 (compatible; OpenVibeBot/1.0; +https://openvibe.network/bot)` and obeys robots.txt groups, robots meta
+and X-Robots-Tag for either token, `OpenVibeBot` or `OpenVibeSources`. The crawl type itself:
+[docs/adr/0006-crawl-source-type.md](docs/adr/0006-crawl-source-type.md).
+
+Probed 2026-10-28 (`c` = challenge page):
+
+| Domain | Verdict | Statuses | Lane | Adapter |
+|---|---|---|---|---|
+| adorama.com | structured-only | `/robots.txt:200 /sitemap.xml:404c /products.json:403c /llms.txt:403c /api/:403c /:403c` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/adorama.com.json](adapters/adorama.com.json) |
+| allbirds.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:200 /llms.txt:200 /api/:404 /:200` | crawl adapter, enabled | [adapters/allbirds.com.json](adapters/allbirds.com.json) |
+| anker.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:404 /llms.txt:200 /api/:404 /:200` | crawl adapter, enabled | [adapters/anker.com.json](adapters/anker.com.json) |
+| backcountry.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| bestbuy.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:404 /llms.txt:404 /api/:404 /:200` | crawl adapter, enabled | [adapters/bestbuy.com.json](adapters/bestbuy.com.json) |
+| bhphotovideo.com | structured-only | `/robots.txt:200 /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/bhphotovideo.com.json](adapters/bhphotovideo.com.json) |
+| brooksrunning.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| converse.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| dsw.com | ok | `/robots.txt:200 /sitemap.xml:404 /products.json:404 /llms.txt:404 /api/:200 /:200` | crawl adapter, enabled | [adapters/dsw.com.json](adapters/dsw.com.json) |
+| footlocker.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:200 /llms.txt:200 /api/:403 /:200` | crawl adapter, enabled | [adapters/footlocker.com.json](adapters/footlocker.com.json) |
+| frame.work | queued | `/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| gog.com | ok | `/robots.txt:200 /sitemap.xml:404 /products.json:404 /llms.txt:404 /api/:404 /:200` | crawl adapter, enabled | [adapters/gog.com.json](adapters/gog.com.json) |
+| hoka.com | structured-only | `/robots.txt:200 /sitemap.xml:404 /products.json:410 /llms.txt:410 /api/:500 /:0` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/hoka.com.json](adapters/hoka.com.json) |
+| homedepot.com | ok | `/robots.txt:200 /sitemap.xml:404 /products.json:404 /llms.txt:404 /api/:404 /:200` | crawl adapter, enabled | [adapters/homedepot.com.json](adapters/homedepot.com.json) |
+| humblebundle.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:404 /llms.txt:404 /api/:404 /:200` | crawl adapter, enabled | [adapters/humblebundle.com.json](adapters/humblebundle.com.json) |
+| ikea.com | queued | `/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| microcenter.com | queued | `/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| monoprice.com | structured-only | `/robots.txt:200 /sitemap.xml:403c /products.json:403c /llms.txt:404 /api/:403c /:403c` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/monoprice.com.json](adapters/monoprice.com.json) |
+| newbalance.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| newegg.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| on.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:200 /llms.txt:200 /api/:403 /:200` | crawl adapter, enabled | [adapters/on.com.json](adapters/on.com.json) |
+| patagonia.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:200 /llms.txt:200 /api/:200 /:200` | crawl adapter, enabled | [adapters/patagonia.com.json](adapters/patagonia.com.json) |
+| rei.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| runningwarehouse.com | queued | `/robots.txt:0 /sitemap.xml:0 /products.json:0 /llms.txt:0 /api/:0 /:0` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| saucony.com | structured-only | `/robots.txt:200 /sitemap.xml:404 /products.json:404c /llms.txt:404c /api/:404c /:200c` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/saucony.com.json](adapters/saucony.com.json) |
+| vans.com | queued | `/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403` | review queue; probed again after 24 h | [compliance/review-queue.yaml](compliance/review-queue.yaml) |
+| wayfair.com | structured-only | `/robots.txt:200 /sitemap.xml:404 /products.json:404 /llms.txt:429 /api/:429 /:429` | Lane 1 (feeds, affiliate, API, opt-in); adapter disabled | [adapters/wayfair.com.json](adapters/wayfair.com.json) |
+| woot.com | ok | `/robots.txt:200 /sitemap.xml:200 /products.json:404 /llms.txt:404 /api/:404 /:200` | crawl adapter, enabled | [adapters/woot.com.json](adapters/woot.com.json) |
+| zappos.com | ok | `/robots.txt:200 /sitemap.xml:404 /products.json:404 /llms.txt:404 /api/:200 /:200` | crawl adapter, enabled | [adapters/zappos.com.json](adapters/zappos.com.json) |
+
 ## Processing jobs: who does what (roadmap WS-O task 7, decided 2026-09-26)
 
 | Job | Where | How |

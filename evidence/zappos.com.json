@@ -1,0 +1,43 @@
+{
+  "domain": "zappos.com",
+  "at": "2026-10-28T10:18:30.558Z",
+  "attempted": [
+    {
+      "url": "https://zappos.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1230
+    },
+    {
+      "url": "https://zappos.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 249514
+    },
+    {
+      "url": "https://zappos.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 249564
+    },
+    {
+      "url": "https://zappos.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 249501
+    },
+    {
+      "url": "https://zappos.com/api/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 2599
+    },
+    {
+      "url": "https://zappos.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1373452
+    }
+  ],
+  "verdict": "ok"
+}

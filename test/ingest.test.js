@@ -68,7 +68,7 @@ t('a good fetch creates items with full provenance and an ok run', async () => {
     assert.strictEqual((await events('sources.item.created')).filter(e => e.payload.source_key === key).length, 2);
     // the fetcher identified itself and asked robots.txt first
     const feedReq = web.hits('/feed.xml')[0];
-    assert.match(feedReq.headers['user-agent'], /^OpenVibeSources\//);
+    assert.strictEqual(feedReq.headers['user-agent'], 'Mozilla/5.0 (compatible; OpenVibeBot/1.0; +https://openvibe.network/bot)');
     assert.ok(web.hits('/robots.txt')[0].at <= feedReq.at);
 });
 

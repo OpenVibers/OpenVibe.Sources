@@ -1,0 +1,26 @@
+{
+  "key": "crawl-bhphotovideo-com",
+  "name": "bhphotovideo.com (crawl)",
+  "type": "crawl",
+  "category": "deals",
+  "homepage_url": "https://bhphotovideo.com/",
+  "endpoints": [
+    "https://bhphotovideo.com/"
+  ],
+  "crawl": {
+    "sitemaps": true,
+    "follow_links": true,
+    "max_depth": 2,
+    "require_structured": true,
+    "max_pages": 2000,
+    "pages_per_run": 50,
+    "recrawl_sec": 86400
+  },
+  "min_interval_ms": 5000,
+  "poll_interval_sec": 3600,
+  "robots_note": "robots.txt answered 200 at 2026-10-28T10:17:53.766Z (evidence/bhphotovideo.com.json); every request and redirect hop is checked against it (RFC 9309, tokens OpenVibeBot and OpenVibeSources).",
+  "terms_note": "Access verdict \"structured-only\" per ADR 0007, computed from evidence/bhphotovideo.com.json (2026-10-28T10:17:53.766Z). Structured surfaces answering: none. Lane 1 only: feeds, affiliate programs, official APIs or merchant opt-in; this crawl adapter stays disabled.",
+  "enabled": false,
+  "review_required": true,
+  "default_indexability": "noindex"
+}

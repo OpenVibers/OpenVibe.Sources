@@ -1,0 +1,43 @@
+{
+  "domain": "bestbuy.com",
+  "at": "2026-10-28T10:17:52.971Z",
+  "attempted": [
+    {
+      "url": "https://bestbuy.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 15016
+    },
+    {
+      "url": "https://bestbuy.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 7194
+    },
+    {
+      "url": "https://bestbuy.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 287219
+    },
+    {
+      "url": "https://bestbuy.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 287219
+    },
+    {
+      "url": "https://bestbuy.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 287219
+    },
+    {
+      "url": "https://bestbuy.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 600379
+    }
+  ],
+  "verdict": "ok"
+}

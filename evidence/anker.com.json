@@ -1,0 +1,43 @@
+{
+  "domain": "anker.com",
+  "at": "2026-10-28T10:17:00.155Z",
+  "attempted": [
+    {
+      "url": "https://anker.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1192
+    },
+    {
+      "url": "https://anker.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 947
+    },
+    {
+      "url": "https://anker.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 1424433
+    },
+    {
+      "url": "https://anker.com/llms.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 7071
+    },
+    {
+      "url": "https://anker.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 1424433
+    },
+    {
+      "url": "https://anker.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1939667
+    }
+  ],
+  "verdict": "ok"
+}

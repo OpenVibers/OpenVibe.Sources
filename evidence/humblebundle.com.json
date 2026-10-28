@@ -1,0 +1,43 @@
+{
+  "domain": "humblebundle.com",
+  "at": "2026-10-28T10:18:13.614Z",
+  "attempted": [
+    {
+      "url": "https://humblebundle.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1256
+    },
+    {
+      "url": "https://humblebundle.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 397
+    },
+    {
+      "url": "https://humblebundle.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 71476
+    },
+    {
+      "url": "https://humblebundle.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 71421
+    },
+    {
+      "url": "https://humblebundle.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 232
+    },
+    {
+      "url": "https://humblebundle.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 574183
+    }
+  ],
+  "verdict": "ok"
+}

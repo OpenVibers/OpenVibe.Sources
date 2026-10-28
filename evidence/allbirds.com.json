@@ -1,0 +1,43 @@
+{
+  "domain": "allbirds.com",
+  "at": "2026-10-28T10:16:56.095Z",
+  "attempted": [
+    {
+      "url": "https://allbirds.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 2285
+    },
+    {
+      "url": "https://allbirds.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1186
+    },
+    {
+      "url": "https://allbirds.com/products.json",
+      "status": 200,
+      "challenged": false,
+      "bytes": 203264
+    },
+    {
+      "url": "https://allbirds.com/llms.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 5767
+    },
+    {
+      "url": "https://allbirds.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 423147
+    },
+    {
+      "url": "https://allbirds.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 694402
+    }
+  ],
+  "verdict": "ok"
+}

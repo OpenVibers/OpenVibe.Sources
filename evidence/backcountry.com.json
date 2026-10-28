@@ -1,0 +1,43 @@
+{
+  "domain": "backcountry.com",
+  "at": "2026-10-28T10:17:00.621Z",
+  "attempted": [
+    {
+      "url": "https://backcountry.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    },
+    {
+      "url": "https://backcountry.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    },
+    {
+      "url": "https://backcountry.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    },
+    {
+      "url": "https://backcountry.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    },
+    {
+      "url": "https://backcountry.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    },
+    {
+      "url": "https://backcountry.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 919
+    }
+  ],
+  "verdict": "queued"
+}

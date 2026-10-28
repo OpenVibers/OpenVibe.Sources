@@ -9,7 +9,10 @@
     "dev": "NODE_ENV=development node server/index.js",
     "test": "node test/run.js",
     "seed": "node scripts/seed.js",
-    "test:pg": "SOURCES_TEST_STORE=pg node test/run.js"
+    "test:pg": "SOURCES_TEST_STORE=pg node test/run.js",
+    "probe": "node scripts/probe.mjs",
+    "adapters": "node scripts/adapters-from-evidence.mjs",
+    "register-adapters": "node scripts/register-adapters.js"
   },
   "keywords": [
     "openvibe",

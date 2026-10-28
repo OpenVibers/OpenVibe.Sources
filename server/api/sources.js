@@ -6,13 +6,14 @@
  *     GET  /api/v1/sources                    every source with health and staleness
  *     GET  /api/v1/sources/:key
  *     GET  /api/v1/sources/:key/runs?before=&limit=   fetch runs, newest first
+ *     GET  /api/v1/sources/:key/crawl         a crawl source's frontier: pages by state, due, the latest fetches
  *     GET  /api/v1/runs?state=&source=&after=&limit=  fetch runs across sources, oldest first
  *     GET  /api/v1/health                     status counts and every source that is not healthy
  *   sources.source.manage
  *     POST   /api/v1/sources                  create (disabled unless enabled: true + notes)
  *     PATCH  /api/v1/sources/:key             change fields (enable/disable too)
  *     DELETE /api/v1/sources/:key             only while it has no items
- *     POST   /api/v1/sources/:key/fetch       run now (409 while a run is in flight)
+ *     POST   /api/v1/sources/:key/fetch       run now (409 while a run is in flight); a crawl starts and answers 202
  */
 const express = require('express');
 const { http } = require('openvibe-contracts');
@@ -66,6 +67,13 @@ function sourcesRouter({ db, registry, ingest, auth, limits }) {
         res.json({ runs: rows.map(runView), next_before: rows.length === limit ? rows[rows.length - 1].rid : null });
     });
 
+    router.get('/api/v1/sources/:key/crawl', read, async (req, res) => {
+        const out = await ingest.crawlStatus(req.params.key);
+        if (!out) return notFound(res, req);
+        if (out.not_crawl) return http.sendProblem(res, 409, 'sources.not_crawl', { detail: 'only a crawl source has a frontier', ctx: req.ov });
+        res.json({ crawl: out });
+    });
+
     router.get('/api/v1/runs', read, async (req, res) => {
         const state = req.query.state ? String(req.query.state) : null;
         if (state && state !== 'failed' && !STATES.includes(state)) return http.sendProblem(res, 400, 'sources.bad_query', { detail: `state must be failed or one of ${STATES.join('|')}`, ctx: req.ov });
@@ -116,6 +124,13 @@ function sourcesRouter({ db, registry, ingest, auth, limits }) {
 
     router.post('/api/v1/sources/:key/fetch', fetchNow, async (req, res, next) => {
         try {
+            const row = await registry.get(req.params.key);
+            if (row && row.type === 'crawl') {
+                // A crawl run takes minutes: it starts now and its pages show up in /runs and /crawl as they are fetched.
+                if (ingest.inflight().includes(row.key)) return http.sendProblem(res, 409, 'sources.fetch_in_flight', { detail: 'a run of this source is in flight', ctx: req.ov });
+                ingest.run(row.key, { trigger: 'manual' }).catch(err => console.error(`[sources] crawl ${row.key}: ${err.stack || err}`));
+                return res.status(202).json({ started: true, source_key: row.key });
+            }
             const out = await ingest.run(req.params.key, { trigger: 'manual' });
             if (!out) return notFound(res, req);
             if (out.manual) return http.sendProblem(res, 409, 'sources.manual_source', { detail: 'a manual source is not fetched; add items with POST /api/v1/sources/:key/items', ctx: req.ov });

@@ -81,6 +81,17 @@ function load(env = process.env) {
             // deliberate on-host sources only). Empty in production.
             allowPrivateHosts: list(env.SOURCES_ALLOW_PRIVATE_HOSTS, []),
         },
+        // Crawl sources (server/crawl.js): how long one run may take, how many crawl at once (each holds a worker slot
+        // for its whole run, so feeds always keep the rest), sitemap limits, and how soon a run follows one that left
+        // pages due.
+        crawl: {
+            runMs: int(env.SOURCES_CRAWL_RUN_MS, 15 * 60 * 1000),
+            maxConcurrent: int(env.SOURCES_MAX_CONCURRENT_CRAWLS, 2),
+            soonMs: int(env.SOURCES_CRAWL_SOON_MS, 60 * 1000),
+            sitemapMaxBytes: int(env.SOURCES_SITEMAP_MAX_BYTES, 50 * 1024 * 1024),
+            sitemapMaxUrls: 50000,
+            maxSitemaps: 1000,
+        },
         items: {
             // The ceiling on any one source's max_items. Each source still keeps its own (most are 200 or less); 12000
             // lets sec-company-tickers take SEC's whole ticker list (about 10,450 rows) in its one daily request.

@@ -53,7 +53,7 @@ start and flushes on stop.
 
 ## The registry
 
-A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|manual`), `category`
+A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|crawl|manual`), `category`
 (`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding|games|housing|food|jobs`, read from `sources.source@1`; housing, food and jobs since contracts 0.210.0), `endpoints` (for `api`: a field mapping, no code per
 provider), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
@@ -106,6 +106,7 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
 | `jsonld` (`jsonld@1`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error` |
 | `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`; epoch fields only where mapped as such |
+| `crawl` (`jsonld@1`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
 
 XML with DTD entity declarations is refused; the parser expands no entities (values are decoded
@@ -169,6 +170,65 @@ field is stored as `kind` with those fields; any other item is skipped and count
 plain feed source keeps it). The registry refuses a pattern that does not compile or has no group, an unknown option,
 and `extract` on an api source. `dealnews-coupon-codes` (category `coupons`) is the first: the code, the shop and the
 stated end date of the DealNews deals that state a code, exactly as written.
+
+### Crawl sources (`server/crawl.js`, contracts 0.224.0)
+
+The owner, 2026-10-28: "aggregate all websites and select deals on all sites… a full comprehensive crawler system… the
+open source Google". A crawl source walks one site from its endpoints (the seeds). Its `crawl` settings:
+
+| Field | Default | What it does |
+|---|---|---|
+| `sitemaps` | `true` | read the site's sitemaps: robots.txt `Sitemap` lines, else `/sitemap.xml`; indexes and `.xml.gz` followed |
+| `follow_links` | `false` | also follow same-host links (not `rel=nofollow`, not from a `nofollow` page) |
+| `max_depth` | `2` | with `follow_links`, how many links from a seed or sitemap page |
+| `include`, `exclude` | none | regular expressions over the path and query (seeds are fetched whatever they say) |
+| `max_pages` | `5000` | the frontier's size for the site |
+| `pages_per_run` | `100` | requests in one run (sitemaps count) |
+| `recrawl_sec` | `86400` | when a page that changed is due again; an unchanged page waits up to 4× longer |
+| `require_structured` | `true` | keep only pages with schema.org JSON-LD |
+
+**The frontier** (`crawl_frontier`, migration 0006) holds every page and sitemap the crawl knows, with its state:
+
+- **Page states:** `new`, `kept`, `hub`, `unstructured`, `noindex`, `duplicate`, `not_html`, `too_large`, `excluded`,
+  `denied`, `missing`, `gone` and `failing`.
+- **What it records per page:** when the page is due, its validators, its body hash, and the fetch run its items were
+  last read in.
+- **Run order:** each run reads the due sitemaps first, then the due pages, oldest first.
+
+**Every request is a source request like any other:**
+- robots.txt on the URL and on every redirect hop;
+- per-host spacing with Crawl-delay and the source's `min_interval_ms`;
+- conditional GETs;
+- the address guard;
+- one `fetch_runs` row per page.
+
+**Scope:** a crawl never leaves its seeds' hosts (or their `www` twins).
+
+**Pages that ask not to be kept:**
+- **Canonical:** a page whose canonical is another page of the crawl is read there instead.
+- **noindex:** a page that says noindex (`<meta name="robots">`, `<meta name="openvibesources">`, `X-Robots-Tag`) is
+  not kept, and its items are retired.
+- **Gone:** a page that answers 404 twice, or 410 once, is gone and its items are retired as `gone_from_source`.
+
+**A page's failure is the page's:** the source fails (backoff, one `sources.fetch.failed`) only when the site does:
+- robots.txt unreachable;
+- a 429 or a 503 with Retry-After;
+- five requests in a row with no usable answer.
+
+**Scheduling:**
+- at most `SOURCES_MAX_CONCURRENT_CRAWLS` (2) crawls run at once;
+- a run lasts at most `SOURCES_CRAWL_RUN_MS` (15 min);
+- while pages are still due, the next run comes after `SOURCES_CRAWL_SOON_MS` (60 s), not `poll_interval_sec`.
+
+**Settings that don't apply:** a crawl source has no `retire_after_sec`, because a page leaves with its items as
+described above.
+
+**API:**
+- `GET /api/v1/sources/:key/crawl` shows the frontier: pages by state, sitemaps, how many are due, and the latest
+  fetches.
+- `POST /api/v1/sources/:key/fetch` starts a crawl and answers 202.
+
+Tests: `test/crawl.test.js`.
 
 ### Items
 

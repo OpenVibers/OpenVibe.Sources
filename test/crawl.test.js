@@ -121,7 +121,7 @@ t('a crawl reads the sitemaps robots.txt names and keeps the products their page
     const lamp = items.find(i => i.title === 'Desk lamp');
     assert.strictEqual(lamp.kind, 'product');
     assert.strictEqual(JSON.parse(lamp.fields).offers[0].price, '19.99');
-    assert.strictEqual(lamp.parser_version, 'jsonld@1');
+    assert.strictEqual(lamp.parser_version, 'jsonld@2');
     assert.strictEqual(lamp.last_fetch_run_id, by['/products/lamp'].last_ok_run_id);
     const runs = await runsOf('shop');
     assert.ok(runs.every(r => r.state !== 'parse_error'));

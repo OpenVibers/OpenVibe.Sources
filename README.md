@@ -104,9 +104,9 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 |---|---|---|
 | `rss`, `atom` (`feed@3`) | RSS 2.0, RSS 1.0/RDF, Atom 1.0 | guid/id identity, else link; text-only summary capped at 1000 chars; a deal feed's own offer elements (DealNews' `dealnews:price` with its currency, `dealnews:retailer`, `dealnews:expires`) become `fields.price`, `currency`, `seller` and `valid_until` exactly as stated (the item stays an article; nothing is read out of the headline); its `dealnews:category` fills `fields.categories` when the item has no `<category>`, and `dealnews:staffPick` is `fields.staff_pick` (true/false, absent when not stated) |
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
-| `jsonld` (`jsonld@1`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error` |
+| `jsonld` (`jsonld@2`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error`; `list_price` from a ListPrice/StrikethroughPrice/MSRP/SRP `priceSpecification`, as stated |
 | `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`; epoch fields only where mapped as such |
-| `crawl` (`jsonld@1`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
+| `crawl` (`jsonld@2`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
 
 XML with DTD entity declarations is refused; the parser expands no entities (values are decoded

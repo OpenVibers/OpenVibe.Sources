@@ -132,14 +132,37 @@ t('JSON-LD Product: offers as stated, missing price stays null, rating copied no
     assert.strictEqual(p.fields.gtin, '0012345678905');
     assert.strictEqual(p.fields.brand, 'Example Co');
     assert.deepStrictEqual(p.fields.offers[0], {
-        type: 'Offer', price: '19.99', low_price: null, high_price: null, offer_count: null, currency: 'USD', availability: 'InStock',
+        type: 'Offer', price: '19.99', low_price: null, high_price: null, list_price: null, offer_count: null, currency: 'USD', availability: 'InStock',
         condition: null, valid_until: '2026-12-31T00:00:00.000Z', url: 'https://shop.example.com/p/widget-pro', seller: 'Example Shop',
     });
     assert.strictEqual(p.fields.offers[1].price, null, 'no price on the page = null, never 0 or a guess');
+    assert.strictEqual(p.fields.offers[1].list_price, null, 'no priceSpecification = no list price');
     assert.strictEqual(p.fields.offers[1].availability, 'OutOfStock');
     assert.deepStrictEqual(p.fields.aggregate_rating, { value: 4.4, best: null, worst: null, count: null, review_count: 89 });
     assert.deepStrictEqual(p.fields.reviews, [{ author: 'Sam', rating: { value: 5, best: 5, worst: null, count: null, review_count: null }, date: '2026-08-01T00:00:00.000Z' }]);
     assert.ok(!JSON.stringify(p).includes('Long text'), 'embedded review bodies are not stored');
+});
+
+t('JSON-LD priceSpecification: list price from ListPrice/StrikethroughPrice/MSRP/SRP as stated, only in the offer\'s currency; SalePrice or an untyped specification fills a missing price', () => {
+    const r = jsonld.parse(fx('list-price.html'), { url: 'https://shop.example.com/p/deals' });
+    assert.strictEqual(r.items.length, 1);
+    const o = r.items[0].fields.offers;
+    assert.strictEqual(o.length, 9);
+    const [a, b, c, d, e, f, g, h, i] = o;
+    assert.strictEqual(a.price, '99.99');
+    assert.strictEqual(a.list_price, '129.99', 'the prefixed ListPrice specification, exactly as stated');
+    assert.strictEqual(b.list_price, '79.95', 'an unprefixed StrikethroughPrice is read');
+    assert.strictEqual(c.list_price, null, 'a list price in EUR on a USD offer is not comparable');
+    assert.strictEqual(d.list_price, '99.99', 'MSRP');
+    assert.strictEqual(e.list_price, '84.99', 'SRP');
+    assert.strictEqual(f.price, '79.00', 'a SalePrice specification supplies the current price when the offer states none');
+    assert.strictEqual(f.list_price, null, 'a SalePrice is not a list price');
+    assert.strictEqual(g.price, null, 'a SalePrice in another currency does not supply the price');
+    assert.strictEqual(h.price, '44.00', 'a specification without priceType supplies the current price');
+    assert.strictEqual(i.price, '15.50');
+    assert.strictEqual(i.currency, 'GBP', 'a price stated only in the specification brings its currency');
+    assert.strictEqual(a.currency, 'USD');
+    assert.strictEqual(jsonld.PARSER_VERSION, 'jsonld@2');
 });
 
 t('JSON-LD NewsArticle, Review and BlogPosting; an invalid block is skipped, not fatal', () => {

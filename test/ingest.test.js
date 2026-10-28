@@ -323,7 +323,7 @@ t('JSON-LD and sitemap sources ingest end to end', async () => {
         const [prod] = await itemsOf(p);
         assert.strictEqual(prod.kind, 'product');
         assert.strictEqual(JSON.parse(prod.fields).offers[0].price, '19.99');
-        assert.strictEqual(prod.parser_version, 'jsonld@1');
+        assert.strictEqual(prod.parser_version, 'jsonld@2');
         const sm = await create(sourceDef({ type: 'sitemap', category: 'deals', endpoints: [`${s.origin}/sitemap.xml`] }));
         const out = await run(sm);
         assert.deepStrictEqual([out.runs[0].state, out.runs[0].items_created, out.runs[0].items_skipped], ['ok', 2, 1]);

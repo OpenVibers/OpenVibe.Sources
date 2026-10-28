@@ -5,8 +5,10 @@
  * Types read: Product, Offer, AggregateOffer, Review, NewsArticle, BlogPosting (and Article and
  * its news subtypes). Values are copied as the page states them: prices stay the strings the page
  * gave, ratings are the page's own numbers, availability is the schema.org term. Nothing is
- * computed, averaged or defaulted; a missing price is null. Embedded reviews keep author, rating
- * and date only (review text belongs to its author).
+ * computed, averaged or defaulted; a missing price is null. An offer's `list_price` is the price
+ * of its ListPrice/StrikethroughPrice/MSRP/SRP `priceSpecification` entry, copied exactly as the
+ * page states it. Embedded reviews keep author, rating and date only (review text belongs to its
+ * author).
  *
  * A page without any readable JSON-LD block is a parse error: the source promised structured data
  * and did not deliver it, and the run must say so instead of producing nothing silently.
@@ -14,7 +16,7 @@
 const crypto = require('crypto');
 const { toText, toIsoDate, canonicalUrl, toId, asArray, ParseError } = require('./util');
 
-const PARSER_VERSION = 'jsonld@1';
+const PARSER_VERSION = 'jsonld@2';
 const ARTICLE_TYPES = new Set(['NewsArticle', 'BlogPosting', 'Article', 'ReportageNewsArticle', 'AnalysisNewsArticle', 'OpinionNewsArticle', 'BackgroundNewsArticle']);
 const KIND = { Product: 'product', Offer: 'offer', AggregateOffer: 'offer', Review: 'review' };
 
@@ -61,6 +63,23 @@ const priceOf = (v) => {
     return null;
 };
 const term = (v) => (typeof v === 'string' ? v.replace(/^https?:\/\/schema\.org\//, '').slice(0, 60) : null);
+const LIST_PRICE_TYPES = new Set(['ListPrice', 'StrikethroughPrice', 'MSRP', 'SRP']);
+
+/**
+ * The price of the first priceSpecification entry whose priceType `match`es (or, when
+ * `allowUntyped`, that has no priceType), copied exactly as stated; null when there is no such
+ * entry, or when the entry's priceCurrency and the offer's are both stated and differ.
+ */
+function specPrice(o, match, allowUntyped = false) {
+    for (const spec of asArray(o.priceSpecification)) {
+        if (!spec || typeof spec !== 'object') continue;
+        const t = term(spec.priceType);
+        if (!match(t) && !(allowUntyped && t === null)) continue;
+        if (typeof spec.priceCurrency === 'string' && typeof o.priceCurrency === 'string' && spec.priceCurrency !== o.priceCurrency) return null;
+        return priceOf(spec.price);
+    }
+    return null;
+}
 const imageOf = (v, base) => {
     const first = asArray(v)[0];
     return canonicalUrl(first && typeof first === 'object' ? first.url || first.contentUrl : first, base);
@@ -68,13 +87,24 @@ const imageOf = (v, base) => {
 
 function offerFields(o, base) {
     if (!o || typeof o !== 'object') return null;
+    let price = priceOf(o.price);
+    let currency = typeof o.priceCurrency === 'string' && /^[A-Z]{3}$/.test(o.priceCurrency) ? o.priceCurrency : null;
+    if (o.price == null) {
+        price = specPrice(o, (t) => t === 'SalePrice', true);
+        // A shop that states its price only in the specification often states the currency only there too.
+        if (price != null && !currency) {
+            const spec = asArray(o.priceSpecification).find(x => x && typeof x === 'object' && priceOf(x.price) === price);
+            if (spec && typeof spec.priceCurrency === 'string' && /^[A-Z]{3}$/.test(spec.priceCurrency)) currency = spec.priceCurrency;
+        }
+    }
     return {
         type: typesOf(o)[0] || null,
-        price: priceOf(o.price),
+        price,
         low_price: priceOf(o.lowPrice),
         high_price: priceOf(o.highPrice),
+        list_price: specPrice(o, (t) => LIST_PRICE_TYPES.has(t)),
         offer_count: numeric(o.offerCount),
-        currency: typeof o.priceCurrency === 'string' && /^[A-Z]{3}$/.test(o.priceCurrency) ? o.priceCurrency : null,
+        currency,
         availability: term(o.availability),
         condition: term(o.itemCondition),
         valid_until: toIsoDate(o.priceValidUntil),

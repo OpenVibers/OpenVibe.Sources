@@ -1,0 +1,43 @@
+{
+  "domain": "bhphotovideo.com",
+  "at": "2026-10-28T10:17:53.766Z",
+  "attempted": [
+    {
+      "url": "https://bhphotovideo.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 4747
+    },
+    {
+      "url": "https://bhphotovideo.com/sitemap.xml",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5706
+    },
+    {
+      "url": "https://bhphotovideo.com/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5690
+    },
+    {
+      "url": "https://bhphotovideo.com/llms.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5697
+    },
+    {
+      "url": "https://bhphotovideo.com/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5685
+    },
+    {
+      "url": "https://bhphotovideo.com/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5652
+    }
+  ],
+  "verdict": "structured-only"
+}

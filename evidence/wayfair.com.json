@@ -1,0 +1,43 @@
+{
+  "domain": "wayfair.com",
+  "at": "2026-10-28T10:18:27.350Z",
+  "attempted": [
+    {
+      "url": "https://wayfair.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3224
+    },
+    {
+      "url": "https://wayfair.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 23
+    },
+    {
+      "url": "https://wayfair.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 23
+    },
+    {
+      "url": "https://wayfair.com/llms.txt",
+      "status": 429,
+      "challenged": false,
+      "bytes": 40
+    },
+    {
+      "url": "https://wayfair.com/api/",
+      "status": 429,
+      "challenged": false,
+      "bytes": 40
+    },
+    {
+      "url": "https://wayfair.com/",
+      "status": 429,
+      "challenged": false,
+      "bytes": 40
+    }
+  ],
+  "verdict": "structured-only"
+}

@@ -242,6 +242,8 @@ t('X-Robots-Tag scoped to another crawler does not apply; scoped to ours it does
     assert.deepStrictEqual(page.headerDirectives('openvibesources: noindex, nofollow', 'OpenVibeSources'), { noindex: true, nofollow: true });
     assert.deepStrictEqual(page.headerDirectives(['none'], 'OpenVibeSources'), { noindex: true, nofollow: true });
     assert.deepStrictEqual(page.headerDirectives('unavailable_after: 2030-01-01', 'OpenVibeSources'), { noindex: false, nofollow: false });
+    assert.deepStrictEqual(page.headerDirectives('openvibebot: noindex', 'OpenVibeBot,OpenVibeSources'), { noindex: true, nofollow: false });
+    assert.strictEqual(page.read('<meta name="OpenVibeBot" content="noindex">', { url: 'https://x.test/' }).noindex, true);
 });
 
 t('the site failing is the source failing: robots.txt unreachable, then a 429', async () => {

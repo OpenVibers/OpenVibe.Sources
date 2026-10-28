@@ -1,0 +1,42 @@
+{
+  "domain": "hoka.com",
+  "at": "2026-10-28T10:18:09.453Z",
+  "attempted": [
+    {
+      "url": "https://hoka.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 9907
+    },
+    {
+      "url": "https://hoka.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 0
+    },
+    {
+      "url": "https://hoka.com/products.json",
+      "status": 410,
+      "challenged": false,
+      "bytes": 625565
+    },
+    {
+      "url": "https://hoka.com/llms.txt",
+      "status": 410,
+      "challenged": false,
+      "bytes": 625565
+    },
+    {
+      "url": "https://hoka.com/api/",
+      "status": 500,
+      "challenged": false,
+      "bytes": 21
+    },
+    {
+      "url": "https://hoka.com/",
+      "status": 0,
+      "error": "TypeError"
+    }
+  ],
+  "verdict": "structured-only"
+}

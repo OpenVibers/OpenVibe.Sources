@@ -1,0 +1,43 @@
+{
+  "domain": "rei.com",
+  "at": "2026-10-28T10:18:20.825Z",
+  "attempted": [
+    {
+      "url": "https://rei.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 369
+    },
+    {
+      "url": "https://rei.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 370
+    },
+    {
+      "url": "https://rei.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 372
+    },
+    {
+      "url": "https://rei.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 367
+    },
+    {
+      "url": "https://rei.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 363
+    },
+    {
+      "url": "https://rei.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 355
+    }
+  ],
+  "verdict": "queued"
+}

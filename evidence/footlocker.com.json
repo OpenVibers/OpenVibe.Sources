@@ -1,0 +1,43 @@
+{
+  "domain": "footlocker.com",
+  "at": "2026-10-28T10:18:04.235Z",
+  "attempted": [
+    {
+      "url": "https://footlocker.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1050
+    },
+    {
+      "url": "https://footlocker.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 2356
+    },
+    {
+      "url": "https://footlocker.com/products.json",
+      "status": 200,
+      "challenged": false,
+      "bytes": 760829
+    },
+    {
+      "url": "https://footlocker.com/llms.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 757022
+    },
+    {
+      "url": "https://footlocker.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 0
+    },
+    {
+      "url": "https://footlocker.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 928378
+    }
+  ],
+  "verdict": "ok"
+}

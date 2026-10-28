@@ -1,0 +1,43 @@
+{
+  "domain": "homedepot.com",
+  "at": "2026-10-28T10:18:10.727Z",
+  "attempted": [
+    {
+      "url": "https://homedepot.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1394
+    },
+    {
+      "url": "https://homedepot.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 2522
+    },
+    {
+      "url": "https://homedepot.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 2522
+    },
+    {
+      "url": "https://homedepot.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 2522
+    },
+    {
+      "url": "https://homedepot.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 2522
+    },
+    {
+      "url": "https://homedepot.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 933817
+    }
+  ],
+  "verdict": "ok"
+}

@@ -1,0 +1,27 @@
+{
+  "key": "crawl-zappos-com",
+  "name": "zappos.com (crawl)",
+  "type": "crawl",
+  "category": "deals",
+  "homepage_url": "https://zappos.com/",
+  "endpoints": [
+    "https://zappos.com/"
+  ],
+  "crawl": {
+    "sitemaps": true,
+    "follow_links": true,
+    "max_depth": 2,
+    "require_structured": true,
+    "max_pages": 2000,
+    "pages_per_run": 50,
+    "recrawl_sec": 86400
+  },
+  "min_interval_ms": 5000,
+  "poll_interval_sec": 3600,
+  "robots_note": "robots.txt answered 200 at 2026-10-28T10:18:30.558Z (evidence/zappos.com.json); every request and redirect hop is checked against it (RFC 9309, tokens OpenVibeBot and OpenVibeSources).",
+  "terms_note": "Access verdict \"ok\" per ADR 0007, computed from evidence/zappos.com.json (2026-10-28T10:18:30.558Z). Structured surfaces answering: /api/.",
+  "license_note": "Terms of use on file: https://zappos.com/terms-of-use: \"The license granted herein does not include: any resale or commercial use of any Zappos Service, or its contents; any collection or use of any product listings, descriptions, images, or prices; any derivative use of any Zappos Service or its contents; any downloading, copying, or other use of accoun\"",
+  "enabled": true,
+  "review_required": true,
+  "default_indexability": "noindex"
+}

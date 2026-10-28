@@ -1,0 +1,43 @@
+{
+  "domain": "on.com",
+  "at": "2026-10-28T10:18:19.026Z",
+  "attempted": [
+    {
+      "url": "https://on.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 392
+    },
+    {
+      "url": "https://on.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 460
+    },
+    {
+      "url": "https://on.com/products.json",
+      "status": 200,
+      "challenged": false,
+      "bytes": 623476
+    },
+    {
+      "url": "https://on.com/llms.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 800
+    },
+    {
+      "url": "https://on.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 691319
+    },
+    {
+      "url": "https://on.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 623476
+    }
+  ],
+  "verdict": "ok"
+}

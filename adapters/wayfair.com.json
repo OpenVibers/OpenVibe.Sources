@@ -1,0 +1,26 @@
+{
+  "key": "crawl-wayfair-com",
+  "name": "wayfair.com (crawl)",
+  "type": "crawl",
+  "category": "deals",
+  "homepage_url": "https://wayfair.com/",
+  "endpoints": [
+    "https://wayfair.com/"
+  ],
+  "crawl": {
+    "sitemaps": true,
+    "follow_links": true,
+    "max_depth": 2,
+    "require_structured": true,
+    "max_pages": 2000,
+    "pages_per_run": 50,
+    "recrawl_sec": 86400
+  },
+  "min_interval_ms": 5000,
+  "poll_interval_sec": 3600,
+  "robots_note": "robots.txt answered 200 at 2026-10-28T10:18:27.350Z (evidence/wayfair.com.json); every request and redirect hop is checked against it (RFC 9309, tokens OpenVibeBot and OpenVibeSources).",
+  "terms_note": "Access verdict \"structured-only\" per ADR 0007, computed from evidence/wayfair.com.json (2026-10-28T10:18:27.350Z). Structured surfaces answering: none. Lane 1 only: feeds, affiliate programs, official APIs or merchant opt-in; this crawl adapter stays disabled.",
+  "enabled": false,
+  "review_required": true,
+  "default_indexability": "noindex"
+}

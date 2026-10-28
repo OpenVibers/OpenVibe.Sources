@@ -1,0 +1,69 @@
+# ADR 0007 review queue: sources with nothing under 400. A second probe ≥ 24 h after the first decides; until then
+# no adapter exists. Written by scripts/adapters-from-evidence.mjs from evidence/*.json.
+queue:
+  - domain: backcountry.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:17:00.621Z
+    next_probe_after: 2026-10-29T10:17:00.621Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: brooksrunning.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:17:57.626Z
+    next_probe_after: 2026-10-29T10:17:57.626Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: converse.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:00.177Z
+    next_probe_after: 2026-10-29T10:18:00.177Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: frame.work
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:04.784Z
+    next_probe_after: 2026-10-29T10:18:04.784Z
+    statuses: "/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c"
+  - domain: ikea.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:14.069Z
+    next_probe_after: 2026-10-29T10:18:14.069Z
+    statuses: "/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c"
+  - domain: microcenter.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:14.764Z
+    next_probe_after: 2026-10-29T10:18:14.764Z
+    statuses: "/robots.txt:403c /sitemap.xml:403c /products.json:403c /llms.txt:403c /api/:403c /:403c"
+  - domain: newbalance.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:16.312Z
+    next_probe_after: 2026-10-29T10:18:16.312Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: newegg.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:16.799Z
+    next_probe_after: 2026-10-29T10:18:16.799Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: rei.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:20.825Z
+    next_probe_after: 2026-10-29T10:18:20.825Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"
+  - domain: runningwarehouse.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:22.204Z
+    next_probe_after: 2026-10-29T10:18:22.204Z
+    statuses: "/robots.txt:0 /sitemap.xml:0 /products.json:0 /llms.txt:0 /api/:0 /:0"
+  - domain: vans.com
+    verdict: queued
+    attempts: 1
+    first_probe: 2026-10-28T10:18:25.348Z
+    next_probe_after: 2026-10-29T10:18:25.348Z
+    statuses: "/robots.txt:403 /sitemap.xml:403 /products.json:403 /llms.txt:403 /api/:403 /:403"

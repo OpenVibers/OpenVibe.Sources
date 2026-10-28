@@ -3,8 +3,8 @@
  * robots.txt (RFC 9309), checked before every request an ingestion run makes, including each
  * redirect hop to a new origin.
  *
- *   - the group whose User-agent names our product token (case-insensitive) applies, else `*`;
- *     several matching groups are merged
+ *   - the groups whose User-agent names one of our product tokens (a comma list, case-insensitive:
+ *     `OpenVibeBot,OpenVibeSources`) apply, else `*`; several matching groups are merged
  *   - Allow/Disallow with `*` and `$`; the longest matching rule wins, Allow wins a tie
  *   - 2xx: parsed; 4xx (e.g. 404) except 429: no restrictions; 429, 5xx, network error or timeout:
  *     complete disallow ("unreachable") — never guessed as allowed
@@ -16,8 +16,13 @@
  * the fetch run is `robots_denied` and nothing is requested.
  */
 
+// 'OpenVibeBot,OpenVibeSources' → ['openvibebot', 'openvibesources']
+function agentTokens(agent) {
+    return String(agent).toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+}
+
 function parseRobots(text, agent) {
-    const token = String(agent).toLowerCase();
+    const tokens = agentTokens(agent);
     const groups = [];
     const sitemaps = [];
     let current = null;
@@ -55,7 +60,7 @@ function parseRobots(text, agent) {
         }
     }
     // RFC 9309: the product token is matched case-insensitively against the User-agent value.
-    let chosen = groups.filter(g => g.agents.some(a => a.split('/')[0].trim() === token));
+    let chosen = groups.filter(g => g.agents.some(a => tokens.includes(a.split('/')[0].trim())));
     if (!chosen.length) chosen = groups.filter(g => g.agents.includes('*'));
     const delays = chosen.map(g => g.crawlDelay).filter(d => d != null);
     return {
@@ -191,4 +196,4 @@ function createRobots({ db, fetcher, agent, ttlMs, maxBytes, now = () => Date.no
     return { check, matcher, sitemaps, forget: async (origin) => await db.prepare('DELETE FROM robots_cache WHERE origin = ?').run(origin) };
 }
 
-module.exports = { parseRobots, isAllowed, compileRules, createRobots };
+module.exports = { parseRobots, isAllowed, compileRules, createRobots, agentTokens };

@@ -28,6 +28,11 @@ t('robots rules: our group over *, longest match, Allow wins ties, * and $', () 
     assert.strictEqual(isAllowed(empty, '/anything'), true);
     const prefix = parseRobots('User-agent: OpenVibe\nDisallow: /\n', 'OpenVibeSources');
     assert.strictEqual(isAllowed(prefix, '/x'), true, 'a different token (even a prefix of ours) does not apply');
+    // ADR 0007: a comma list of product tokens; a group naming either applies
+    const both = 'User-agent: *\nDisallow: /all\n\nUser-agent: OpenVibeBot\nDisallow: /bot-only\n';
+    assert.strictEqual(isAllowed(parseRobots(both, 'OpenVibeBot,OpenVibeSources'), '/bot-only'), false);
+    assert.strictEqual(isAllowed(parseRobots(both, 'OpenVibeBot,OpenVibeSources'), '/all'), true, 'our group replaces *');
+    assert.strictEqual(isAllowed(parseRobots('User-agent: OpenVibeSources\nDisallow: /\n', 'OpenVibeBot,OpenVibeSources'), '/x'), false);
 });
 
 t('address policy', () => {

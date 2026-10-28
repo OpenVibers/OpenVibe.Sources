@@ -1,0 +1,25 @@
+{
+  "key": "crawl-bestbuy-com",
+  "name": "bestbuy.com (crawl)",
+  "type": "crawl",
+  "category": "deals",
+  "homepage_url": "https://bestbuy.com/",
+  "endpoints": [
+    "https://bestbuy.com/"
+  ],
+  "crawl": {
+    "sitemaps": true,
+    "follow_links": false,
+    "require_structured": true,
+    "max_pages": 2000,
+    "pages_per_run": 50,
+    "recrawl_sec": 86400
+  },
+  "min_interval_ms": 5000,
+  "poll_interval_sec": 3600,
+  "robots_note": "robots.txt answered 200 at 2026-10-28T10:17:52.971Z (evidence/bestbuy.com.json); every request and redirect hop is checked against it (RFC 9309, tokens OpenVibeBot and OpenVibeSources).",
+  "terms_note": "Access verdict \"ok\" per ADR 0007, computed from evidence/bestbuy.com.json (2026-10-28T10:17:52.971Z). Structured surfaces answering: /sitemap.xml.",
+  "enabled": true,
+  "review_required": true,
+  "default_indexability": "noindex"
+}

@@ -1,0 +1,43 @@
+{
+  "domain": "monoprice.com",
+  "at": "2026-10-28T10:18:15.581Z",
+  "attempted": [
+    {
+      "url": "https://monoprice.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 629
+    },
+    {
+      "url": "https://monoprice.com/sitemap.xml",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5703
+    },
+    {
+      "url": "https://monoprice.com/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5731
+    },
+    {
+      "url": "https://monoprice.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 480731
+    },
+    {
+      "url": "https://monoprice.com/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5682
+    },
+    {
+      "url": "https://monoprice.com/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5670
+    }
+  ],
+  "verdict": "structured-only"
+}

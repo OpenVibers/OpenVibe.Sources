@@ -1,0 +1,43 @@
+{
+  "domain": "frame.work",
+  "at": "2026-10-28T10:18:04.784Z",
+  "attempted": [
+    {
+      "url": "https://frame.work/robots.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5697
+    },
+    {
+      "url": "https://frame.work/sitemap.xml",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5700
+    },
+    {
+      "url": "https://frame.work/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5706
+    },
+    {
+      "url": "https://frame.work/llms.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5669
+    },
+    {
+      "url": "https://frame.work/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5657
+    },
+    {
+      "url": "https://frame.work/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5645
+    }
+  ],
+  "verdict": "queued"
+}

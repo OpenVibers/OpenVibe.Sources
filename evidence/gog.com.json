@@ -1,0 +1,43 @@
+{
+  "domain": "gog.com",
+  "at": "2026-10-28T10:18:07.984Z",
+  "attempted": [
+    {
+      "url": "https://gog.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 152
+    },
+    {
+      "url": "https://gog.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 153
+    },
+    {
+      "url": "https://gog.com/products.json",
+      "status": 404,
+      "challenged": false,
+      "bytes": 407603
+    },
+    {
+      "url": "https://gog.com/llms.txt",
+      "status": 404,
+      "challenged": false,
+      "bytes": 153
+    },
+    {
+      "url": "https://gog.com/api/",
+      "status": 404,
+      "challenged": false,
+      "bytes": 407531
+    },
+    {
+      "url": "https://gog.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 1503918
+    }
+  ],
+  "verdict": "ok"
+}

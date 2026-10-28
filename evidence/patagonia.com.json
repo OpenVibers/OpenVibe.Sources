@@ -1,0 +1,43 @@
+{
+  "domain": "patagonia.com",
+  "at": "2026-10-28T10:18:19.826Z",
+  "attempted": [
+    {
+      "url": "https://patagonia.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    },
+    {
+      "url": "https://patagonia.com/sitemap.xml",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    },
+    {
+      "url": "https://patagonia.com/products.json",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    },
+    {
+      "url": "https://patagonia.com/llms.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    },
+    {
+      "url": "https://patagonia.com/api/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    },
+    {
+      "url": "https://patagonia.com/",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3226
+    }
+  ],
+  "verdict": "ok"
+}

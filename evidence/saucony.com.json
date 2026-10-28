@@ -1,0 +1,43 @@
+{
+  "domain": "saucony.com",
+  "at": "2026-10-28T10:18:24.130Z",
+  "attempted": [
+    {
+      "url": "https://saucony.com/robots.txt",
+      "status": 200,
+      "challenged": false,
+      "bytes": 3618
+    },
+    {
+      "url": "https://saucony.com/sitemap.xml",
+      "status": 404,
+      "challenged": false,
+      "bytes": 0
+    },
+    {
+      "url": "https://saucony.com/products.json",
+      "status": 404,
+      "challenged": true,
+      "bytes": 364694
+    },
+    {
+      "url": "https://saucony.com/llms.txt",
+      "status": 404,
+      "challenged": true,
+      "bytes": 364694
+    },
+    {
+      "url": "https://saucony.com/api/",
+      "status": 404,
+      "challenged": true,
+      "bytes": 364687
+    },
+    {
+      "url": "https://saucony.com/",
+      "status": 200,
+      "challenged": true,
+      "bytes": 617508
+    }
+  ],
+  "verdict": "structured-only"
+}

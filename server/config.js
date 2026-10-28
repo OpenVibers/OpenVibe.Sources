@@ -66,9 +66,10 @@ function load(env = process.env) {
             maxBackoffMs: int(env.SOURCES_MAX_BACKOFF_MS, 6 * 3600 * 1000),
         },
         fetch: {
-            userAgent: env.SOURCES_USER_AGENT || `OpenVibeSources/${pkg.version} (+https://sources.openvibe.network; Contact@OpenVibe.Network)`,
-            // Product token matched against robots.txt User-agent lines.
-            robotsAgent: env.SOURCES_ROBOTS_AGENT || 'OpenVibeSources',
+            // ADR 0007: the compatible-form string, fixed. robots.txt groups for either product token apply.
+            userAgent: env.SOURCES_USER_AGENT || 'Mozilla/5.0 (compatible; OpenVibeBot/1.0; +https://openvibe.network/bot)',
+            // Product tokens (comma list) matched against robots.txt User-agent lines, robots meta names and X-Robots-Tag.
+            robotsAgent: env.SOURCES_ROBOTS_AGENT || 'OpenVibeBot,OpenVibeSources',
             timeoutMs: int(env.SOURCES_FETCH_TIMEOUT_MS, 20000),
             maxBytes: int(env.SOURCES_MAX_BYTES, 5 * 1024 * 1024),
             maxRedirects: int(env.SOURCES_MAX_REDIRECTS, 5),

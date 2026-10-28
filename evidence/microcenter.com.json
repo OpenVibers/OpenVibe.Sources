@@ -1,0 +1,43 @@
+{
+  "domain": "microcenter.com",
+  "at": "2026-10-28T10:18:14.764Z",
+  "attempted": [
+    {
+      "url": "https://microcenter.com/robots.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5706
+    },
+    {
+      "url": "https://microcenter.com/sitemap.xml",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5709
+    },
+    {
+      "url": "https://microcenter.com/products.json",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5737
+    },
+    {
+      "url": "https://microcenter.com/llms.txt",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5700
+    },
+    {
+      "url": "https://microcenter.com/api/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5688
+    },
+    {
+      "url": "https://microcenter.com/",
+      "status": 403,
+      "challenged": true,
+      "bytes": 5676
+    }
+  ],
+  "verdict": "queued"
+}

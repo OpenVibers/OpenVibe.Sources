@@ -1,0 +1,43 @@
+{
+  "domain": "newegg.com",
+  "at": "2026-10-28T10:18:16.799Z",
+  "attempted": [
+    {
+      "url": "https://newegg.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 372
+    },
+    {
+      "url": "https://newegg.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 373
+    },
+    {
+      "url": "https://newegg.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 375
+    },
+    {
+      "url": "https://newegg.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 370
+    },
+    {
+      "url": "https://newegg.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://newegg.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 358
+    }
+  ],
+  "verdict": "queued"
+}

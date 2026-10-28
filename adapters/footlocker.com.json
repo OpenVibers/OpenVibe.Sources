@@ -1,0 +1,26 @@
+{
+  "key": "crawl-footlocker-com",
+  "name": "footlocker.com (crawl)",
+  "type": "crawl",
+  "category": "deals",
+  "homepage_url": "https://footlocker.com/",
+  "endpoints": [
+    "https://footlocker.com/"
+  ],
+  "crawl": {
+    "sitemaps": true,
+    "follow_links": false,
+    "require_structured": true,
+    "max_pages": 2000,
+    "pages_per_run": 50,
+    "recrawl_sec": 86400
+  },
+  "min_interval_ms": 5000,
+  "poll_interval_sec": 3600,
+  "robots_note": "robots.txt answered 200 at 2026-10-28T10:18:04.235Z (evidence/footlocker.com.json); every request and redirect hop is checked against it (RFC 9309, tokens OpenVibeBot and OpenVibeSources).",
+  "terms_note": "Access verdict \"ok\" per ADR 0007, computed from evidence/footlocker.com.json (2026-10-28T10:18:04.235Z). Structured surfaces answering: /sitemap.xml, /products.json, /llms.txt.",
+  "license_note": "Terms of use on file: https://help.footlocker.com/hc/en-us/articles/360034292814-Terms-of-Use-Comprehensive: \"You may not without the prior written permission of Foot Locker, use any computer code, data mining software, \"robot\", \"bot\", \"spider\", \"scraper\" or other automatic device, or program, algorithm or methodology having similar processes or functionality, or any manual process, to monitor or copy any o\"",
+  "enabled": true,
+  "review_required": true,
+  "default_indexability": "noindex"
+}

@@ -1,0 +1,43 @@
+{
+  "domain": "vans.com",
+  "at": "2026-10-28T10:18:25.348Z",
+  "attempted": [
+    {
+      "url": "https://vans.com/robots.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://vans.com/sitemap.xml",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://vans.com/products.json",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://vans.com/llms.txt",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://vans.com/api/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    },
+    {
+      "url": "https://vans.com/",
+      "status": 403,
+      "challenged": false,
+      "bytes": 366
+    }
+  ],
+  "verdict": "queued"
+}

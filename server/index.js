@@ -25,9 +25,11 @@ const { jwksClient } = require('openvibe-sdk/auth');
 const { gracefulStop, telemetry } = require('openvibe-sdk/service');
 const { createPgTelemetrySink, startTelemetryRetention } = require('openvibe-sdk/telemetry');
 const { createAuth } = require('./auth');
+const { createMerchant } = require('./merchant');
+const { createMerchantAuth } = require('./merchant-auth');
 const { createApp } = require('./app');
 
-async function start({ config, db: givenDb = null, now = () => Date.now(), fetchImpl = globalThis.fetch, lookupImpl, log = console, listen = true, limitsNow = null } = {}) {
+async function start({ config, db: givenDb = null, now = () => Date.now(), fetchImpl = globalThis.fetch, lookupImpl, merchantResolver = null, log = console, listen = true, limitsNow = null } = {}) {
     config = config || load();
     // PostgreSQL (ADR-035): opened and migrated here unless the caller (a test) hands in a migrated handle.
     const db = givenDb || await openDb(config, { log });
@@ -53,14 +55,26 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     const ingest = createIngest({ db, config, registry, items, robots, fetcher, spacer, emitEvent, now, log, outbox });
     const scheduler = createScheduler({ db, ingest, config, now, log });
     const keys = jwksClient(config.jwksUrl, { fetch: fetchImpl, log });
-    const auth = createAuth({ config, log });
-    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow });
+    const auth = createAuth({ config, log, jwks: keys });
+    const merchant = createMerchant({ db, config, registry, fetcher, resolver: merchantResolver, now, log });
+    const merchantAuth = createMerchantAuth({ config, auth, log, fetchImpl });
+    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth });
     // One JWKS client for the process (the SDK shares it with verifyUserToken): refresh in the background
     // on an unref'd timer, keeping the last good keys through a Network outage.
     keys.start();
     const keyLoaded = keys.keys().catch(() => null);
     outbox.start();
     if (config.worker.enabled) scheduler.start();
+    // Pending merchant proofs are checked again on a slow cadence (the merchant can always press "Check now"). A claim
+    // that never verifies fails after merchant.pendingDays. 0 turns the worker pass off (tests).
+    let merchantTimer = null;
+    let merchantKick = null;
+    if (config.merchant.recheckIntervalMs > 0) {
+        merchantTimer = setInterval(() => merchant.recheck().catch((err) => log.error(`[merchant] recheck: ${err.stack || err}`)), config.merchant.recheckIntervalMs);
+        merchantTimer.unref?.();
+        merchantKick = setTimeout(() => merchant.recheck().catch((err) => log.error(`[merchant] recheck: ${err.stack || err}`)), 5000);
+        merchantKick.unref?.();
+    }
     const pruneTimer = setInterval(async () => { try { await outbox.outbox.prune(); } catch (err) { log.error(`[outbox] prune: ${err.message}`); } }, 6 * 3600 * 1000);
     pruneTimer.unref?.();
 
@@ -75,6 +89,8 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
 
     async function close() {
         clearInterval(pruneTimer);
+        if (merchantTimer) clearInterval(merchantTimer);
+        if (merchantKick) clearTimeout(merchantKick);
         keys.stop();
         await scheduler.stop();
         await outbox.stop();
@@ -85,7 +101,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         if (!givenDb) await db.close();
     }
 
-    return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, outbox, keys, keyLoaded, auth, app, server, close };
+    return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, outbox, keys, keyLoaded, auth, merchant, merchantAuth, app, server, close };
 }
 
 if (require.main === module) {

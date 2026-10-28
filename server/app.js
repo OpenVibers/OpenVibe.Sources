@@ -8,6 +8,8 @@ const { createRelease } = require('openvibe-shared/release');
 const { createSourcesReadiness, registerSourcesGauges } = require('./observability');
 const { sourcesRouter } = require('./api/sources');
 const { itemsRouter } = require('./api/items');
+const { merchantRouter } = require('./api/merchant');
+const { merchantPages } = require('./merchant-pages');
 const { createActorLimits } = require('./api/actor-limits');
 const pkg = require('../package.json');
 
@@ -16,12 +18,14 @@ const TEXT_INDEX = [
     'Every item carries its source, canonical URL, retrieval time, content hash and terms; a failed fetch is',
     'recorded as a failure and never replaced with invented content.',
     '',
-    'This is an internal service. Its API is for OpenVibe services on the production host (service tokens);',
-    'sources.openvibe.network answers only this page, /api/health, /api/ready and /release.json.',
+    'This is an internal service. Its JSON API is for OpenVibe services on the production host (service tokens),',
+    'and its merchant opt-in pages are for signed-in merchants: sources.openvibe.network answers /, /merchant,',
+    '/merchant/*, /shared/*, /api/health, /api/ready and /release.json.',
     '',
     'GET  /api/v1/sources, /api/v1/sources/:key, /api/v1/sources/:key/runs, /api/v1/runs, /api/v1/health   (sources.source.read)',
     'GET  /api/v1/items?source=&category=&after=, /api/v1/items/:id                                          (sources.item.read)',
     'POST/PATCH/DELETE /api/v1/sources[/:key], POST /api/v1/sources/:key/fetch, /items, DELETE /api/v1/items/:id (sources.source.manage)',
+    'GET/POST /api/v1/merchant/sources[/:id[/verify|/withdraw]]                                              (sources.source.read/manage, or a merchant session)',
     'GET  /api/health, /api/ready, /release.json',
     '',
     'Source: https://github.com/OpenVibers/OpenVibe.Sources',
@@ -55,15 +59,17 @@ a { color: var(--accent); }
 where every item came from, when it was fetched and under which terms. A failed fetch is recorded as a
 failure, never replaced with invented content.</p>
 <p>There is nothing to browse here. What reaches readers is published by the products themselves, under
-their own rules.</p>
+their own rules. Merchants who want their store listed can <a href="/merchant">list it on OpenVibe</a>:
+claim the domain, prove control of it, and name the sitemap or product feed we may read.</p>
 <p class="muted">Health: <a href="/api/health">/api/health</a> · Readiness: <a href="/api/ready">/api/ready</a> ·
+Merchant opt-in: <a href="/merchant">/merchant</a> ·
 Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers/OpenVibe.Sources</a></p>
 </main>
 </body>
 </html>
 `;
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null }) {
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
@@ -100,9 +106,24 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     app.use(sourcesRouter({ db, registry, ingest, auth, limits }));
     app.use(itemsRouter({ db, registry, items, auth, outbox, now, limits }));
 
-    // The public host (sources.openvibe.network) shows only this page, health, readiness and
-    // /release.json: Sources is internal. Browsers get a short honest HTML page, other clients the
-    // text route index. Never cached, never indexed.
+    // Merchant opt-in (plan §4.4 channel 1): the JSON read/write API, and the signed-in pages that are its front door.
+    // /shared carries this release's own kit.css/kit-web.js/theme-loader.js, so the pages do not depend on another host.
+    if (merchant && merchantAuth) {
+        app.use('/shared', require('openvibe-shared/serve').handler());
+        app.use(merchantRouter({ db, merchant, registry, ingest, auth, merchantAuth, limits }));
+        const networkOrigin = (() => { try { return new URL(config.networkUrl).origin; } catch { return 'https://openvibe.network'; } })();
+        app.use('/merchant', (req, res, next) => {
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+            res.setHeader('Content-Security-Policy', `default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; connect-src 'self' ${networkOrigin}; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`);
+            next();
+        }, express.urlencoded({ extended: false, limit: '32kb' }), merchantAuth.page, merchantPages({
+            db, merchant, registry, ingest, merchantAuth, limits, log,
+        }));
+    }
+
+    // The public host (sources.openvibe.network) shows the internal-service page, the merchant opt-in pages and
+    // health/readiness/release.json: the JSON API stays loopback-only. Browsers get a short honest HTML page, other
+    // clients the text route index. Never cached, never indexed.
     app.get('/', (req, res) => {
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         res.setHeader('Vary', 'Accept');

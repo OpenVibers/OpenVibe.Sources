@@ -1,17 +1,22 @@
 'use strict';
 /**
- * Service-token authentication and capability checks. Every API route is for services (other
- * OpenVibe services, or the Network admin surface acting through its own principal): an
- * RS256 client-credentials token from OpenVibe.Network (audience openvibe.sources), verified
- * offline against Network's JWKS (openvibe-sdk/auth, one client per URL, kept fresh and served
- * through an outage), and ONE capability per route.
+ * Service-token authentication and capability checks. API routes for services (other OpenVibe
+ * services, or the Network admin surface acting through its own principal) use an RS256
+ * client-credentials token from OpenVibe.Network (audience openvibe.sources), verified offline
+ * against Network's JWKS (openvibe-sdk/auth, one client per URL, kept fresh and served through an
+ * outage), and ONE capability per route.
+ *
+ * The merchant opt-in routes also accept a person's Network session token (the same RS256 key and
+ * issuer, no `typ`, a usr_… `subject_id`): the merchant is the owner of the claim. Pages use the
+ * same verification on their own first-party cookie. A first-party service may act for a person
+ * only through the X-OV-Subject header (server/merchant-auth.js), as OpenVibe.Space does.
  *
  * The sources.* capabilities are released in openvibe-contracts (docs/capabilities-proposal/ is
  * kept in step with those manifests), so the library's own grant rule decides every one: an exact
  * id or a `family.*` grant, and capability.unknown for an id it does not know.
  */
-const { serviceAuth, capabilities, http } = require('openvibe-contracts');
-const { jwksClient } = require('openvibe-sdk/auth');
+const { serviceAuth, capabilities, http, ids } = require('openvibe-contracts');
+const { jwksClient, verifyUserToken } = require('openvibe-sdk/auth');
 
 const CAPS = Object.freeze({
     read: 'sources.source.read',
@@ -23,8 +28,9 @@ function checkCapability(claims, capabilityId) {
     return capabilities.check(claims, capabilityId);
 }
 
-function createAuth({ config, log = console }) {
+function createAuth({ config, log = console, jwks = null }) {
     const headerKid = (token) => { try { return JSON.parse(Buffer.from(String(token).split('.')[0], 'base64url').toString('utf8')).kid || null; } catch { return null; } };
+    const userKeys = jwks || jwksClient(config.jwksUrl, { log });
 
     /** { ok, claims } or { ok: false, code, reason }. The SDK's error names the internal JWKS URL: logged, never answered. */
     async function verifyService(token) {
@@ -41,6 +47,23 @@ function createAuth({ config, log = console }) {
             if (last.ok || last.code !== 'token.bad_signature') return last;
         }
         return last;
+    }
+
+    /**
+     * A person's Network session token → { claims, subject: usr_…, name } or null. Typed tokens (FedCM assertions,
+     * realtime tickets) and service/app principals are refused by verifyUserToken; the subject must be a usr_ id.
+     */
+    async function verifyUser(token) {
+        if (!token) return null;
+        try {
+            const claims = await verifyUserToken(String(token), { jwks: userKeys, issuer: config.issuer });
+            const subject = ids.isSubjectId('user', claims.subject_id) ? claims.subject_id
+                : (ids.isSubjectId('user', claims.sub) ? claims.sub : null);
+            if (!subject) return null;
+            return { claims, subject, name: claims.username || claims.display_name || claims.name || null };
+        } catch {
+            return null;
+        }
     }
 
     /** Express guard: one capability. Sets req.principal = { sub, cap, jti }. */
@@ -62,7 +85,7 @@ function createAuth({ config, log = console }) {
             return next();
         };
     }
-    return { requireCap };
+    return { requireCap, verifyService, verifyUser };
 }
 
 module.exports = { CAPS, createAuth, checkCapability };

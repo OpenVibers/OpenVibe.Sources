@@ -151,6 +151,7 @@ t('a source registered over the API with internal endpoints is stored, and its f
 t('ratchet: every file that makes an outbound request itself is reviewed', () => {
     const REVIEWED = {
         'server/net/fetcher.js': 'every source fetch; the guard (checkUrl up front, lookup at connect, on every redirect hop)',
+        'server/merchant-auth.js': 'OAuth code exchange only, to the operator-configured Network URLs (never a merchant-supplied URL)',
     };
     const root = path.join(__dirname, '..');
     const found = [];

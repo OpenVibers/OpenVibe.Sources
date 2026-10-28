@@ -25,13 +25,14 @@ function load(env = process.env) {
     // The JWKS the SDK's client (openvibe-sdk/auth jwksClient) fetches, caches and keeps fresh; one URL,
     // since the SDK keeps one client per URL. Defaults to Network's internal JWKS.
     const jwksUrl = strip(env.OV_NETWORK_JWKS_URL || `${networkInternalUrl}/api/.well-known/jwks`);
+    const baseUrl = strip(env.BASE_URL || (isProduction ? 'https://sources.openvibe.network' : `http://localhost:${port}`));
     return {
         port,
         host: env.HOST || '127.0.0.1',
         nodeEnv,
         isProduction,
         serviceId: 'sources',
-        baseUrl: strip(env.BASE_URL || (isProduction ? 'https://sources.openvibe.network' : `http://localhost:${port}`)),
+        baseUrl,
 
         networkUrl,
         networkInternalUrl,
@@ -47,6 +48,35 @@ function load(env = process.env) {
         oauth: {
             clientId: env.OV_OAUTH_CLIENT_ID || 'sources',
             clientSecret: env.OV_OAUTH_CLIENT_SECRET || '',
+            // The Network OAuth client `sources` must be registered with this exact redirect URI.
+            redirectUri: strip(env.OV_OAUTH_REDIRECT_URI || `${baseUrl}/merchant/callback`),
+            scope: env.OV_OAUTH_SCOPE || 'profile',
+        },
+        cookies: {
+            // A first-party session cookie; Secure everywhere except local tests/development over http.
+            secure: env.SOURCES_COOKIE_SECURE != null ? env.SOURCES_COOKIE_SECURE === '1' : isProduction,
+        },
+
+        // Merchant opt-in (server/merchant.js): proof checks, the session form secret, and the shape of the source
+        // created only after verification. A sitemap becomes a crawl; a product feed uses the feed adapter.
+        merchant: {
+            pendingDays: Math.max(1, int(env.SOURCES_MERCHANT_PENDING_DAYS, 14)),
+            // Pending claims are checked again on this cadence; 0 turns the worker pass off (tests).
+            recheckIntervalMs: Math.max(0, int(env.SOURCES_MERCHANT_RECHECK_MS, 10 * 60 * 1000)),
+            metaMaxBytes: Math.min(5 * 1024 * 1024, Math.max(1024, int(env.SOURCES_MERCHANT_META_MAX_BYTES, 1024 * 1024))),
+            metaTimeoutMs: Math.min(120000, Math.max(1000, int(env.SOURCES_MERCHANT_META_TIMEOUT_MS, 10000))),
+            dnsServers: list(env.SOURCES_MERCHANT_DNS_SERVERS, []),
+            // CSRF/state HMAC key. Production should set SOURCES_SESSION_SECRET (or shares OV_OAUTH_CLIENT_SECRET).
+            sessionSecret: env.SOURCES_SESSION_SECRET || env.OV_OAUTH_CLIENT_SECRET || 'sources-merchant-development',
+            crawlMinIntervalMs: Math.min(86400000, Math.max(0, int(env.SOURCES_MERCHANT_CRAWL_MIN_INTERVAL_MS, 1000))),
+            feedMinIntervalMs: Math.min(86400000, Math.max(0, int(env.SOURCES_MERCHANT_FEED_MIN_INTERVAL_MS, 60000))),
+            pollIntervalSec: Math.min(7 * 86400, Math.max(1, int(env.SOURCES_MERCHANT_POLL_INTERVAL_SEC, 3600))),
+            crawlStaleAfterSec: Math.min(90 * 86400, Math.max(1, int(env.SOURCES_MERCHANT_CRAWL_STALE_AFTER_SEC, 86400))),
+            feedStaleAfterSec: Math.min(90 * 86400, Math.max(1, int(env.SOURCES_MERCHANT_FEED_STALE_AFTER_SEC, 10800))),
+            maxItems: Math.min(12000, Math.max(1, int(env.SOURCES_MERCHANT_MAX_ITEMS, 1000))),
+            crawlMaxPages: Math.min(200000, Math.max(1, int(env.SOURCES_MERCHANT_MAX_PAGES, 5000))),
+            crawlPagesPerRun: Math.min(1000, Math.max(1, int(env.SOURCES_MERCHANT_PAGES_PER_RUN, 100))),
+            crawlRecrawlSec: Math.min(30 * 86400, Math.max(3600, int(env.SOURCES_MERCHANT_RECRAWL_SEC, 86400))),
         },
 
         // PostgreSQL (ADR-035): DATABASE_URL serves (PgBouncer), DATABASE_DIRECT_URL migrates (owner role).

@@ -474,7 +474,7 @@ vhost serves it.
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.222.0
+- openvibe-contracts: v0.224.0
 - openvibe-sdk: v0.67.0
-- openvibe-shared: v4.26.1
+- openvibe-shared: v4.27.0
 <!-- versions:end -->

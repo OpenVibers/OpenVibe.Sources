@@ -39,6 +39,7 @@ function layout({ title = 'List your store on OpenVibe', body = '', description 
 ${description ? `<meta name="description" content="${esc(description)}">` : ''}
 <script src="/shared/theme-loader.js"></script>
 <link rel="stylesheet" href="/shared/kit.css">
+<link rel="stylesheet" href="/shared/kit-data.css">
 <style>html{background:var(--ovk-bg);color:var(--ovk-text)}body{margin:0}:root{--ovk-top:0px}</style>
 </head>
 <body>

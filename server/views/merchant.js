@@ -39,7 +39,7 @@ function layout({ title = 'List your store on OpenVibe', body = '', description 
 ${description ? `<meta name="description" content="${esc(description)}">` : ''}
 <script src="/shared/theme-loader.js"></script>
 <link rel="stylesheet" href="/shared/kit.css">
-<style>html{background:var(--ovk-bg);color:var(--ovk-text)}body{margin:0}</style>
+<style>html{background:var(--ovk-bg);color:var(--ovk-text)}body{margin:0}:root{--ovk-top:0px}</style>
 </head>
 <body>
 <main class="ovk-page">
@@ -161,13 +161,13 @@ function detailPage({ merchant, claim, csrf, notice: noticeText = '', noticeKind
     let proof = '';
     if (pending) {
         const how = claim.method === 'dns'
-            ? `<p>Publish this DNS record at your DNS provider:</p>
-${kit.snippet({ code: `${challenge.name}  IN  TXT  "${challenge.value}"` })}
-<dl class="ovk-stats">
-<div><dt>type</dt><dd>TXT</dd></div>
-<div><dt>name</dt><dd><code>${esc(challenge.name)}</code></dd></div>
-<div><dt>value</dt><dd><code>${esc(challenge.value)}</code></dd></div>
-</dl>`
+            // A DNS provider asks for the type, the name and the value in separate boxes: one copy button each.
+            ? `<p>Add a <b>TXT</b> record at your DNS provider, with this name and value:</p>
+<p class="ovk-note">Name</p>
+${kit.snippet({ code: challenge.name, id: 'proof-name', label: 'Copy the name' })}
+<p class="ovk-note">Value</p>
+${kit.snippet({ code: challenge.value, id: 'proof-value', label: 'Copy the value' })}
+${kit.fold({ title: 'As one zone-file line', body: kit.snippet({ code: `${challenge.name}  IN  TXT  "${challenge.value}"`, id: 'proof-line' }) })}`
             : `<p>Put this tag in the <code>&lt;head&gt;</code> of <a href="${esc(challenge.url)}" rel="noopener">${esc(challenge.url)}</a>:</p>
 ${kit.snippet({ code: challenge.html })}
 <p class="ovk-note">The page must stay on ${esc(claim.domain)} (a redirect to another host is refused).</p>`;
@@ -196,17 +196,24 @@ ${claim.verification.last_error ? kit.notice({ kind: 'warn', text: claim.verific
         }));
     }
 
+    const progress = withdrawn ? '' : kit.steps({ label: 'Listing your store', current: verified ? 2 : 1, items: [
+        { label: 'Claim the domain', href: '/merchant' },
+        { label: 'Prove you control it', note: claim.method === 'dns' ? 'a DNS TXT record' : 'a meta tag' },
+        { label: 'Listed', note: 'crawled politely' },
+    ] });
+
     const body = `${kit.head({
         title: claim.domain,
         sub: `${claim.listing.kind === 'sitemap' ? 'Sitemap' : 'Product feed'} · ${claim.listing.url}`,
         back: { href: '/merchant', label: 'Merchant opt-in' },
         actions: [statusBadge(claim.status)],
     })}
+${progress}
 ${notice(noticeKind, noticeText)}
 ${notice('error', error)}
-${kit.section({ title: pending ? 'Prove you control this domain' : 'Verification', body: proof })}
+${kit.section({ title: pending ? 'Prove you control this domain' : 'Verification', body: `<div class="ovk-form">${proof}</div>` })}
 ${kit.section({ title: 'Source and last crawl', body: sourcePanel(claim) })}
-${actions.length ? kit.section({ title: 'Withdraw', body: actions.join('') }) : ''}`;
+${actions.length ? kit.fold({ title: 'Withdraw permission', tone: 'danger', body: `<p class="ovk-note">The source is disabled at once and its permission note is kept for the audit trail.</p>${actions.join('')}` }) : ''}`;
     return layout({ title: `${claim.domain} · Merchant opt-in`, body });
 }
 

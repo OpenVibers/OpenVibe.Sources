@@ -61,7 +61,6 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     const merchant = createMerchant({ db, config, registry, fetcher, resolver: merchantResolver, now, log });
     const merchantAuth = createMerchantAuth({ config, auth, log, fetchImpl });
     const accountData = accountDataLib.create({ db, log });
-    await accountData.ensureSchema();
     const accountSend = config.oauth.clientSecret ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl }) : null;
     const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth, accountData, accountSend });
     // One JWKS client for the process (the SDK shares it with verifyUserToken): refresh in the background

@@ -108,10 +108,16 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             // it has no field mapping of its own, so it does not go through the api mapping checks.
             if (e.resolver !== undefined) {
                 for (const k of Object.keys(e)) {
-                    if (!['url', 'format', 'resolver', 'item_kind', 'max_bytes', 'timeout_ms'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a resolver field`);
+                    // The normalized row written by the create path carries the api defaults; accepting them back
+                    // (only as their defaults) is what lets PATCH { enabled: true } validate a stored resolver.
+                    if (!['url', 'format', 'resolver', 'item_kind', 'max_bytes', 'timeout_ms', 'items_shape', 'items_path', 'fields', 'extra'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a resolver field`);
                 }
                 if (e.resolver !== 'hn-whoishiring') throw new RegistryError(`endpoints[${i}].resolver must be hn-whoishiring`);
                 if (e.format !== undefined && e.format !== 'json') throw new RegistryError(`endpoints[${i}].format must be json for a resolver`);
+                if (e.items_shape !== undefined && e.items_shape !== 'array') throw new RegistryError(`endpoints[${i}].items_shape must be array for a resolver`);
+                if (e.items_path !== undefined && e.items_path !== '') throw new RegistryError(`endpoints[${i}].items_path must be "" for a resolver`);
+                if (e.fields !== undefined && (!e.fields || typeof e.fields !== 'object' || Array.isArray(e.fields) || Object.keys(e.fields).length)) throw new RegistryError(`endpoints[${i}].fields must be empty for a resolver`);
+                if (e.extra !== undefined && (!e.extra || typeof e.extra !== 'object' || Array.isArray(e.extra) || Object.keys(e.extra).length)) throw new RegistryError(`endpoints[${i}].extra must be empty for a resolver`);
                 if (!/\.json(\?|$)/.test(out.url)) throw new RegistryError(`endpoints[${i}].resolver needs a .json endpoint`);
                 if (e.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(e.item_kind)) throw new RegistryError(`endpoints[${i}].item_kind is malformed`);
                 if (e.max_bytes !== undefined && (!Number.isInteger(e.max_bytes) || e.max_bytes < 1024 || e.max_bytes > 32 * 1024 * 1024)) throw new RegistryError(`endpoints[${i}].max_bytes must be an integer from 1024 to 33554432`);
@@ -138,7 +144,13 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             const err = checkApiMapping(e, { bulk: true });
             if (err) throw new RegistryError(`endpoints[${i}]: ${err}`);
             for (const k of Object.keys(e)) {
-                if (!['url', 'format', 'item_kind', 'fields', 'extra', 'extra_lists', 'max_bytes', 'max_rows', 'timeout_ms'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a bulk field`);
+                if (!['url', 'format', 'item_kind', 'fields', 'extra', 'extra_lists', 'max_bytes', 'max_rows', 'timeout_ms', 'resolver'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a bulk field`);
+            }
+            // An off-delta bulk source reads a text index and then only the delta files it lists (Open Food Facts).
+            if (e.resolver !== undefined) {
+                if (e.resolver !== 'off-delta') throw new RegistryError(`endpoints[${i}].resolver must be off-delta`);
+                if (!/\.txt(\?|$)/.test(out.url)) throw new RegistryError(`endpoints[${i}].resolver needs the index .txt endpoint`);
+                if (e.format !== 'jsonl') throw new RegistryError(`endpoints[${i}].format must be jsonl for an off-delta resolver`);
             }
             Object.assign(out, {
                 format: e.format || 'csv',
@@ -150,6 +162,7 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             if (e.extra_lists) out.extra_lists = e.extra_lists;
             if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
             if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;
+            if (e.resolver !== undefined) out.resolver = e.resolver;
         } else {
             // A feed may read structured facts out of its items' prose (adapters/extract.js).
             for (const k of Object.keys(e)) if (k !== 'url' && !(k === 'extract' && (input.type === 'rss' || input.type === 'atom'))) throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);
@@ -242,6 +255,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         del: db.prepare('DELETE FROM sources WHERE key = ?'),
         itemCount: db.prepare('SELECT COUNT(*) AS n FROM items WHERE source_key = ?'),
         dropFrontier: db.prepare('DELETE FROM crawl_frontier WHERE source_key = ?'),
+        dropState: db.prepare('DELETE FROM source_state WHERE source_key = ?'),
         resetValidators: db.prepare('DELETE FROM endpoint_state WHERE source_key = ?'),
     };
 
@@ -333,6 +347,7 @@ function createRegistry({ db, now = () => Date.now(), maxItemsCap = 12000 }) {
         if ((await st.itemCount.get(key)).n) throw new RegistryError('the source has items; disable it instead (provenance must stay resolvable)', 'sources.has_items');
         await st.del.run(key);
         await st.dropFrontier.run(key);
+        await st.dropState.run(key);
         return true;
     }
 

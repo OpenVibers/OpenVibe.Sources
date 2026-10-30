@@ -156,9 +156,10 @@
           },
           "resolver": {
             "enum": [
-              "hn-whoishiring"
+              "hn-whoishiring",
+              "off-delta"
             ],
-            "description": "An api endpoint whose records are walked from several JSON URLs instead of one items_path. hn-whoishiring reads user/whoishiring.json, the latest \"Who is hiring\" story's top-level kids, and each item/<id>.json; it stores one job per comment, a short excerpt with emails and phones removed, and links the comment (Sources, 2026-10-31). The endpoint URL must be a .json URL."
+            "description": "An api endpoint whose records are walked from several JSON URLs instead of one items_path, or a bulk endpoint whose rows come from the gzipped JSONL parts a text index lists. hn-whoishiring reads user/whoishiring.json, the latest \"Who is hiring\" story's top-level kids, and each item/<id>.json; it stores one job per comment, a short excerpt with emails and phones removed, and links the comment (Sources, 2026-10-31). off-delta reads index.txt and then only the delta parts not finished yet, resuming a part at its stored row offset (Open Food Facts; Sources, 2026-10-31). The endpoint URL is a .json URL for hn-whoishiring and the index's .txt URL for off-delta."
           },
           "item_kind": {
             "type": "string",

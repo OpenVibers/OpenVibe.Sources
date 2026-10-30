@@ -22,14 +22,17 @@ const { ParseError } = require('./util');
 
 const PARSER_VERSION = 'bulk@1';
 
-function createParser({ endpoint = {}, url, maxItems = 500, summaryMax = 1000 } = {}) {
+function createParser({ endpoint = {}, url, maxItems = 500, summaryMax = 1000, skipRows = 0 } = {}) {
     const format = endpoint.format || 'csv';
     const limit = Math.max(1, Math.min(Number(endpoint.max_rows) || 1000, Number(maxItems) || 500));
     const decoder = new StringDecoder('utf8');
     const items = [];
     const seen = new Set();
+    const skippedAtStart = Math.max(0, Math.floor(Number(skipRows) || 0));
+    let skip = skippedAtStart;
     let skipped = 0;
     let rows = 0;
+    let scanned = 0;
     let stopped = false;
 
     // Line-oriented formats keep the tail of an incomplete line between chunks. CSV needs a small state machine
@@ -43,9 +46,11 @@ function createParser({ endpoint = {}, url, maxItems = 500, summaryMax = 1000 } 
     let first = true;
 
     function accept(rec) {
+        scanned++;
+        if (skip > 0) { skip--; return; }              // a resumed bulk part: rows already kept by an earlier run
         if (stopped) return;
-        if (!rec || typeof rec !== 'object' || Array.isArray(rec)) { skipped++; return; }
         const index = rows++;
+        if (!rec || typeof rec !== 'object' || Array.isArray(rec)) { skipped++; return; }
         const item = mapRecord(rec, rec, undefined, index, endpoint, url, summaryMax);
         if (!item) { skipped++; return; }
         if (seen.has(item.identity)) { skipped++; return; }
@@ -153,7 +158,7 @@ function createParser({ endpoint = {}, url, maxItems = 500, summaryMax = 1000 } 
             if (format === 'csv') { if (tail) csvWrite(tail); csvFinish(); }
             else { if (tail) lineWrite(tail); if (pending) line(pending.endsWith('\r') ? pending.slice(0, -1) : pending); }
         }
-        return { items, skipped, meta: { format, rows, filtered: 0, capped: stopped } };
+        return { items, skipped, meta: { format, rows, scanned, skip_rows: skippedAtStart - skip, filtered: 0, capped: stopped } };
     }
 
     return { write, end, get full() { return stopped; }, get count() { return items.length; } };

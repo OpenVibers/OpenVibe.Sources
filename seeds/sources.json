@@ -2247,6 +2247,184 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+    {
+      "key": "bls-cpi-rent",
+      "name": "BLS CPI: rent of primary residence, US city average and 19 metro areas",
+      "type": "api",
+      "category": "housing",
+      "homepage_url": "https://www.bls.gov/cpi/",
+      "endpoints": [
+        {
+          "url": "https://download.bls.gov/pub/time.series/cu/cu.data.0.Current",
+          "format": "tsv",
+          "items_path": "",
+          "item_kind": "rent_cpi",
+          "max_bytes": 67108864,
+          "timeout_ms": 120000,
+          "filter": {
+            "series_id": [
+              "CUUR0000SEHA",
+              "CUURS11ASEHA",
+              "CUURS12ASEHA",
+              "CUURS12BSEHA",
+              "CUURS23ASEHA",
+              "CUURS23BSEHA",
+              "CUURS24ASEHA",
+              "CUURS35ASEHA",
+              "CUURS35BSEHA",
+              "CUURS35CSEHA",
+              "CUURS37ASEHA",
+              "CUURS37BSEHA",
+              "CUURS48ASEHA",
+              "CUURS48BSEHA",
+              "CUURS49ASEHA",
+              "CUURS49BSEHA",
+              "CUURS49DSEHA",
+              "CUURS49ESEHA",
+              "CUURA104SEHA",
+              "CUURA210SEHA"
+            ]
+          },
+          "fields": {
+            "identity": "$index",
+            "title": "series_id"
+          },
+          "extra": {
+            "series_id": "series_id",
+            "year": "year",
+            "period": "period",
+            "value": "value"
+          }
+        }
+      ],
+      "robots_note": "download.bls.gov/robots.txt answers 404 to the OpenVibeBot UA (re-checked 2026-10-30 from openvibe-ovh; an unmarked fetch gets 403, so the fetcher always sends the ADR 0007 User-Agent). api.bls.gov is Disallow: / and is not used. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "BLS public data. BLS asks to be cited and says it cannot vouch for data or analyses derived from these data after they have been retrieved from BLS.gov (https://www.bls.gov/developers/termsOfService.htm, https://www.bls.gov/bls/linksite.htm). This is BLS's published CPI flat file (cu.data.0.Current, about 49 MB, every series oldest to newest): the filter keeps the US city average rent series CUUR0000SEHA and the 19 largest metro rent series, one item per month, so Rent can draw a dated national and metro trend line. Monthly data; a weekly poll is plenty. Store the series id, year, period and value; cite BLS and link https://data.bls.gov/timeseries/<series>. Re-verify before enabling.",
+      "license_note": "US federal government work (public domain in the US); BLS cited as the source.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "max_items": 12000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "open-food-facts",
+      "name": "Open Food Facts product database (daily export)",
+      "type": "bulk",
+      "category": "food",
+      "homepage_url": "https://world.openfoodfacts.org/",
+      "endpoints": [
+        {
+          "url": "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz",
+          "format": "tsv",
+          "item_kind": "food_product",
+          "max_bytes": 2147483648,
+          "max_rows": 12000,
+          "timeout_ms": 120000,
+          "fields": {
+            "identity": "code",
+            "url": "url",
+            "title": "product_name"
+          },
+          "extra": {
+            "brands": "brands",
+            "categories": "categories",
+            "countries": "countries_en",
+            "main_category": "main_category_en",
+            "quantity": "quantity",
+            "nutriscore_grade": "nutriscore_grade",
+            "nutriscore_score": "nutriscore_score",
+            "energy_kcal_100g": "energy-kcal_100g",
+            "fat_100g": "fat_100g",
+            "saturated_fat_100g": "saturated-fat_100g",
+            "carbohydrates_100g": "carbohydrates_100g",
+            "sugars_100g": "sugars_100g",
+            "proteins_100g": "proteins_100g",
+            "salt_100g": "salt_100g",
+            "fiber_100g": "fiber_100g",
+            "sodium_100g": "sodium_100g"
+          }
+        }
+      ],
+      "robots_note": "static.openfoodfacts.org/robots.txt checked 2026-10-30 from openvibe-ovh: 'User-agent: *', 'Disallow: /api', 'Disallow: /cgi', 'Disallow: /facets'; /data/ is allowed. The download redirects to openfoodfacts-ds.s3.eu-west-3.amazonaws.com, whose /robots.txt is 404 (no restrictions). The fetcher re-checks robots.txt on both origins, and every redirect hop, on every run.",
+      "terms_note": "Open Food Facts publishes its database under the Open Database License: 'The Open Food Facts database is available under the Open Database License' (https://world.openfoodfacts.org/terms-of-use). Attribution and share-alike apply, and the ODbL notice stays with anything derived. This is the tab-separated CSV export (en.openfoodfacts.org.products.csv.gz, about 1.5 GB compressed): the bulk loader streams it with a 2 GiB cap and stops after 12,000 rows per run, so it never downloads the file whole. Store the code, name, brands, categories, Nutri-Score and the per-100 g nutrient columns; images are CC BY-SA and are not stored. Re-verify before enabling.",
+      "license_note": "ODbL 1.0 (database); individual contents DbCL; images CC BY-SA. Credit 'Open Food Facts (ODbL)' and link the product page and https://opendatacommons.org/licenses/odbl/1-0/ wherever a product's figures show.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 12000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "themealdb",
+      "name": "TheMealDB recipes",
+      "type": "api",
+      "category": "food",
+      "homepage_url": "https://www.themealdb.com/",
+      "endpoints": [
+        {
+          "url": "https://www.themealdb.com/api/json/v1/1/search.php?s=",
+          "format": "json",
+          "items_path": "meals",
+          "item_kind": "recipe",
+          "max_bytes": 1048576,
+          "fields": {
+            "identity": "idMeal",
+            "title": "strMeal",
+            "summary": "strInstructions"
+          },
+          "extra": {
+            "category": "strCategory",
+            "area": "strArea",
+            "thumbnail": "strMealThumb",
+            "tags": "strTags",
+            "youtube": "strYoutube",
+            "source": "strSource"
+          }
+        }
+      ],
+      "robots_note": "www.themealdb.com/robots.txt checked 2026-10-30 from openvibe-ovh: 'User-agent: *' then 'Allow: /', and a Sitemap line; no Disallow. The fetcher re-checks it on every run.",
+      "terms_note": "TheMealDB says 'The API and site will always remain free at point of access' (https://www.themealdb.com/api.php). The key in this URL is the test key '1', which TheMealDB documents for development: a production key is the owner's call, so this seed stays disabled. Only a short plain-text excerpt of the instructions is stored (summary, capped at 1000 characters), the recipe is linked by its own URL, and TheMealDB is attributed; the recipe text and images remain the site's. Re-verify before enabling.",
+      "license_note": "TheMealDB's own free API terms; recipe text and images remain the site's. A short excerpt and a link back only.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "max_items": 400,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "hn-whoishiring",
+      "name": "Hacker News: Who is hiring (monthly thread)",
+      "type": "api",
+      "category": "jobs",
+      "homepage_url": "https://news.ycombinator.com/",
+      "endpoints": [
+        {
+          "url": "https://hacker-news.firebaseio.com/v0/user/whoishiring.json",
+          "format": "json",
+          "resolver": "hn-whoishiring",
+          "item_kind": "job",
+          "max_bytes": 1048576,
+          "timeout_ms": 20000
+        }
+      ],
+      "robots_note": "hacker-news.firebaseio.com/robots.txt checked 2026-10-30 from openvibe-ovh: 'User-agent: *', 'Allow: /*.json$', 'Allow: /*.json?*', 'Disallow: /'. The resolver asks only for .json paths (user/whoishiring.json, item/<id>.json) and refuses any other path before fetching. The fetcher re-checks robots.txt on every run.",
+      "terms_note": "The Hacker News API makes 'the public Hacker News data available in near real time'; 'There is currently no rate limit' (https://github.com/HackerNews/API). The resolver walks user/whoishiring.json to the newest 'Ask HN: Who is hiring?' story and only its top-level kids, then item/<id>.json once per comment; it never walks a comment's replies. One job item per comment, with the comment linked: the full comment is never stored, only a plain-text excerpt with email addresses and phone numbers replaced by [email] and [phone]. The poster owns the comment. Attribute Hacker News and the poster; link https://news.ycombinator.com/item?id=<id>. Re-verify before enabling.",
+      "license_note": "Hacker News user content; the poster owns the comment. Headline, short excerpt and link only.",
+      "min_interval_ms": 1000,
+      "poll_interval_sec": 86400,
+      "max_items": 500,
+      "retire_after_sec": 3888000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

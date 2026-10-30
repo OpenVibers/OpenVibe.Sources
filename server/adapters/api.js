@@ -28,12 +28,14 @@
  *
  *   "extra": { "price_hourly": "$root.terms.OnDemand.{$key}.*.priceDimensions.*.pricePerUnit.USD" }
  *
- * An endpoint may carry `where`: an object of up to 10 `path -> expected` conditions whose paths
- * follow the same rules (relative, `$key`, `$root.`, `*`). Expected is a string, number or boolean
- * (compared to the value after `scalar()`), or an array of up to 20 such values (any of them
- * matches). A record that fails any condition is left out before `maxItems` is counted and
- * reported as `meta.filtered`, not `skipped`:
+ * An endpoint may carry `where` (or its alias `filter`): an object of up to 10 `path -> expected`
+ * conditions whose paths follow the same rules (relative, `$key`, `$root.`, `*`). Expected is a
+ * string, number or boolean (compared to the value after `scalar()`), or an array of up to 20 such
+ * values (any of them matches). A record that fails any condition is left out before `maxItems` is
+ * counted and reported as `meta.filtered`, not `skipped`. `filter` is the name the BLS CPI rent
+ * seed uses; both are applied when both are given:
  *
+ *   "filter": { "series_id": "CUUR0000SEHA" }
  *   "where": { "productFamily": "Lightsail Instance", "attributes.operatingSystem": "Linux" }
  *
  * A key may carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and
@@ -49,7 +51,7 @@
  * A `where` expectation may also be `{ "pattern": "<regular expression>" }` (at most 200 characters):
  * the value must be text the expression matches, e.g. `{ "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } }`.
  *
- * `max_bytes` (an integer from 1 KiB to 32 MiB) raises or lowers the body cap for one endpoint
+ * `max_bytes` (an integer from 1 KiB to 64 MiB) raises or lowers the body cap for one endpoint
  * (SOURCES_MAX_BYTES otherwise); OVHcloud's VPS catalog is about 12 MB.
  *
  * `timeout_ms` (an integer from 1 s to 120 s) gives one endpoint its own deadline (SOURCES_FETCH_TIMEOUT_MS otherwise):
@@ -222,14 +224,37 @@ function keyPathViolation(p, shape) {
     return null;
 }
 
-/** Validate an endpoint mapping (registry side). Returns an error string or null. */
-function checkMapping(ep) {
-    if (!['json', 'xml', 'tsv'].includes(ep.format || 'json')) return 'format must be json, xml or tsv';
-    if ((ep.format || 'json') === 'tsv' && ep.items_path) return 'a tsv body is the array itself: items_path is ""';
-    if (ep.duplicates !== undefined && !['first', 'last'].includes(ep.duplicates)) return 'duplicates must be first or last';
+/** The `where` / `filter` conditions: path -> expected value(s) or { pattern }. */
+function checkConditions(where, label, shape) {
+    if (typeof where !== 'object' || Array.isArray(where)) return `${label} must be an object of path -> expected`;
+    if (Object.keys(where).length > 10) return `at most 10 ${label} conditions`;
+    for (const [p, expected] of Object.entries(where)) {
+        if (!PATH_RE.test(p)) return `${label}.${p} path is malformed`;
+        const kerr = keyPathViolation(p, shape);
+        if (kerr) return `${label}.${p}: ${kerr}`;
+        if (isPattern(expected)) {
+            if (Object.keys(expected).length !== 1 || typeof expected.pattern !== 'string' || !expected.pattern || expected.pattern.length > 200) return `${label}.${p}: a pattern is { "pattern": "<at most 200 characters>" }`;
+            try { new RegExp(expected.pattern); } catch { return `${label}.${p}: the pattern is not a valid regular expression`; }
+            continue;
+        }
+        const wanted = Array.isArray(expected) ? expected : [expected];
+        if (wanted.length > 20) return `${label}.${p} has at most 20 expected values`;
+        for (const v of wanted) {
+            if (typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean') return `${label}.${p} expectations must be strings, numbers or booleans`;
+        }
+    }
+    return null;
+}
+
+/** Validate an endpoint mapping (registry side). `bulk` is the streaming dataset download's own schema. */
+function checkMapping(ep, { bulk = false } = {}) {
+    const formats = bulk ? ['csv', 'jsonl', 'tsv'] : ['json', 'xml', 'tsv'];
+    if (!formats.includes(ep.format || (bulk ? 'csv' : 'json'))) return bulk ? 'format must be csv, jsonl or tsv' : 'format must be json, xml or tsv';
+    if (['tsv', 'csv', 'jsonl'].includes(ep.format) && ep.items_path) return `a ${ep.format} body is the array itself: items_path is ""`;
+    if (!bulk && ep.duplicates !== undefined && !['first', 'last'].includes(ep.duplicates)) return 'duplicates must be first or last';
     const shape = ep.items_shape || 'array';
-    if (!['array', 'map'].includes(shape)) return 'items_shape must be array or map';
-    if (ep.items_path !== undefined && ep.items_path !== '' && !PATH_RE.test(ep.items_path)) return 'items_path is malformed';
+    if (!bulk && !['array', 'map'].includes(shape)) return 'items_shape must be array or map';
+    if (!bulk && ep.items_path !== undefined && ep.items_path !== '' && !PATH_RE.test(ep.items_path)) return 'items_path is malformed';
     const fields = ep.fields || {};
     if (!fields.identity && !fields.url) return 'fields.identity or fields.url is required';
     for (const [k, p] of Object.entries(fields)) {
@@ -254,30 +279,21 @@ function checkMapping(ep) {
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `extra_lists.${k}: ${kerr}`;
     }
-    const where = ep.where == null ? {} : ep.where;
-    if (typeof where !== 'object' || Array.isArray(where)) return 'where must be an object of path -> expected';
-    if (Object.keys(where).length > 10) return 'at most 10 where conditions';
-    for (const [p, expected] of Object.entries(where)) {
-        if (!PATH_RE.test(p)) return `where.${p} path is malformed`;
-        const kerr = keyPathViolation(p, shape);
-        if (kerr) return `where.${p}: ${kerr}`;
-        if (isPattern(expected)) {
-            if (Object.keys(expected).length !== 1 || typeof expected.pattern !== 'string' || !expected.pattern || expected.pattern.length > 200) return `where.${p}: a pattern is { "pattern": "<at most 200 characters>" }`;
-            try { new RegExp(expected.pattern); } catch { return `where.${p}: the pattern is not a valid regular expression`; }
-            continue;
-        }
-        const wanted = Array.isArray(expected) ? expected : [expected];
-        if (wanted.length > 20) return `where.${p} has at most 20 expected values`;
-        for (const v of wanted) {
-            if (typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean') return `where.${p} expectations must be strings, numbers or booleans`;
-        }
+    for (const label of ['where', 'filter']) {
+        if (ep[label] == null) continue;
+        const err = checkConditions(ep[label], label, shape);
+        if (err) return err;
     }
     if (ep.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(ep.item_kind)) return 'item_kind is malformed';
-    if (ep.max_bytes !== undefined && (!Number.isInteger(ep.max_bytes) || ep.max_bytes < 1024 || ep.max_bytes > 32 * 1024 * 1024)) return 'max_bytes is an integer from 1024 to 33554432';
+    if (ep.max_bytes !== undefined && (!Number.isInteger(ep.max_bytes) || ep.max_bytes < 1024 || ep.max_bytes > (bulk ? 16 * 1024 * 1024 * 1024 : 64 * 1024 * 1024))) {
+        return bulk ? 'max_bytes is an integer from 1024 to 17179869184' : 'max_bytes is an integer from 1024 to 67108864';
+    }
+    if (ep.max_rows !== undefined && (!bulk || !Number.isInteger(ep.max_rows) || ep.max_rows < 1 || ep.max_rows > 5000000)) return 'max_rows is an integer from 1 to 5000000';
     if (ep.timeout_ms !== undefined && (!Number.isInteger(ep.timeout_ms) || ep.timeout_ms < 1000 || ep.timeout_ms > 120000)) return 'timeout_ms is an integer from 1000 to 120000';
-    if (ep.request_content_type !== undefined && ep.request_content_type !== 'application/json') return 'request_content_type may only be application/json';
+    if (!bulk && ep.request_content_type !== undefined && ep.request_content_type !== 'application/json') return 'request_content_type may only be application/json';
     return null;
 }
+
 
 /** A tab-separated body as records keyed by its header line's names (values trimmed); malformed lines are counted. */
 function parseTsv(text) {
@@ -295,6 +311,29 @@ function parseTsv(text) {
         records.push(rec);
     }
     return { records, bad };
+}
+
+/** One record → the item every api-shaped adapter stores, or null when it states no identity. */
+function mapRecord(body, rec, key, index, endpoint, url, summaryMax = 1000) {
+    const f = endpoint.fields || {};
+    const get = (p) => (p === '$index' ? index : getField(body, rec, key, p));
+    const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
+    const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
+    if (!identity) return null;
+    const extra = {};
+    for (const [k, p] of Object.entries(endpoint.extra || {})) extra[k] = scalar(get(p));
+    for (const [k, p] of Object.entries(endpoint.extra_lists || {})) extra[k] = scalars(get(p));
+    return {
+        identity: String(identity),
+        kind: endpoint.item_kind || 'record',
+        canonical_url: link,
+        title: f.title ? toText(scalar(get(f.title)), 500) : null,
+        summary: f.summary ? toText(scalar(get(f.summary)), summaryMax) : null,
+        authors: f.author ? [toText(scalar(get(f.author)), 200)].filter(Boolean) : [],
+        published_at: f.published_at ? toIsoDate(scalar(get(f.published_at))) : f.published_at_epoch ? epochSecondsToIso(scalar(get(f.published_at_epoch))) : null,
+        updated_at: f.updated_at ? toIsoDate(scalar(get(f.updated_at))) : f.updated_at_epoch ? epochSecondsToIso(scalar(get(f.updated_at_epoch))) : null,
+        fields: extra,
+    };
 }
 
 function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } = {}) {
@@ -317,9 +356,11 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
         if (!Array.isArray(node)) throw new ParseError(`items_path "${itemsPath}" is not an array in the response`);
         records = node.map((value, index) => ({ key: undefined, index, value }));
     }
-    const f = endpoint.fields || {};
-    const where = endpoint.where && typeof endpoint.where === 'object' && !Array.isArray(endpoint.where) ? endpoint.where : {};
-    const filterKeys = Object.keys(where);
+    const conditions = [];
+    for (const label of ['filter', 'where']) {
+        const c = endpoint[label];
+        if (c && typeof c === 'object' && !Array.isArray(c)) conditions.push(c);
+    }
     const items = [];
     let skipped = malformed;
     let filtered = 0;
@@ -327,32 +368,16 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
     const keepLast = endpoint.duplicates === 'last';
     for (const { key, index, value: rec } of records) {
         if (!rec || typeof rec !== 'object' || (shape === 'map' && Array.isArray(rec))) { skipped++; continue; }
-        if (filterKeys.length && !matchesWhere(body, rec, key, where)) { filtered++; continue; }
-        const get = (p) => (p === '$index' ? index : getField(body, rec, key, p));
-        const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
-        const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
-        const again = identity && seen.has(identity);
-        if (!identity || (again && !keepLast)) { skipped++; continue; }
+        if (conditions.length && !conditions.every((c) => matchesWhere(body, rec, key, c))) { filtered++; continue; }
+        const item = mapRecord(body, rec, key, index, endpoint, url, summaryMax);
+        const again = item && seen.has(item.identity);
+        if (!item || (again && !keepLast)) { skipped++; continue; }
         if (!again && items.length >= maxItems) { skipped++; continue; }
         if (again) skipped++;   // the earlier record it replaces
-        const extra = {};
-        for (const [k, p] of Object.entries(endpoint.extra || {})) extra[k] = scalar(get(p));
-        for (const [k, p] of Object.entries(endpoint.extra_lists || {})) extra[k] = scalars(get(p));
-        const item = {
-            identity: String(identity),
-            kind: endpoint.item_kind || 'record',
-            canonical_url: link,
-            title: f.title ? toText(scalar(get(f.title)), 500) : null,
-            summary: f.summary ? toText(scalar(get(f.summary)), summaryMax) : null,
-            authors: f.author ? [toText(scalar(get(f.author)), 200)].filter(Boolean) : [],
-            published_at: f.published_at ? toIsoDate(scalar(get(f.published_at))) : f.published_at_epoch ? epochSecondsToIso(scalar(get(f.published_at_epoch))) : null,
-            updated_at: f.updated_at ? toIsoDate(scalar(get(f.updated_at))) : f.updated_at_epoch ? epochSecondsToIso(scalar(get(f.updated_at_epoch))) : null,
-            fields: extra,
-        };
-        if (again) items[seen.get(identity)] = item;
-        else { seen.set(identity, items.length); items.push(item); }
+        if (again) items[seen.get(item.identity)] = item;
+        else { seen.set(item.identity, items.length); items.push(item); }
     }
     return { items, skipped, meta: { format, filtered } };
 }
 
-module.exports = { parse, PARSER_VERSION, checkMapping };
+module.exports = { parse, mapRecord, PARSER_VERSION, checkMapping };

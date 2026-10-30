@@ -38,6 +38,7 @@
         "sitemap",
         "jsonld",
         "api",
+        "bulk",
         "crawl",
         "manual"
       ]
@@ -84,9 +85,11 @@
             "enum": [
               "json",
               "xml",
-              "tsv"
+              "tsv",
+              "csv",
+              "jsonl"
             ],
-            "description": "json (default), xml, or tsv: a tab-separated file whose first line names the columns, read as an array of records keyed by those names (items_path is \"\"; BLS series files, Sources 2026-10-24)."
+            "description": "json (default), xml, tsv (a tab-separated file whose first line names the columns; BLS series files, Sources 2026-10-24), or, for a bulk source, csv, jsonl or tsv: one dataset file read as a stream, row by row (Sources, 2026-10-31)."
           },
           "duplicates": {
             "enum": [
@@ -147,6 +150,16 @@
             },
             "description": "Records kept only when every path equals its value (or one of an array of values), or, for { pattern }, is text the regular expression matches; others are left out before max_items counts. Paths follow the field rules: relative to the record, $key, an absolute $root.<path> into the response (a {$key} segment there is the record's map key), * for an object's single child, and key[field=value,...] selectors (Sources#39, Sources#51)."
           },
+          "filter": {
+            "$ref": "#/properties/endpoints/items/properties/where",
+            "description": "The same row conditions as where; the name the BLS CPI rent seed uses (Sources, 2026-10-31). When both are given, both apply."
+          },
+          "resolver": {
+            "enum": [
+              "hn-whoishiring"
+            ],
+            "description": "An api endpoint whose records are walked from several JSON URLs instead of one items_path. hn-whoishiring reads user/whoishiring.json, the latest \"Who is hiring\" story's top-level kids, and each item/<id>.json; it stores one job per comment, a short excerpt with emails and phones removed, and links the comment (Sources, 2026-10-31). The endpoint URL must be a .json URL."
+          },
           "item_kind": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]{1,39}$"
@@ -160,8 +173,14 @@
           "max_bytes": {
             "type": "integer",
             "minimum": 1024,
-            "maximum": 33554432,
-            "description": "The body cap for this endpoint, in bytes (1 KiB to 32 MiB); the deployment's cap otherwise. OVHcloud's VPS catalog is about 12 MB (Sources#51)."
+            "maximum": 17179869184,
+            "description": "The body cap for this endpoint, in bytes; the deployment's cap otherwise. An api endpoint may set 1 KiB to 64 MiB (OVHcloud's VPS catalog is about 12 MB; Sources#51); a bulk dataset file may set up to 16 GiB, and the row limit stops the stream long before that (Sources, 2026-10-31)."
+          },
+          "max_rows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000000,
+            "description": "A bulk endpoint only: the most rows one run keeps (default 1000). The stream is stopped once this many items are stored, so a multi-GB file is never held in memory and never read whole (Sources, 2026-10-31)."
           },
           "timeout_ms": {
             "type": "integer",

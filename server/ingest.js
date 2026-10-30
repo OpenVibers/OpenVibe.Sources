@@ -25,11 +25,12 @@
  * row per page, a page's own failure stays the page's, and the source fails only when the site does. While pages are
  * still due after a run, the next one comes sooner (SOURCES_CRAWL_SOON_MS) than poll_interval_sec.
  */
+const crypto = require('crypto');
 const { ids } = require('openvibe-contracts');
-const { ADAPTERS } = require('./adapters');
+const { ADAPTERS, RESOLVERS } = require('./adapters');
 const extract = require('./adapters/extract');
 const { createCrawler } = require('./crawl');
-const { sha256, decodeBody } = require('./adapters/util');
+const { sha256, decodeBody, ParseError } = require('./adapters/util');
 
 const FAILURE_STATES = new Set(['http_error', 'timeout', 'robots_denied', 'parse_error', 'rate_limited']);
 
@@ -229,6 +230,188 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         return { run, failed: false, success: true, recorded: true };
     }
 
+    /**
+     * A bulk dataset file: one streamed GET, parsed row by row. The stream is stopped at the row limit, so a
+     * multi-GB file is never downloaded whole and never held in memory; the endpoint's max_bytes is the cap.
+     */
+    async function fetchBulkEndpoint(source, endpoint, trigger) {
+        const adapter = ADAPTERS.bulk;
+        const startedAt = now();
+        const run = baseRun(source, endpoint.url, trigger, startedAt);
+        const target = new URL(endpoint.url);
+        const host = target.host;
+
+        const headers = { Accept: adapter.accept };
+        const sensitive = [];
+        let requestUrl = target;
+        if (source.auth.mode !== 'none') {
+            const secret = config.secrets[source.auth.env];
+            if (!secret) {
+                Object.assign(run, { state: 'disabled', error_code: 'credential_missing', detail: `environment variable ${source.auth.env} is not set`, finished_at: now() });
+                return { run, failed: false };
+            }
+            if (source.auth.mode === 'bearer') { headers.Authorization = `Bearer ${secret}`; sensitive.push('Authorization'); }
+            if (source.auth.mode === 'header') { headers[source.auth.header] = secret; sensitive.push(source.auth.header); }
+            if (source.auth.mode === 'query') { requestUrl = new URL(target); requestUrl.searchParams.set(source.auth.param, secret); }
+        }
+
+        const verdict = await robots.check(target.toString());
+        setCrawlDelay(host, verdict.crawlDelaySec);
+        if (!verdict.allowed) {
+            if (verdict.refusedCode) Object.assign(run, { state: 'http_error', error_code: verdict.refusedCode, detail: `${host} is not fetchable (${verdict.refusedCode})`, finished_at: now() });
+            else Object.assign(run, { state: 'robots_denied', error_code: 'robots', detail: verdict.reason, finished_at: now() });
+            return { run, failed: true };
+        }
+
+        await space(host, source.min_interval_ms);
+        await st.requested.run(now(), source.key);
+        const parser = adapter.createParser({ endpoint, url: endpoint.url, maxItems: source.max_items, summaryMax: config.items.summaryMax });
+        const hash = crypto.createHash('sha256');
+        let res;
+        try {
+            res = await fetcher.streamUrl(requestUrl.toString(), {
+                headers,
+                capBytes: endpoint.max_bytes || config.fetch.maxBytes,
+                timeoutMs: endpoint.timeout_ms || undefined,
+                beforeHop: async (next) => {
+                    const v = await robots.check(next.toString());
+                    if (!v.allowed) return { refuse: v.reason };
+                    if (next.host !== host) {
+                        setCrawlDelay(next.host, v.crawlDelaySec);
+                        await space(next.host, source.min_interval_ms);
+                    }
+                    return null;
+                },
+            }, (chunk) => { hash.update(chunk); return parser.write(chunk); });
+        } catch (err) {
+            const state = err.code === 'timeout' ? 'timeout' : err.code === 'hop_refused' ? 'robots_denied'
+                : err.code === 'parse_error' ? 'parse_error' : 'http_error';
+            Object.assign(run, { state, error_code: err.code || 'network', detail: String(err.message).slice(0, 500), finished_at: now() });
+            return { run, failed: true };
+        }
+        run.http_status = res.status;
+        run.bytes = res.bytes != null ? res.bytes : null;
+        run.finished_at = now();
+
+        if (res.status === 429) {
+            const wait = Math.min(retryAfterMs(res.headers['retry-after'], now()) ?? 10 * 60 * 1000, 24 * 3600 * 1000);
+            Object.assign(run, { state: 'rate_limited', error_code: 'upstream_429', detail: `the site asked us to wait ${Math.round(wait / 1000)} s` });
+            return { run, failed: true, notBefore: now() + wait };
+        }
+        if (res.status !== 200 && res.status !== 203) {
+            const wait = res.status === 503 ? retryAfterMs(res.headers['retry-after'], now()) : null;
+            Object.assign(run, { state: 'http_error', error_code: `http_${res.status}`, detail: `HTTP ${res.status}` });
+            return { run, failed: true, notBefore: wait != null ? now() + Math.min(wait, 24 * 3600 * 1000) : null };
+        }
+
+        let parsed;
+        try {
+            parsed = parser.end();
+        } catch (err) {
+            Object.assign(run, { state: 'parse_error', error_code: err.code === 'parse_error' ? 'unreadable' : 'adapter_error', detail: String(err.message).slice(0, 500) });
+            return { run, failed: true };
+        }
+        run.raw_body_hash = hash.digest('hex');
+        run.parser_version = adapter.version;
+        await db.tx(async () => {
+            const counts = await items.ingest(source, parsed.items, {
+                runId: run.id, rawBodyHash: run.raw_body_hash, parserVersion: adapter.version, retrievedAt: run.finished_at,
+            });
+            Object.assign(run, {
+                state: 'ok', items_seen: parsed.items.length, items_created: counts.created, items_updated: counts.updated,
+                items_unchanged: counts.unchanged, items_skipped: parsed.skipped + counts.skipped,
+            });
+            await st.insertRun.run(run);
+            await st.saveValidators.run({
+                k: source.key, u: endpoint.url, etag: res.headers.etag || null, lm: res.headers['last-modified'] || null,
+                status: res.status, at: run.finished_at,
+            });
+        });
+        return { run, failed: false, success: true, recorded: true };
+    }
+
+    /**
+     * An api endpoint with a resolver (HN Who is hiring): a few JSON documents walked by server/adapters/hn.js.
+     * Every URL is checked against robots and must be a .json path; the resolver returns the same shape a parser does.
+     */
+    async function fetchResolverEndpoint(source, endpoint, trigger) {
+        const adapter = ADAPTERS.api;
+        const { resolve, version: resolverVersion } = RESOLVERS[endpoint.resolver];
+        const startedAt = now();
+        const run = baseRun(source, endpoint.url, trigger, startedAt);
+        const target = new URL(endpoint.url);
+        const host = target.host;
+
+        const headers = { Accept: 'application/json' };
+        const sensitive = [];
+        let requestUrl = target;
+        if (source.auth.mode !== 'none') {
+            const secret = config.secrets[source.auth.env];
+            if (!secret) {
+                Object.assign(run, { state: 'disabled', error_code: 'credential_missing', detail: `environment variable ${source.auth.env} is not set`, finished_at: now() });
+                return { run, failed: false };
+            }
+            if (source.auth.mode === 'bearer') { headers.Authorization = `Bearer ${secret}`; sensitive.push('Authorization'); }
+            if (source.auth.mode === 'header') { headers[source.auth.header] = secret; sensitive.push(source.auth.header); }
+            if (source.auth.mode === 'query') { requestUrl = new URL(target); requestUrl.searchParams.set(source.auth.param, secret); }
+        }
+
+        const hash = crypto.createHash('sha256');
+        let bytes = 0;
+        let lastStatus = null;
+        const getJson = async (url, cap) => {
+            const verdict = await robots.check(url);
+            if (!verdict.allowed) throw Object.assign(new Error(verdict.reason || 'robots.txt disallows this URL'), { code: 'robots_denied' });
+            const r = await fetcher.fetchUrl(url, {
+                headers,
+                capBytes: Math.min(Number(cap) || 1048576, 32 * 1024 * 1024),
+                timeoutMs: endpoint.timeout_ms || undefined,
+                sensitiveHeaders: sensitive,
+                beforeHop: async (next) => {
+                    const v = await robots.check(next.toString());
+                    return v.allowed ? null : { refuse: v.reason };
+                },
+            });
+            lastStatus = r.status;
+            run.http_status = r.status;
+            if (r.status === 429) throw Object.assign(new Error('the Hacker News API answered 429'), { code: 'rate_limited' });
+            if (r.status !== 200 && r.status !== 203) throw Object.assign(new Error(`HTTP ${r.status} for ${url}`), { code: 'http_error' });
+            bytes += r.bytes || 0;
+            hash.update(r.body || Buffer.alloc(0));
+            try { return JSON.parse(decodeBody(r.body, r.headers['content-type'])); } catch { throw new ParseError('the Hacker News API answered non-JSON'); }
+        };
+
+        await space(host, source.min_interval_ms);
+        await st.requested.run(now(), source.key);
+        let parsed;
+        try {
+            parsed = await resolve({ endpoint, getJson, maxItems: source.max_items, summaryMax: config.items.summaryMax, cap: endpoint.max_bytes || 1048576 });
+        } catch (err) {
+            const state = err.code === 'robots_denied' ? 'robots_denied' : err.code === 'rate_limited' ? 'rate_limited'
+                : err.code === 'parse_error' ? 'parse_error' : err.code === 'timeout' ? 'timeout' : 'http_error';
+            Object.assign(run, { state, error_code: err.code || 'network', detail: String(err.message).slice(0, 500), finished_at: now() });
+            if (err.code !== 'parse_error') log.error(`[ingest] ${source.key}: resolver failed: ${err.stack || err}`);
+            return { run, failed: true };
+        }
+        run.http_status = lastStatus;
+        run.bytes = bytes;
+        run.finished_at = now();
+        run.raw_body_hash = hash.digest('hex');
+        run.parser_version = resolverVersion;
+        await db.tx(async () => {
+            const counts = await items.ingest(source, parsed.items, {
+                runId: run.id, rawBodyHash: run.raw_body_hash, parserVersion: resolverVersion, retrievedAt: run.finished_at,
+            });
+            Object.assign(run, {
+                state: 'ok', items_seen: parsed.items.length, items_created: counts.created, items_updated: counts.updated,
+                items_unchanged: counts.unchanged, items_skipped: parsed.skipped + counts.skipped,
+            });
+            await st.insertRun.run(run);
+            await st.saveValidators.run({ k: source.key, u: endpoint.url, etag: null, lm: null, status: lastStatus, at: run.finished_at });
+        });
+        return { run, failed: false, success: true, recorded: true };
+    }
+
     const crawler = createCrawler({
         db, config, items, robots, fetcher, spacer, now, log,
         record: { baseRun, insertRun: (r) => st.insertRun.run(r), requested: (t, key) => st.requested.run(t, key) },
@@ -245,7 +428,11 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         for (const endpoint of source.endpoints) {
             let out;
             try {
-                out = await fetchEndpoint(source, endpoint, trigger);
+                out = source.type === 'bulk'
+                    ? await fetchBulkEndpoint(source, endpoint, trigger)
+                    : endpoint.resolver
+                        ? await fetchResolverEndpoint(source, endpoint, trigger)
+                        : await fetchEndpoint(source, endpoint, trigger);
             } catch (err) {
                 // Anything unexpected is still a recorded failure, never a silent gap.
                 const r = baseRun(source, endpoint.url, trigger, t);
@@ -262,7 +449,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
             if (out.run.state === 'rate_limited') break;   // the site asked us to stop
         }
 
-        if (source.retire_after_sec && anySuccess && allAnswered && !anyFailure) {
+        if (source.retire_after_sec && source.type !== 'bulk' && anySuccess && allAnswered && !anyFailure) {
             try {
                 const retired = await items.retireUnseen(source, now() - source.retire_after_sec * 1000);
                 if (retired) log.log(`[ingest] ${source.key}: retired ${retired} item(s) the feed stopped showing`);

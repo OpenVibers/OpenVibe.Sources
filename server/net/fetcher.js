@@ -113,7 +113,113 @@ function createFetcher({ guard, userAgent, timeoutMs = 20000, maxBytes = 5 * 102
         }
     }
 
-    return { fetchUrl };
+    /** A streamed GET: the same guard/redirect/deadline/cap, but the decoded bytes go to onChunk as they arrive. */
+    function onceStream(url, headers, deadline, capBytes, limitMs, onChunk) {
+        return new Promise((resolve, reject) => {
+            const mod = url.protocol === 'https:' ? https : http;
+            const remaining = deadline - Date.now();
+            if (remaining <= 0) return reject(new FetchError('timeout', 'deadline passed'));
+            let settled = false;
+            let stopped = false;
+            const done = (fn, v) => { if (!settled) { settled = true; clearTimeout(timer); fn(v); } };
+            const fail = (err) => { if (!settled) { settled = true; clearTimeout(timer); req.destroy(); reject(err); } };
+            const req = mod.request(url, {
+                method: 'GET',
+                headers,
+                lookup: guard.lookup,
+                agent: false,
+                timeout: remaining,
+            }, (res) => {
+                const status = res.statusCode;
+                if (status >= 300 && status < 400 && res.headers.location) {
+                    res.resume();
+                    return done(resolve, { redirect: res.headers.location, status, headers: res.headers });
+                }
+                // Non-200 answers (304, 429, 4xx/5xx) carry no dataset: read the headers and let ingest decide.
+                if (status !== 200 && status !== 203) {
+                    res.resume();
+                    return done(resolve, { status, headers: res.headers, bytes: 0, finalUrl: url.toString(), stopped: false });
+                }
+                const declared = Number(res.headers['content-length']);
+                if (Number.isFinite(declared) && declared > capBytes) {
+                    res.resume();
+                    return fail(new FetchError('too_large', `content-length ${declared} exceeds ${capBytes} bytes`));
+                }
+                let stream = res;
+                const enc = String(res.headers['content-encoding'] || '').trim().toLowerCase();
+                const type = String(res.headers['content-type'] || '').toLowerCase();
+                if (enc === 'gzip' || enc === 'x-gzip') stream = res.pipe(zlib.createGunzip());
+                else if (enc === 'deflate') stream = res.pipe(zlib.createInflate());
+                else if (enc === 'br') stream = res.pipe(zlib.createBrotliDecompress());
+                // A dataset file may be served as application/gzip (or named .gz) without Content-Encoding.
+                else if (/gzip/.test(type) || /\.gz(?:\?|$)/i.test(url.pathname + url.search)) stream = res.pipe(zlib.createGunzip());
+                let bytes = 0;
+                stream.on('data', (chunk) => {
+                    if (settled) return;
+                    bytes += chunk.length;
+                    if (bytes > capBytes) return fail(new FetchError('too_large', `body exceeds ${capBytes} bytes`));
+                    let more = true;
+                    try { more = onChunk(chunk); } catch (err) { return fail(err); }
+                    if (more === false) {
+                        stopped = true;
+                        done(resolve, { status, headers: res.headers, bytes, finalUrl: url.toString(), stopped: true });
+                        res.destroy();
+                        stream.destroy();
+                        req.destroy();
+                    }
+                });
+                stream.on('end', () => done(resolve, { status, headers: res.headers, bytes, finalUrl: url.toString(), stopped }));
+                stream.on('error', (err) => fail(new FetchError('network', `body: ${err.message}`)));
+                res.on('aborted', () => { if (!stopped) fail(new FetchError('network', 'response aborted')); });
+            });
+            const timer = setTimeout(() => {
+                req.destroy();
+                done(reject, new FetchError('timeout', `no complete response within ${limitMs} ms`));
+            }, remaining);
+            req.on('timeout', () => {
+                req.destroy();
+                done(reject, new FetchError('timeout', `no complete response within ${limitMs} ms`));
+            });
+            req.on('error', (err) => {
+                if (err instanceof GuardError) return done(reject, new FetchError(err.code, err.message));
+                done(reject, new FetchError('network', `${err.code || 'error'}: ${err.message}`));
+            });
+            req.end();
+        });
+    }
+
+    /**
+     * Stream one body to `onChunk(buffer)`. Return false from onChunk to stop early (the row limit): the request
+     * is destroyed and the promise resolves with `stopped: true`, so a multi-GB file is never downloaded whole.
+     */
+    async function streamUrl(input, { headers = {}, beforeHop = null, capBytes = maxBytes, timeoutMs: ownTimeout = null } = {}, onChunk) {
+        if (typeof onChunk !== 'function') throw new TypeError('streamUrl needs onChunk');
+        const limitMs = ownTimeout || timeoutMs;
+        const deadline = Date.now() + limitMs;
+        let url;
+        try { url = guard.checkUrl(input); } catch (err) { throw new FetchError(err.code || 'bad_url', err.message); }
+        const h = {
+            'User-Agent': userAgent,
+            Accept: headers.Accept || '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            ...headers,
+        };
+        for (let hop = 0; ; hop++) {
+            const r = await onceStream(url, h, deadline, capBytes, limitMs, onChunk);
+            if (!r.redirect) return { kind: 'response', status: r.status, headers: r.headers, body: null, bytes: r.bytes, stopped: r.stopped, finalUrl: url.toString() };
+            if (hop >= maxRedirects) throw new FetchError('too_many_redirects', `more than ${maxRedirects} redirects`);
+            let next;
+            try { next = guard.checkUrl(new URL(r.redirect, url).toString()); } catch (err) { throw new FetchError(err.code || 'bad_url', `redirect: ${err.message}`); }
+            if (beforeHop) {
+                const verdict = await beforeHop(next);
+                if (verdict && verdict.refuse) throw new FetchError('hop_refused', verdict.refuse);
+            }
+            if (next.origin !== url.origin) for (const name of ['Authorization']) delete h[name];
+            url = next;
+        }
+    }
+
+    return { fetchUrl, streamUrl };
 }
 
 module.exports = { createFetcher, FetchError };

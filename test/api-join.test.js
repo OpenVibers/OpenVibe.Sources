@@ -163,7 +163,7 @@ t('a where pattern keeps text it matches; a number or a non-matching code is fil
 
 t('checkMapping accepts selectors, patterns and max_bytes, and refuses their malformed variants', () => {
     assert.strictEqual(api.checkMapping(selectEndpoint), null);
-    assert.strictEqual(api.checkMapping({ ...selectEndpoint, max_bytes: 32 * 1024 * 1024 }), null);
+    assert.strictEqual(api.checkMapping({ ...selectEndpoint, max_bytes: 64 * 1024 * 1024 }), null);
     const extra = (x) => api.checkMapping({ fields: { identity: 'id' }, extra: { x } });
     assert.strictEqual(extra('a[b=Monthly fees].c'), null, 'literal values may hold spaces');
     assert.match(extra('a[b=1,c=2,d=3,e=4,f=5].x'), /malformed/, 'at most four conditions');
@@ -176,7 +176,7 @@ t('checkMapping accepts selectors, patterns and max_bytes, and refuses their mal
     assert.match(where({ pattern: 'x'.repeat(201) }), /at most 200/);
     assert.match(where({ pattern: 'x', flags: 'i' }), /a pattern is/);
     assert.match(where({ y: 1 }), /strings, numbers or booleans/, 'an object without pattern is still refused as before');
-    for (const max of [0, 1023, 32 * 1024 * 1024 + 1, 1.5, '5000000']) {
+    for (const max of [0, 1023, 64 * 1024 * 1024 + 1, 1.5, '5000000']) {
         assert.match(api.checkMapping({ fields: { identity: 'id' }, max_bytes: max }), /max_bytes is an integer/, String(max));
     }
 });

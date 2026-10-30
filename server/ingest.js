@@ -28,6 +28,7 @@
 const crypto = require('crypto');
 const { ids } = require('openvibe-contracts');
 const { ADAPTERS, RESOLVERS } = require('./adapters');
+const offDelta = require('./adapters/off-delta');
 const extract = require('./adapters/extract');
 const { createCrawler } = require('./crawl');
 const { sha256, decodeBody, ParseError } = require('./adapters/util');
@@ -58,6 +59,9 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         touchEndpoint: db.prepare(`INSERT INTO endpoint_state (source_key, url, last_status, last_fetch_at) VALUES (@k, @u, @status, @at)
             ON CONFLICT(source_key, url) DO UPDATE SET last_status = excluded.last_status, last_fetch_at = excluded.last_fetch_at`),
         requested: db.prepare('UPDATE sources SET last_request_at = ? WHERE key = ?'),
+        stateGet: db.prepare('SELECT value FROM source_state WHERE source_key = ? AND name = ?'),
+        stateSet: db.prepare(`INSERT INTO source_state (source_key, name, value, updated_at) VALUES (@k, @n, @v, @at)
+            ON CONFLICT(source_key, name) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`),
         lastOk: db.prepare(`SELECT id FROM fetch_runs WHERE source_key = ? AND endpoint_url = ? AND state = 'ok' ORDER BY rid DESC LIMIT 1`),
         finish: db.prepare(`UPDATE sources SET last_run_at = @at, last_state = @state, consecutive_failures = @failures,
             last_success_at = COALESCE(@success_at, last_success_at), next_due_at = @next_due, not_before = @not_before WHERE key = @key`),
@@ -412,6 +416,165 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
         return { run, failed: false, success: true, recorded: true };
     }
 
+    /**
+     * A bulk source with `resolver: "off-delta"`: read a text index, then only the delta parts not finished yet.
+     * The full export is one gzip stream and cannot be resumed, so the first run starts at the oldest part in the
+     * index. A run reads up to its row limit across parts; a part stopped by the limit keeps its row offset in
+     * source_state, and the next run streams that part again only to skip those rows, then continues.
+     */
+    async function fetchOffDeltaEndpoint(source, endpoint, trigger) {
+        const adapter = ADAPTERS.bulk;
+        const startedAt = now();
+        const run = baseRun(source, endpoint.url, trigger, startedAt);
+        const target = new URL(endpoint.url);
+        const host = target.host;
+
+        const headers = { Accept: 'text/plain' };
+        const sensitive = [];
+        let requestUrl = target;
+        if (source.auth.mode !== 'none') {
+            const secret = config.secrets[source.auth.env];
+            if (!secret) {
+                Object.assign(run, { state: 'disabled', error_code: 'credential_missing', detail: `environment variable ${source.auth.env} is not set`, finished_at: now() });
+                return { run, failed: false };
+            }
+            if (source.auth.mode === 'bearer') { headers.Authorization = `Bearer ${secret}`; sensitive.push('Authorization'); }
+            if (source.auth.mode === 'header') { headers[source.auth.header] = secret; sensitive.push(source.auth.header); }
+            if (source.auth.mode === 'query') { requestUrl = new URL(target); requestUrl.searchParams.set(source.auth.param, secret); }
+        }
+
+        const verdict = await robots.check(target.toString());
+        setCrawlDelay(host, verdict.crawlDelaySec);
+        if (!verdict.allowed) {
+            if (verdict.refusedCode) Object.assign(run, { state: 'http_error', error_code: verdict.refusedCode, detail: `${host} is not fetchable (${verdict.refusedCode})`, finished_at: now() });
+            else Object.assign(run, { state: 'robots_denied', error_code: 'robots', detail: verdict.reason, finished_at: now() });
+            return { run, failed: true };
+        }
+
+        await space(host, source.min_interval_ms);
+        await st.requested.run(now(), source.key);
+        const hash = crypto.createHash('sha256');
+        let bytes = 0;
+        let lastStatus = null;
+        const beforeHop = async (next) => {
+            const v = await robots.check(next.toString());
+            if (!v.allowed) return { refuse: v.reason };
+            if (next.host !== host) {
+                setCrawlDelay(next.host, v.crawlDelaySec);
+                await space(next.host, source.min_interval_ms);
+            }
+            return null;
+        };
+        const read = async (url, cap, accept) => {
+            const v = await robots.check(url);
+            if (!v.allowed) throw Object.assign(new Error(v.reason || 'robots.txt disallows this URL'), { code: 'robots_denied' });
+            const r = await fetcher.fetchUrl(url, {
+                headers: { Accept: accept }, capBytes: cap, timeoutMs: endpoint.timeout_ms || undefined,
+                sensitiveHeaders: sensitive, beforeHop,
+            });
+            lastStatus = r.status;
+            run.http_status = r.status;
+            if (r.status === 429) throw Object.assign(new Error('the delta index answered 429'), { code: 'rate_limited' });
+            if (r.status !== 200 && r.status !== 203) throw Object.assign(new Error(`HTTP ${r.status} for ${url}`), { code: 'http_error' });
+            bytes += r.bytes || 0;
+            hash.update(r.body || Buffer.alloc(0));
+            return r;
+        };
+        const failure = (err) => {
+            const state = err.code === 'robots_denied' ? 'robots_denied' : err.code === 'rate_limited' ? 'rate_limited'
+                : err.code === 'timeout' ? 'timeout' : err.code === 'parse_error' ? 'parse_error' : 'http_error';
+            Object.assign(run, { state, error_code: err.code || 'network', detail: String(err.message).slice(0, 500), finished_at: now() });
+            if (err.code !== 'parse_error') log.error(`[ingest] ${source.key}: off-delta failed: ${err.stack || err}`);
+            return { run, failed: true };
+        };
+
+        let files;
+        try {
+            const index = await read(requestUrl.toString(), Math.min(endpoint.max_bytes || 1024 * 1024, 1024 * 1024), 'text/plain');
+            files = offDelta.parseIndex(decodeBody(index.body, index.headers['content-type'] || 'text/plain'), endpoint.url);
+        } catch (err) { return failure(err); }
+
+        const stateRow = await st.stateGet.get(source.key, offDelta.STATE_NAME);
+        const state = offDelta.readState(stateRow && stateRow.value);
+        if (state.current && !files.some((f) => f.name === state.current)) {
+            state.current = null;
+            state.offset = 0;
+        }
+        const queue = offDelta.nextFiles(files, state);
+        const budget = Math.max(1, Math.min(Number(endpoint.max_rows) || 1000, Number(source.max_items) || 500));
+        let remaining = budget;
+        const collected = new Map();         // identity → item, later parts win
+        let duplicates = 0;
+        let skipped = 0;
+        let cursor = { seen: state.seen, seen_end: state.seen_end, current: state.current, offset: state.offset };
+
+        for (const file of queue) {
+            if (remaining <= 0) break;
+            const offset = cursor.current === file.name ? cursor.offset : 0;
+            const parser = adapter.createParser({
+                endpoint: { ...endpoint, max_rows: Math.min(Number(endpoint.max_rows) || 1000, remaining) },
+                url: file.url, maxItems: remaining, summaryMax: config.items.summaryMax, skipRows: offset,
+            });
+            let res;
+            try {
+                const v = await robots.check(file.url);
+                if (!v.allowed) throw Object.assign(new Error(v.reason || 'robots.txt disallows this delta'), { code: 'robots_denied' });
+                res = await fetcher.streamUrl(file.url, {
+                    headers: { Accept: adapter.accept },
+                    capBytes: endpoint.max_bytes || config.fetch.maxBytes,
+                    timeoutMs: endpoint.timeout_ms || undefined,
+                    beforeHop,
+                }, (chunk) => { hash.update(chunk); return parser.write(chunk); });
+            } catch (err) { return failure(err); }
+            lastStatus = res.status;
+            run.http_status = res.status;
+            if (res.status === 429) {
+                const wait = Math.min(retryAfterMs(res.headers['retry-after'], now()) ?? 10 * 60 * 1000, 24 * 3600 * 1000);
+                Object.assign(run, { state: 'rate_limited', error_code: 'upstream_429', detail: `the site asked us to wait ${Math.round(wait / 1000)} s` });
+                return { run, failed: true, notBefore: now() + wait };
+            }
+            if (res.status !== 200 && res.status !== 203) {
+                Object.assign(run, { state: 'http_error', error_code: `http_${res.status}`, detail: `HTTP ${res.status}` });
+                return { run, failed: true };
+            }
+            bytes += res.bytes || 0;
+            let parsed;
+            try { parsed = parser.end(); } catch (err) { return failure(err); }
+            for (const it of parsed.items) {
+                if (collected.has(it.identity)) duplicates++;
+                collected.delete(it.identity);
+                collected.set(it.identity, it);
+            }
+            skipped += parsed.skipped;
+            remaining -= parsed.items.length;
+            if (res.stopped) {               // the row limit stopped this part: keep its offset for the next run
+                cursor = { ...cursor, current: file.name, offset: offset + parsed.meta.rows };
+                break;
+            }
+            cursor = { seen: file.name, seen_end: file.end, current: null, offset: 0 };
+            if (remaining <= 0) break;
+        }
+
+        const parsedItems = [...collected.values()];
+        run.bytes = bytes;
+        run.finished_at = now();
+        run.raw_body_hash = hash.digest('hex');
+        run.parser_version = offDelta.PARSER_VERSION;
+        await db.tx(async () => {
+            const counts = await items.ingest(source, parsedItems, {
+                runId: run.id, rawBodyHash: run.raw_body_hash, parserVersion: offDelta.PARSER_VERSION, retrievedAt: run.finished_at,
+            });
+            Object.assign(run, {
+                state: 'ok', items_seen: parsedItems.length, items_created: counts.created, items_updated: counts.updated,
+                items_unchanged: counts.unchanged, items_skipped: skipped + duplicates + counts.skipped,
+            });
+            await st.insertRun.run(run);
+            await st.stateSet.run({ k: source.key, n: offDelta.STATE_NAME, v: JSON.stringify(cursor), at: run.finished_at });
+            await st.saveValidators.run({ k: source.key, u: endpoint.url, etag: null, lm: null, status: lastStatus, at: run.finished_at });
+        });
+        return { run, failed: false, success: true, recorded: true };
+    }
+
     const crawler = createCrawler({
         db, config, items, robots, fetcher, spacer, now, log,
         record: { baseRun, insertRun: (r) => st.insertRun.run(r), requested: (t, key) => st.requested.run(t, key) },
@@ -429,7 +592,9 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
             let out;
             try {
                 out = source.type === 'bulk'
-                    ? await fetchBulkEndpoint(source, endpoint, trigger)
+                    ? endpoint.resolver === 'off-delta'
+                        ? await fetchOffDeltaEndpoint(source, endpoint, trigger)
+                        : await fetchBulkEndpoint(source, endpoint, trigger)
                     : endpoint.resolver
                         ? await fetchResolverEndpoint(source, endpoint, trigger)
                         : await fetchEndpoint(source, endpoint, trigger);

@@ -56,4 +56,22 @@ t('every seed creates through the registry and stays disabled', async () => {
     }
 });
 
+t('every stored seed can be enabled by the same PATCH an operator would send', async () => {
+    // The host keeps the normalized row the create path wrote, not the raw seed: a resolver row carries
+    // items_shape/items_path/fields/extra defaults that its own validation must accept when PATCH revalidates it.
+    const fresh = await require('./db').testDb();
+    try {
+        const registry = createRegistry({ db: fresh.db });
+        for (const s of seeds) {
+            await registry.create(s, 'seed');
+            const row = await registry.patch(s.key, { enabled: true }, 'seed-check');
+            assert.strictEqual(Boolean(row.enabled), true, `${s.key} cannot be enabled: the host's PATCH would fail`);
+        }
+        const enabled = await fresh.db.prepare('SELECT COUNT(*) AS n FROM sources WHERE enabled = 1').get();
+        assert.strictEqual(enabled.n, seeds.length, 'every seed must be enableable in a test database');
+    } finally {
+        await fresh.close();
+    }
+});
+
 t.run();

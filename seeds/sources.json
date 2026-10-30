@@ -1876,6 +1876,377 @@
       "review_required": true,
       "sensitivity": "none",
       "default_indexability": "noindex"
+    },
+{
+      "key": "sec-press",
+      "name": "US Securities and Exchange Commission",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.sec.gov/news/pressreleases",
+      "endpoints": [
+        "https://www.sec.gov/news/pressreleases.rss"
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://www.sec.gov/robots.txt answers 200 with 'User-agent: *' and no Disallow that matches /news/pressreleases.rss (the file disallows only paths under /files and a few query forms). The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: https://www.sec.gov/os/webmaster-faq answers 200 and is the SEC's own statement on reuse of its material; SEC pages carry the standard US federal government work notice. Keep the headline and a short summary of each release, never the whole release, and link back to the release on sec.gov. Re-verify before enabling.",
+      "license_note": "US federal government work, public domain in the US (17 USC 105). Attribute the US Securities and Exchange Commission and link the release.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 1800,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+{
+      "key": "doj-news",
+      "name": "US Department of Justice",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.justice.gov/news",
+      "endpoints": [
+        "https://www.justice.gov/news/rss"
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://www.justice.gov/robots.txt answers 200 with 'User-agent: *' and a Crawl-delay of 10 seconds, and no Disallow that matches /news/rss. The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: https://www.justice.gov/terms answers 404, so there is no DOJ terms page to rely on; DOJ material is US federal government work and falls under 17 USC 105. Keep the headline and a short summary of each item, never the whole text, and link back to the justice.gov page. Re-verify before enabling.",
+      "license_note": "US federal government work, public domain in the US (17 USC 105). Attribute the US Department of Justice and link the item.",
+      "min_interval_ms": 15000,
+      "poll_interval_sec": 3600,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+{
+      "key": "dol-news",
+      "name": "US Department of Labor",
+      "type": "rss",
+      "category": "news",
+      "homepage_url": "https://www.dol.gov/newsroom/releases",
+      "endpoints": [
+        "https://www.dol.gov/rss/releases.xml"
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://www.dol.gov/robots.txt answers 200 with 'User-agent: *' and Disallow rules only for /core/, /admin/, /search/ and a few asset paths; nothing matches /rss/releases.xml. The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: https://www.dol.gov/general/aboutdol/copyright answers 200 ('Public Domain Copyright, Trademark & Patent Information') and states that most US Department of Labor material is public domain, with third-party material excluded. Keep the headline and a short summary of each release, never the whole text, and link back to dol.gov. Re-verify before enabling.",
+      "license_note": "US federal government work, public domain in the US (17 USC 105), except third-party credited material. Attribute the US Department of Labor and link the release.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 3600,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+{
+      "key": "hud-safmr",
+      "name": "HUD Small Area Fair Market Rents by ZIP",
+      "type": "api",
+      "category": "housing",
+      "homepage_url": "https://www.huduser.gov/portal/datasets/fmr.html",
+      "endpoints": [
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/SAFMR_Year/FeatureServer/2/query?where=1%3D1&outFields=ZIP,HUD_CODE,Metro_Name,Year_Designated,SAFMR_0BR,SAFMR_1BR,SAFMR_2BR,SAFMR_3BR,SAFMR_4BR,OBJECTID_1&orderByFields=OBJECTID_1&resultOffset=0&resultRecordCount=2000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "safmr",
+          "fields": {
+            "identity": "attributes.OBJECTID_1",
+            "title": "attributes.Metro_Name"
+          },
+          "extra": {
+            "zip": "attributes.ZIP",
+            "hud_code": "attributes.HUD_CODE",
+            "metro_name": "attributes.Metro_Name",
+            "fiscal_year": "attributes.Year_Designated",
+            "safmr_0br": "attributes.SAFMR_0BR",
+            "safmr_1br": "attributes.SAFMR_1BR",
+            "safmr_2br": "attributes.SAFMR_2BR",
+            "safmr_3br": "attributes.SAFMR_3BR",
+            "safmr_4br": "attributes.SAFMR_4BR"
+          }
+        },
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/SAFMR_Year/FeatureServer/2/query?where=1%3D1&outFields=ZIP,HUD_CODE,Metro_Name,Year_Designated,SAFMR_0BR,SAFMR_1BR,SAFMR_2BR,SAFMR_3BR,SAFMR_4BR,OBJECTID_1&orderByFields=OBJECTID_1&resultOffset=2000&resultRecordCount=2000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "safmr",
+          "fields": {
+            "identity": "attributes.OBJECTID_1",
+            "title": "attributes.Metro_Name"
+          },
+          "extra": {
+            "zip": "attributes.ZIP",
+            "hud_code": "attributes.HUD_CODE",
+            "metro_name": "attributes.Metro_Name",
+            "fiscal_year": "attributes.Year_Designated",
+            "safmr_0br": "attributes.SAFMR_0BR",
+            "safmr_1br": "attributes.SAFMR_1BR",
+            "safmr_2br": "attributes.SAFMR_2BR",
+            "safmr_3br": "attributes.SAFMR_3BR",
+            "safmr_4br": "attributes.SAFMR_4BR"
+          }
+        },
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/SAFMR_Year/FeatureServer/2/query?where=1%3D1&outFields=ZIP,HUD_CODE,Metro_Name,Year_Designated,SAFMR_0BR,SAFMR_1BR,SAFMR_2BR,SAFMR_3BR,SAFMR_4BR,OBJECTID_1&orderByFields=OBJECTID_1&resultOffset=4000&resultRecordCount=2000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "safmr",
+          "fields": {
+            "identity": "attributes.OBJECTID_1",
+            "title": "attributes.Metro_Name"
+          },
+          "extra": {
+            "zip": "attributes.ZIP",
+            "hud_code": "attributes.HUD_CODE",
+            "metro_name": "attributes.Metro_Name",
+            "fiscal_year": "attributes.Year_Designated",
+            "safmr_0br": "attributes.SAFMR_0BR",
+            "safmr_1br": "attributes.SAFMR_1BR",
+            "safmr_2br": "attributes.SAFMR_2BR",
+            "safmr_3br": "attributes.SAFMR_3BR",
+            "safmr_4br": "attributes.SAFMR_4BR"
+          }
+        },
+        {
+          "url": "https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/SAFMR_Year/FeatureServer/2/query?where=1%3D1&outFields=ZIP,HUD_CODE,Metro_Name,Year_Designated,SAFMR_0BR,SAFMR_1BR,SAFMR_2BR,SAFMR_3BR,SAFMR_4BR,OBJECTID_1&orderByFields=OBJECTID_1&resultOffset=6000&resultRecordCount=2000&returnGeometry=false&f=json",
+          "format": "json",
+          "items_path": "features",
+          "item_kind": "safmr",
+          "fields": {
+            "identity": "attributes.OBJECTID_1",
+            "title": "attributes.Metro_Name"
+          },
+          "extra": {
+            "zip": "attributes.ZIP",
+            "hud_code": "attributes.HUD_CODE",
+            "metro_name": "attributes.Metro_Name",
+            "fiscal_year": "attributes.Year_Designated",
+            "safmr_0br": "attributes.SAFMR_0BR",
+            "safmr_1br": "attributes.SAFMR_1BR",
+            "safmr_2br": "attributes.SAFMR_2BR",
+            "safmr_3br": "attributes.SAFMR_3BR",
+            "safmr_4br": "attributes.SAFMR_4BR"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://services.arcgis.com/robots.txt answers 403 'Invalid URL', so the host publishes no valid robots file and no restriction applies. The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: HUD publishes the Small Area Fair Market Rent data set as open data on its ArcGIS Hub; the SAFMR_Year layer 2 holds 6,884 rows for the fiscal years 2018 and 2024 (no 2025 or 2026 rows exist yet, checked on that date), keyed by ZIP, HUD metro code and year, with one row per ZIP per metro. The layer serves 2,000 records a request, so four pages cover it. These figures are HUD's estimates, not a landlord's asking rent: keep the fiscal year with every number and link back to the HUD data page. Re-verify before enabling.",
+      "license_note": "US federal government work, public domain in the US (17 USC 105). Attribute HUD and link https://www.huduser.gov/portal/datasets/fmr.html.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "max_items": 7000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+{
+      "key": "azure-retail-prices",
+      "name": "Microsoft Azure retail prices (VM and storage)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://azure.microsoft.com/en-us/pricing/",
+      "endpoints": [
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Virtual%20Machines%27%20and%20armRegionName%20eq%20%27eastus%27%20and%20type%20eq%20%27Consumption%27%20and%20productName%20eq%20%27Virtual%20Machines%20Dsv5%20Series%27",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "armSkuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Virtual%20Machines%27%20and%20armRegionName%20eq%20%27westus%27%20and%20type%20eq%20%27Consumption%27%20and%20productName%20eq%20%27Virtual%20Machines%20Dsv5%20Series%27",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "armSkuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Virtual%20Machines%27%20and%20armRegionName%20eq%20%27eastus%27%20and%20type%20eq%20%27Consumption%27%20and%20productName%20eq%20%27Virtual%20Machines%20Ddsv5%20Series%27",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "armSkuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Virtual%20Machines%27%20and%20armRegionName%20eq%20%27eastus%27%20and%20type%20eq%20%27Consumption%27%20and%20productName%20eq%20%27Virtual%20Machines%20Dasv5%20Series%27",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "armSkuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Virtual%20Machines%27%20and%20armRegionName%20eq%20%27eastus%27%20and%20type%20eq%20%27Consumption%27%20and%20productName%20eq%20%27Virtual%20Machines%20Esv5%20Series%27",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "armSkuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Storage%27%20and%20armRegionName%20eq%20%27eastus%27%20and%20productName%20eq%20%27Blob%20Storage%27%20and%20unitOfMeasure%20eq%20%271%20GB/Month%27%20and%20tierMinimumUnits%20eq%200",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "skuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        },
+        {
+          "url": "https://prices.azure.com/api/retail/prices?%24filter=serviceName%20eq%20%27Storage%27%20and%20armRegionName%20eq%20%27westus%27%20and%20productName%20eq%20%27Blob%20Storage%27%20and%20unitOfMeasure%20eq%20%271%20GB/Month%27%20and%20tierMinimumUnits%20eq%200",
+          "format": "json",
+          "items_path": "Items",
+          "item_kind": "plan",
+          "fields": {
+            "identity": "skuId",
+            "title": "skuName"
+          },
+          "extra": {
+            "sku_id": "skuId",
+            "sku_name": "skuName",
+            "meter_name": "meterName",
+            "product_name": "productName",
+            "service_name": "serviceName",
+            "region": "armRegionName",
+            "location": "location",
+            "price": "retailPrice",
+            "unit": "unitOfMeasure",
+            "currency": "currencyCode",
+            "effective_start": "effectiveStartDate",
+            "tier_minimum_units": "tierMinimumUnits"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://prices.azure.com/robots.txt answers 404, so the price API host publishes no robots.txt rules and no restriction applies. The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices answers 200 and describes this as an unauthenticated API giving retail rates for Azure services; Microsoft publishes these as list prices, excluding any discounts, with the final price shown in the pricing calculator. Show each price as an observation 'effective from <date>' with a link to the Azure pricing page, never as a quote, and imply no endorsement. The filters here read a bounded slice (five VM product series in two regions, and Blob Storage per GB per month) because the fetcher cannot follow the API's NextPageLink. Re-verify before enabling.",
+      "license_note": "Prices and meter names are Microsoft's data (https://azure.microsoft.com/en-us/pricing/); no separate licence to republish them was found beyond the published list prices. Attribute Microsoft Azure and link the pricing page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 500,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+{
+      "key": "weworkremotely",
+      "name": "We Work Remotely job board",
+      "type": "rss",
+      "category": "jobs",
+      "homepage_url": "https://weworkremotely.com/",
+      "endpoints": [
+        "https://weworkremotely.com/remote-jobs.rss"
+      ],
+      "robots_note": "robots.txt checked 2026-10-30 from the United States: https://weworkremotely.com/robots.txt answers 200 with 'User-agent: *', 'Allow: /' and Disallow rules only for /admin/, /account/ and /manage-company/; nothing matches /remote-jobs.rss. The fetcher re-checks it on every run.",
+      "terms_note": "Verified 2026-10-30: https://weworkremotely.com/terms-and-conditions answers 200 and governs use of the site and its content, but no clause granting or barring reuse of the job listings was found, so a person must read it before enabling. The board publishes the feed for companies to post in it, so the listings are its feed content: keep the headline, the company and a short summary of each listing, and link every listing back to its weworkremotely.com page. A listing the board stops carrying is retired after a week. Re-verify before enabling.",
+      "license_note": "Job listings are We Work Remotely's feed content (https://weworkremotely.com/terms-and-conditions). No licence to republish them was found. Attribute We Work Remotely by name and link the original listing.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "max_items": 200,
+      "retire_after_sec": 604800,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

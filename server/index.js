@@ -28,6 +28,8 @@ const { createAuth } = require('./auth');
 const { createMerchant } = require('./merchant');
 const { createMerchantAuth } = require('./merchant-auth');
 const { createApp } = require('./app');
+const accountDataLib = require('./account-data');
+const { createNetworkSender, startSubscriptions } = require('openvibe-sdk/account-data');
 
 async function start({ config, db: givenDb = null, now = () => Date.now(), fetchImpl = globalThis.fetch, lookupImpl, merchantResolver = null, log = console, listen = true, limitsNow = null } = {}) {
     config = config || load();
@@ -58,7 +60,9 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     const auth = createAuth({ config, log, jwks: keys });
     const merchant = createMerchant({ db, config, registry, fetcher, resolver: merchantResolver, now, log });
     const merchantAuth = createMerchantAuth({ config, auth, log, fetchImpl });
-    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth });
+    const accountData = accountDataLib.create({ db, log });
+    const accountSend = config.oauth.clientSecret ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl }) : null;
+    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth, accountData, accountSend });
     // One JWKS client for the process (the SDK shares it with verifyUserToken): refresh in the background
     // on an unref'd timer, keeping the last good keys through a Network outage.
     keys.start();
@@ -79,12 +83,19 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     pruneTimer.unref?.();
 
     let server = null;
+    let accountSubscription = null;
     if (listen) {
         server = await new Promise((resolve, reject) => {
             const s = app.listen(config.port, config.host, () => resolve(s));
             s.on('error', reject);
         });
         log.log(`[sources] listening on http://${config.host}:${server.address().port}`);
+        if (config.events.secret.length >= 32 && config.events.url && config.oauth.clientSecret) {
+            accountSubscription = startSubscriptions({
+                eventsUrl: config.events.url, endpoint: `http://127.0.0.1:${config.callbackPort || config.port}/internal/events`, secret: config.events.secret,
+                networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl, log,
+            });
+        }
     }
 
     async function close() {
@@ -92,6 +103,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         if (merchantTimer) clearInterval(merchantTimer);
         if (merchantKick) clearTimeout(merchantKick);
         keys.stop();
+        if (accountSubscription) accountSubscription.stop();
         await scheduler.stop();
         await outbox.stop();
         if (server) {

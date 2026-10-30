@@ -50,6 +50,29 @@ t('duplicates default to the first; maxItems counts distinct identities', () => 
     assert.deepStrictEqual(capped.items.map((i) => [i.identity, i.fields.period]), [['APU0000708111', 'M09'], ['APU0000709112', 'M09']], 'a repeat of a kept series still replaces it at the cap');
 });
 
+t('filter: the BLS CPI rent seed keeps one series\' rows, one item per month, by record position', () => {
+    const rent = {
+        format: 'tsv', items_path: '', item_kind: 'rent_cpi',
+        filter: { series_id: 'APU0000708111' },
+        fields: { identity: '$index', title: 'series_id' },
+        extra: { value: 'value', year: 'year', period: 'period' },
+    };
+    assert.strictEqual(api.checkMapping(rent), null);
+    const r = api.parse(BLS, { url: 'https://download.bls.gov/x', endpoint: rent });
+    assert.deepStrictEqual(r.items.map((i) => [i.identity, i.fields.value, i.fields.period]), [
+        ['0', '2.301', 'M07'], ['1', '2.272', 'M08'], ['2', '2.272', 'M09'],
+    ], 'only the series asked for; $index is the row\'s position in the whole file');
+    assert.strictEqual(r.meta.filtered, 4, 'the other series rows are filtered');
+    assert.strictEqual(r.skipped, 1, 'the malformed line');
+    // A filter and a where may both be given: every condition applies.
+    const both = api.parse(BLS, { url: 'https://download.bls.gov/x', endpoint: { ...rent, where: { year: '2026' } } });
+    assert.strictEqual(both.items.length, 3);
+    const none = api.parse(BLS, { url: 'https://download.bls.gov/x', endpoint: { ...rent, filter: { series_id: 'APU0000709999' } } });
+    assert.deepStrictEqual([none.items.length, none.meta.filtered], [0, 7]);
+    assert.match(api.checkMapping({ ...rent, filter: 'series_id' }), /filter must be an object/);
+    assert.match(api.checkMapping({ ...rent, filter: { 'bad path!': 'x' } }), /filter\.bad path! path is malformed/);
+});
+
 t('mapping and body errors', () => {
     assert.match(api.checkMapping({ ...blsEndpoint, format: 'csv' }), /format must be json, xml or tsv/);
     assert.match(api.checkMapping({ ...blsEndpoint, items_path: 'rows' }), /items_path is ""/);

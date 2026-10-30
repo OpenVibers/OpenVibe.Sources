@@ -25,7 +25,7 @@ decide — under their own review and indexability rules — what, if anything, 
 ```bash
 npm install
 cp .env.example .env
-npm run seed           # the 54 sources in seeds/sources.json, created disabled
+npm run seed           # the 65 sources in seeds/sources.json, created disabled
 npm run dev            # http://127.0.0.1:4720
 npm test               # every test/*.test.js against local stub sites; no internet
 ```
@@ -53,9 +53,9 @@ start and flushes on stop.
 
 ## The registry
 
-A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|crawl|manual`), `category`
+A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|bulk|crawl|manual`), `category`
 (`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding|games|housing|food|jobs`, read from `sources.source@1`; housing, food and jobs since contracts 0.210.0), `endpoints` (for `api`: a field mapping, no code per
-provider), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
+provider; for `bulk`: one dataset file with a format, a byte cap and a row limit), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
 secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),
 `poll_interval_sec`, `stale_after_sec`, `max_items`, `enabled`, `review_required`,
@@ -83,7 +83,7 @@ An in-process scheduler starts runs for enabled sources whose poll is due (at mo
    CGNAT, metadata and v4-mapped/NAT64/6to4 forms are refused), manual redirects (≤ 5, each
    re-checked), conditional GET (`If-None-Match`/`If-Modified-Since`), one deadline for the whole
    response (`SOURCES_FETCH_TIMEOUT_MS`), a byte cap on the decoded body (`SOURCES_MAX_BYTES`).
-5. **Parse** with the adapter; on success, in one transaction: the run row, the items (created /
+5. **Parse** with the adapter (a `bulk` dataset is parsed chunk by chunk and the stream is stopped at its row limit; a resolver walks its JSON documents); on success, in one transaction: the run row, the items (created /
    new revision if the content hash changed / retrieval time refreshed if unchanged), the
    validators, and the events.
 
@@ -105,7 +105,8 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 | `rss`, `atom` (`feed@3`) | RSS 2.0, RSS 1.0/RDF, Atom 1.0 | guid/id identity, else link; text-only summary capped at 1000 chars; a deal feed's own offer elements (DealNews' `dealnews:price` with its currency, `dealnews:retailer`, `dealnews:expires`) become `fields.price`, `currency`, `seller` and `valid_until` exactly as stated (the item stays an article; nothing is read out of the headline); its `dealnews:category` fills `fields.categories` when the item has no `<category>`, and `dealnews:staffPick` is `fields.staff_pick` (true/false, absent when not stated) |
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
 | `jsonld` (`jsonld@2`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error`; `list_price` from a ListPrice/StrikethroughPrice/MSRP/SRP `priceSpecification`, as stated |
-| `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`; epoch fields only where mapped as such |
+| `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`, `where`/`filter`; epoch fields only where mapped as such; `resolver: "hn-whoishiring"` walks the Hacker News thread's JSON documents instead |
+| `bulk` (`bulk@1`) | one dataset file, streamed (CSV, JSONL or TSV) | `max_bytes` is the size cap, `max_rows` the per-run row limit; the stream stops at the limit, so a multi-GB file is never held in memory |
 | `crawl` (`jsonld@2`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
 
@@ -151,7 +152,7 @@ A value is literal text or `$rec.<path>`, read from the record itself. No match 
            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price" }
 ```
 
-`max_bytes` (an integer from 1 KiB to 32 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
+`max_bytes` (an integer from 1 KiB to 64 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
 catalog is about 12 MB.
 
 `timeout_ms` (an integer from 1 s to 120 s) sets one endpoint's deadline instead of `SOURCES_FETCH_TIMEOUT_MS`. NYC Open
@@ -339,7 +340,7 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 54 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
+[seeds/sources.json](seeds/sources.json) holds the 65 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
 robots.txt on every run. Production on 2026-10-22:

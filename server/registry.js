@@ -13,7 +13,7 @@
 const { checkApiMapping } = require('./adapters');
 const extract = require('./adapters/extract');
 
-const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'crawl', 'manual'];
+const TYPES = ['rss', 'atom', 'sitemap', 'jsonld', 'api', 'bulk', 'crawl', 'manual'];
 // The categories are sources.source@1's (openvibe-contracts), read from the schema so the two never drift: housing, food
 // and jobs since contracts 0.210.0, for Rent and Homes, Food and Work (plan 2026-10-22, track F1).
 const CATEGORIES = Object.freeze([...require('openvibe-contracts/contracts/sources/source.v1.json').properties.category.enum]);
@@ -104,17 +104,52 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
         if (!e || typeof e !== 'object') throw new RegistryError(`endpoints[${i}] must be a URL or an object`);
         const out = { url: httpUrl(e.url, `endpoints[${i}].url`) };
         if (input.type === 'api') {
+            // A resolver walks several JSON endpoints of one API (HN Who is hiring), instead of reading one items_path:
+            // it has no field mapping of its own, so it does not go through the api mapping checks.
+            if (e.resolver !== undefined) {
+                for (const k of Object.keys(e)) {
+                    if (!['url', 'format', 'resolver', 'item_kind', 'max_bytes', 'timeout_ms'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a resolver field`);
+                }
+                if (e.resolver !== 'hn-whoishiring') throw new RegistryError(`endpoints[${i}].resolver must be hn-whoishiring`);
+                if (e.format !== undefined && e.format !== 'json') throw new RegistryError(`endpoints[${i}].format must be json for a resolver`);
+                if (!/\.json(\?|$)/.test(out.url)) throw new RegistryError(`endpoints[${i}].resolver needs a .json endpoint`);
+                if (e.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(e.item_kind)) throw new RegistryError(`endpoints[${i}].item_kind is malformed`);
+                if (e.max_bytes !== undefined && (!Number.isInteger(e.max_bytes) || e.max_bytes < 1024 || e.max_bytes > 32 * 1024 * 1024)) throw new RegistryError(`endpoints[${i}].max_bytes must be an integer from 1024 to 33554432`);
+                if (e.timeout_ms !== undefined && (!Number.isInteger(e.timeout_ms) || e.timeout_ms < 1000 || e.timeout_ms > 120000)) throw new RegistryError(`endpoints[${i}].timeout_ms must be an integer from 1000 to 120000`);
+                Object.assign(out, { format: 'json', items_shape: 'array', items_path: '', item_kind: e.item_kind || 'job', fields: {}, extra: {}, resolver: e.resolver });
+                if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
+                if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;
+                return out;
+            }
             const err = checkApiMapping(e);
             if (err) throw new RegistryError(`endpoints[${i}]: ${err}`);
             Object.assign(out, { format: e.format || 'json', items_shape: e.items_shape || 'array', items_path: e.items_path || '', item_kind: e.item_kind || 'record', fields: e.fields || {}, extra: e.extra || {} });
-            // `where` is only copied when given, so records without conditions stay byte-identical.
+            // `where` and its alias `filter` are only copied when given, so records without conditions stay byte-identical.
             if (e.where) out.where = e.where;
+            if (e.filter) out.filter = e.filter;
             // and `extra_lists` (tags, job types) the same way.
             if (e.extra_lists) out.extra_lists = e.extra_lists;
             if (e.duplicates !== undefined) out.duplicates = e.duplicates;
             if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
             if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;
             if (e.request_content_type !== undefined) out.request_content_type = e.request_content_type;
+        } else if (input.type === 'bulk') {
+            if (endpoints.length !== 1) throw new RegistryError('a bulk source is one dataset file: exactly one endpoint');
+            const err = checkApiMapping(e, { bulk: true });
+            if (err) throw new RegistryError(`endpoints[${i}]: ${err}`);
+            for (const k of Object.keys(e)) {
+                if (!['url', 'format', 'item_kind', 'fields', 'extra', 'extra_lists', 'max_bytes', 'max_rows', 'timeout_ms'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a bulk field`);
+            }
+            Object.assign(out, {
+                format: e.format || 'csv',
+                item_kind: e.item_kind || 'record',
+                fields: e.fields || {},
+                extra: e.extra || {},
+                max_rows: e.max_rows === undefined ? 1000 : e.max_rows,
+            });
+            if (e.extra_lists) out.extra_lists = e.extra_lists;
+            if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
+            if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;
         } else {
             // A feed may read structured facts out of its items' prose (adapters/extract.js).
             for (const k of Object.keys(e)) if (k !== 'url' && !(k === 'extract' && (input.type === 'rss' || input.type === 'atom'))) throw new RegistryError(`endpoints[${i}].${k} is only for api sources`);
@@ -175,6 +210,8 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
     // A crawl reaches a page again only when its turn comes, so "not seen for a while" says nothing about a product: a crawl
     // retires a page's items when the page is gone (404 or 410 twice, server/crawl.js) or asks not to be indexed.
     if (input.type === 'crawl' && record.retire_after_sec != null) throw new RegistryError('a crawl source retires a page\'s items when the page is gone; retire_after_sec is for feeds');
+    // A bulk run reads up to max_rows and stops; it never sees the rest of the file, so "not seen" says nothing.
+    if (input.type === 'bulk' && record.retire_after_sec != null) throw new RegistryError('a bulk source reads a row limit per run; retire_after_sec would retire the rows it did not reach');
     if (!SENSITIVITY.includes(record.sensitivity)) throw new RegistryError(`sensitivity must be one of ${SENSITIVITY.join('|')}`);
     if (!['index', 'noindex'].includes(record.default_indexability)) throw new RegistryError('default_indexability must be index or noindex');
     if (record.sensitivity !== 'none' && record.default_indexability === 'index' && record.review_required === false) {

@@ -1,0 +1,9 @@
+{
+  "id": 201,
+  "type": "comment",
+  "by": "acme_founder",
+  "parent": 101,
+  "time": 1793603600,
+  "text": "Acme Corp | Senior Backend Engineer | Remote (US)<p>We are hiring. Email jobs@acme.example or call (415) 555-0123 to apply. <p>More at https://acme.example/jobs",
+  "kids": [301]
+}

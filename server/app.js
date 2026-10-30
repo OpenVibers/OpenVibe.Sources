@@ -69,7 +69,7 @@ Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers
 </html>
 `;
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null, accountData = null, accountSend = null }) {
     const app = express();
     app.disable('x-powered-by');
     app.set('trust proxy', 'loopback');
@@ -80,6 +80,9 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     app.use(require('openvibe-sdk/service').telemetryMiddleware);   // request telemetry: a no-op until server/index.js calls telemetry.init()
     registerSourcesGauges(metrics.registry, { db, sources: registry, ingest, outbox, now });
     app.use(http.middleware());
+    // The account export/deletion consumer (ADR-033), signed and loopback only. No body parser before it: the v2
+    // signature covers the raw body.
+    if (accountData) app.post('/internal/events', accountData.consumer({ secrets: [config.events.secret].filter((s) => s.length >= 32), send: accountSend }));
     // One W3C trace across services (openvibe-shared/trace): calls made while serving a request carry its traceparent.
     require('openvibe-shared/trace').install(app);
     app.use((req, res, next) => {

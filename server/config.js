@@ -85,6 +85,9 @@ function load(env = process.env) {
         events: {
             url: strip(env.EVENTS_URL || ''),
             relayIntervalMs: int(env.EVENTS_RELAY_INTERVAL_MS, 2000),
+            // The account-data consumer (POST /internal/events): the signing secret Network's deliveries use. Unset:
+            // the route is off and Network's account export/deletion does not wait for Sources.
+            secret: strip(env.SOURCES_EVENTS_SECRET || ''),
         },
 
         // Ingestion

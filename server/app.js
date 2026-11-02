@@ -2,6 +2,7 @@
 /** Express app: request context, the v1 API, health/readiness, metrics. */
 const path = require('path');
 const express = require('express');
+const { homePage } = require('./views/home');
 const { http } = require('openvibe-contracts');
 const { instrument } = require('openvibe-shared/metrics');
 const { createRelease } = require('openvibe-shared/release');
@@ -32,42 +33,6 @@ const TEXT_INDEX = [
     '',
 ].join('\n');
 
-const HOME_HTML = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<meta name="color-scheme" content="light dark">
-<title>OpenVibe.Sources</title>
-<style>
-:root { --bg: #fff; --fg: #1a1a1a; --muted: #5c5c66; --accent: #2456d6; }
-@media (prefers-color-scheme: dark) { :root { --bg: #111317; --fg: #e8e8ec; --muted: #a0a0ab; --accent: #7aa2ff; } }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
-h1 { font-size: 1.4rem; margin: 0 0 12px; }
-p { margin: 0 0 12px; }
-.muted { color: var(--muted); font-size: .9rem; }
-a { color: var(--accent); }
-</style>
-</head>
-<body>
-<main>
-<h1>OpenVibe.Sources</h1>
-<p>This is an internal service of the OpenVibe network, not a website. It keeps the list of outside sources
-(feeds, sitemaps, APIs) the network's publication products may read, fetches them politely, and records
-where every item came from, when it was fetched and under which terms. A failed fetch is recorded as a
-failure, never replaced with invented content.</p>
-<p>There is nothing to browse here. What reaches readers is published by the products themselves, under
-their own rules. Merchants who want their store listed can <a href="/merchant">list it on OpenVibe</a>:
-claim the domain, prove control of it, and name the sitemap or product feed we may read.</p>
-<p class="muted">Health: <a href="/api/health">/api/health</a> · Readiness: <a href="/api/ready">/api/ready</a> ·
-Merchant opt-in: <a href="/merchant">/merchant</a> ·
-Source code: <a href="https://github.com/OpenVibers/OpenVibe.Sources">OpenVibers/OpenVibe.Sources</a></p>
-</main>
-</body>
-</html>
-`;
 
 function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null, accountData = null, accountSend = null }) {
     const app = express();
@@ -111,8 +76,8 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
 
     // Merchant opt-in (plan §4.4 channel 1): the JSON read/write API, and the signed-in pages that are its front door.
     // /shared carries this release's own kit.css/kit-web.js/theme-loader.js, so the pages do not depend on another host.
+    app.use('/shared', require('openvibe-shared/serve').handler());
     if (merchant && merchantAuth) {
-        app.use('/shared', require('openvibe-shared/serve').handler());
         app.use(merchantRouter({ db, merchant, registry, ingest, auth, merchantAuth, limits }));
         const networkOrigin = (() => { try { return new URL(config.networkUrl).origin; } catch { return 'https://openvibe.network'; } })();
         app.use('/merchant', (req, res, next) => {
@@ -134,8 +99,9 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
             // The page runs no script of its own. Cloudflare Web Analytics: Cloudflare injects its beacon at the
             // edge and the privacy text says it may measure performance; script-src loads it, connect-src is
             // where it reports.
-            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; script-src https://static.cloudflareinsights.com; connect-src https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
-            return res.type('html').send(HOME_HTML);
+            // The page is the kit's (views/home.js): the theme loader and kit-web from this host's /shared.
+            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; img-src 'self' data:; connect-src https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
+            return res.type('html').send(homePage());
         }
         return res.type('text/plain').send(TEXT_INDEX);
     });

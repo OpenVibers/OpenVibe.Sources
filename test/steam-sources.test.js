@@ -65,3 +65,5 @@ t('$index is an array record\'s position, as a whole path, never on a map', () =
     assert.match(api.checkMapping(ep({ position: '$index' }, 'map')), /\$index requires items_shape "array"/);
     assert.match(api.checkMapping(ep({ position: 'a.$index' })), /exactly "\$index"/);
 });
+
+t.run();

@@ -15,7 +15,7 @@ let svc;
 
 t('boot', async () => { svc = await boot(); });
 
-t('browsers get a short honest HTML page: internal service, nothing to browse, noindex, no-store, no script', async () => {
+t('browsers get a short honest HTML page in the network\'s kit: internal service, nothing to browse, noindex, no-store, no inline script', async () => {
     const r = await request(svc.base, 'GET', '/', { headers: { Accept: 'text/html,application/xhtml+xml' } });
     assert.strictEqual(r.status, 200);
     assert.match(r.headers.get('content-type'), /text\/html/);
@@ -25,9 +25,13 @@ t('browsers get a short honest HTML page: internal service, nothing to browse, n
     assert.strictEqual(r.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.strictEqual(r.headers.get('cache-control'), 'no-store');
     assert.match(r.headers.get('content-security-policy'), /default-src 'none'/);
-    // No script of its own; only Cloudflare Web Analytics, which Cloudflare injects at the edge, may load and report.
-    assert.match(r.headers.get('content-security-policy'), /script-src https:\/\/static\.cloudflareinsights\.com; connect-src https:\/\/cloudflareinsights\.com;/);
-    assert.ok(!/<script/i.test(r.text));
+    // The kit's theme loader and kit-web from this host, and Cloudflare Web Analytics (injected at the edge); no inline script.
+    assert.match(r.headers.get('content-security-policy'), /script-src 'self' https:\/\/static\.cloudflareinsights\.com;[^]*connect-src https:\/\/cloudflareinsights\.com;/);
+    for (const m of r.text.matchAll(/<script\b([^>]*)>/gi)) assert.match(m[1], /src="\/shared\//, 'every script is the kit\'s own file');
+    assert.match(r.text, /<link rel="stylesheet" href="\/shared\/kit\.css">/, 'the network\'s kit');
+    assert.match(r.text, /href="\/merchant"/, 'the merchant opt-in is one tap away');
+    // The kit's files are served whether or not the merchant pages are on.
+    assert.strictEqual((await request(svc.base, 'GET', '/shared/kit.css')).status, 200);
     assert.ok(!/admin/i.test(r.text));
 });
 

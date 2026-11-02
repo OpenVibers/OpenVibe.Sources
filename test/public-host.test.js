@@ -26,7 +26,8 @@ t('browsers get a short honest HTML page in the network\'s kit: internal service
     assert.strictEqual(r.headers.get('cache-control'), 'no-store');
     assert.match(r.headers.get('content-security-policy'), /default-src 'none'/);
     // The kit's theme loader and kit-web from this host, and Cloudflare Web Analytics (injected at the edge); no inline script.
-    assert.match(r.headers.get('content-security-policy'), /script-src 'self' https:\/\/static\.cloudflareinsights\.com;[^]*connect-src https:\/\/cloudflareinsights\.com;/);
+    assert.match(r.headers.get('content-security-policy'), /script-src 'self' https:\/\/static\.cloudflareinsights\.com;[^]*connect-src 'self' https:\/\/openvibe\.network https:\/\/cloudflareinsights\.com;/, 'the theme fetch from openvibe.network, and Cloudflare\'s report path on this host');
+    assert.match(r.text, /<link rel="icon"[^>]*data-ov-icon="sources"/, 'the network\'s icon for Sources (no /favicon.ico 404)');
     for (const m of r.text.matchAll(/<script\b([^>]*)>/gi)) assert.match(m[1], /src="\/shared\//, 'every script is the kit\'s own file');
     assert.match(r.text, /<link rel="stylesheet" href="\/shared\/kit\.css">/, 'the network\'s kit');
     assert.match(r.text, /href="\/merchant"/, 'the merchant opt-in is one tap away');

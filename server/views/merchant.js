@@ -36,6 +36,7 @@ function layout({ title = 'List your store on OpenVibe', body = '', description 
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="dark light">
 <title>${esc(title)} · OpenVibe.Sources</title>
+${require('openvibe-shared/app-icon').headTags({ site: 'sources' }).replace(/<script[\s\S]*?<\/script>/g, '')}
 ${description ? `<meta name="description" content="${esc(description)}">` : ''}
 <script src="/shared/theme-loader.js"></script>
 <link rel="stylesheet" href="/shared/kit.css">

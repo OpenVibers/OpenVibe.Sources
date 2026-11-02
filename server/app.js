@@ -100,7 +100,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
             // edge and the privacy text says it may measure performance; script-src loads it, connect-src is
             // where it reports.
             // The page is the kit's (views/home.js): the theme loader and kit-web from this host's /shared.
-            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; img-src 'self' data:; connect-src https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
+            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; img-src 'self' data:; connect-src 'self' https://openvibe.network https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
             return res.type('html').send(homePage());
         }
         return res.type('text/plain').send(TEXT_INDEX);

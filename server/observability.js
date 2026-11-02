@@ -20,6 +20,25 @@ const { jwksStatus } = require('openvibe-sdk/auth');
 const OVERDUE_MS = 15 * 60 * 1000;
 const STATUSES = ['healthy', 'stale', 'failing', 'never_fetched', 'disabled', 'manual'];
 
+/**
+ * A read kept for keepMs and shared by callers at the same moment. The item count walks every item (47 ms, asked on each
+ * scrape and readiness probe: 151k calls and 118 minutes of database time from 09-28 to 11-02). 30 s in production,
+ * every call elsewhere (tests read their own writes).
+ */
+const COUNTS_MS = process.env.NODE_ENV === 'production' ? 30_000 : 0;
+function kept(read, keepMs = COUNTS_MS, now = () => Date.now()) {
+    if (!(keepMs > 0)) return read;
+    let hold = null;
+    return () => {
+        const t = now();
+        if (hold && (hold.pending || t - hold.at < keepMs)) return hold.pending || Promise.resolve(hold.value);
+        const pending = Promise.resolve().then(read);
+        hold = { at: t, pending };
+        return pending.then((value) => { if (hold && hold.pending === pending) hold = { at: t, value }; return value; },
+            (err) => { if (hold && hold.pending === pending) hold = null; throw err; });
+    };
+}
+
 function readers(db, { startedAt }) {
     // A source waits from when it became due, when it was last changed (a new or re-enabled source
     // is due at once, from next_due_at 0) or when this process started, whichever is latest.
@@ -36,7 +55,7 @@ function readers(db, { startedAt }) {
         },
         lastFetchAt: async () => { const r = await lastRun.get(); return r ? r.finished_at : null; },
         lastSuccessAt: async () => (await lastSuccess.get()).t,
-        items: async () => { const r = await items.get(); return { current: r.n - r.removed, removed: r.removed }; },
+        items: kept(async () => { const r = await items.get(); return { current: r.n - r.removed, removed: r.removed }; }),
     };
 }
 
@@ -119,4 +138,4 @@ function registerSourcesGauges(registry, { db, sources, ingest, outbox, now }) {
     registry.gauge({ name: 'sources_outbox_pending', help: 'Events waiting in the outbox', collect: async () => (await outbox.status()).pending });
 }
 
-module.exports = { createSourcesReadiness, registerSourcesGauges, OVERDUE_MS };
+module.exports = { createSourcesReadiness, registerSourcesGauges, OVERDUE_MS, kept };

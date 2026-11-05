@@ -44,6 +44,12 @@
  *
  * Sources has no openvibe-shared/config namespace, so the rules stay in code (the brief's
  * alternative); a day count this consequential should change in review, not in a database row.
+ *
+ * A contract pin can add a category before this table learns its window. That must not crash the
+ * service at boot: at runtime an unruled category is kept (never pruned), and a rule for a category
+ * the contract no longer has is ignored, each with one warning line per run. The strict one-to-one
+ * check lives in test/retention.test.js instead, so the pin bump PR fails CI and names the rule to
+ * add while production keeps serving in the meantime.
  */
 const { CATEGORIES } = require('./registry');
 
@@ -68,10 +74,8 @@ const RULES = Object.freeze({
     jobs: { days: 14, reason: 'boards retire unseen jobs after 7 days and Work pulls hourly' },
 });
 
-// The rules are the contract's categories, no more and no less: a new category fails here at boot
-// instead of growing without a retention decision (server/registry.js reads the same enum).
-for (const category of CATEGORIES) if (!RULES[category]) throw new Error(`retention: no rule for category ${category}`);
-for (const category of Object.keys(RULES)) if (!CATEGORIES.includes(category)) throw new Error(`retention: ${category} is not a sources.source@1 category`);
+// The rules are the contract's categories in review; the module deliberately does not throw when
+// they disagree (a pin bump must not stop Sources at boot; test/retention.test.js is strict).
 
 /** The age expression shared by the prune statements: last current, not first seen. */
 const AGE_SQL = 'CASE WHEN removed_at IS NULL THEN retrieved_at ELSE removed_at END';
@@ -79,7 +83,7 @@ const AGE_SQL = 'CASE WHEN removed_at IS NULL THEN retrieved_at ELSE removed_at 
  *  retrieved_at, removed rows by removed_at. */
 const OLDER_THAN_SQL = '((removed_at IS NULL AND retrieved_at < $2) OR (removed_at IS NOT NULL AND removed_at < $2))';
 
-function createRetention({ db, now = () => Date.now(), log = console, batchSize = BATCH_SIZE, maxBatches = MAX_BATCHES } = {}) {
+function createRetention({ db, rules = RULES, now = () => Date.now(), log = console, batchSize = BATCH_SIZE, maxBatches = MAX_BATCHES } = {}) {
     if (!db || typeof db.prepare !== 'function' || typeof db.tx !== 'function') throw new TypeError('retention: an openvibe-sdk/db handle is required');
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 10_000) throw new TypeError('retention: batchSize must be an integer between 1 and 10000');
     if (!Number.isInteger(maxBatches) || maxBatches < 1) throw new TypeError('retention: maxBatches must be a positive integer');
@@ -117,7 +121,17 @@ function createRetention({ db, now = () => Date.now(), log = console, batchSize 
     async function runOnce() {
         const at = now();
         const counts = { pruned: 0, revisions: 0, batches: 0, categories: {}, capped: [] };
-        for (const [category, rule] of Object.entries(RULES)) {
+        // A pin bump may reach production before this table does: keep an unruled category, ignore a
+        // rule the contract no longer has, and say so once per run. The strict check is in the test.
+        const known = new Set(CATEGORIES);
+        for (const category of CATEGORIES) {
+            if (!rules[category]) log.warn(`[retention] no rule for category ${category}: items kept`);
+        }
+        for (const category of Object.keys(rules)) {
+            if (!known.has(category)) log.warn(`[retention] rule for ${category} ignored: not a sources.source@1 category`);
+        }
+        for (const [category, rule] of Object.entries(rules)) {
+            if (!known.has(category)) continue;
             const cutoff = rule.days ? at - rule.days * DAY : null;
             if (await pruneCategory(category, rule, cutoff, counts)) counts.capped.push(category);
         }
@@ -134,7 +148,7 @@ function createRetention({ db, now = () => Date.now(), log = console, batchSize 
         return running;
     }
 
-    return { run, runOnce, rules: RULES };
+    return { run, runOnce, rules };
 }
 
 module.exports = { createRetention, RULES, AGE_SQL, OLDER_THAN_SQL, BATCH_SIZE, MAX_BATCHES, DAY };

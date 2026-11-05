@@ -1,8 +1,9 @@
 'use strict';
 /**
  * Item retention (server/retention.js, server/jobs/): the category windows, the age of a removed item,
- * keep-latest per source key, batching and idempotence. A real migrated database (PGlite, or the
- * containers with SOURCES_TEST_STORE=pg), no network.
+ * keep-latest per source key, batching, idempotence, and the runtime grace for a category a pin bump
+ * added before the rule table did. A real migrated database (PGlite, or the containers with
+ * SOURCES_TEST_STORE=pg), no network.
  *
  *   node test/retention.test.js
  */
@@ -39,7 +40,8 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
     // drops a unique constraint) has to go through the owner connection, as migrations do.
     const owner = testdb.directUrl ? createDb({ url: testdb.directUrl, service: 'retention-test-owner', max: 1, log: silent }) : null;
     try {
-        // Every contract category has a rule, with a reason, in one of the two shapes.
+        // STRICT BY DESIGN, TEST-ONLY: a Contracts pin that adds a category must fail here, on the
+        // bump PR, naming the missing rule. server/retention.js itself keeps + warns at runtime.
         assert.deepStrictEqual([...CATEGORIES].sort(), Object.keys(RULES).sort(), 'one rule per source.v1 category');
         for (const [category, rule] of Object.entries(RULES)) {
             assert.strictEqual(typeof rule.reason, 'string');
@@ -101,6 +103,29 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
         assert.deepStrictEqual(c3.categories, { deals: 1 });
         assert.deepStrictEqual(c3.capped, []);
         assert.deepStrictEqual(await ids("WHERE id LIKE 'deals-capped-%'"), []);
+
+        // Runtime grace: a category the contract has but the rules do not is kept (never pruned),
+        // and an extra rule is ignored, each with one warning line per run. The strict check above is
+        // what makes the pin bump fail in CI; this is what keeps production serving meanwhile.
+        await item({ id: 'news-unruled', retrieved: NOW - 100 * DAY });
+        await item({ id: 'deals-injected', category: 'deals', retrieved: NOW - 20 * DAY });
+        const injectedRules = { ...RULES, weather: { days: 1, reason: 'test-only category the contract lacks' } };
+        delete injectedRules.news;
+        const injectedLogs = [];
+        const injected = createRetention({
+            db, rules: injectedRules, now: () => NOW,
+            log: { log: (m) => injectedLogs.push(m), warn: (m) => injectedLogs.push(m), error() {} },
+        });
+        const injectedOut = await injected.runOnce();
+        assert.deepStrictEqual(injectedOut.categories, { deals: 1 });
+        assert.deepStrictEqual(await ids("WHERE id IN ('news-unruled', 'deals-injected')"), ['news-unruled'], 'unruled news kept');
+        assert.strictEqual(injectedLogs.filter((m) => m === '[retention] no rule for category news: items kept').length, 1);
+        assert.strictEqual(injectedLogs.filter((m) => m === '[retention] rule for weather ignored: not a sources.source@1 category').length, 1);
+        await injected.runOnce();
+        assert.strictEqual(injectedLogs.filter((m) => m === '[retention] no rule for category news: items kept').length, 2, 'one warning per run');
+        assert.deepStrictEqual(await ids("WHERE id = 'news-unruled'"), ['news-unruled']);
+        await db.query("DELETE FROM item_revisions WHERE item_id = 'news-unruled'");
+        await db.query("DELETE FROM items WHERE id = 'news-unruled'");
 
         // Keep-latest: one item per (source_key, identity), the newest. The items table already keeps
         // one row per key, so the test drops its unique constraint to prove what the rule does if a

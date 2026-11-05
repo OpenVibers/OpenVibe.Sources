@@ -254,7 +254,10 @@ An item's age is `retrieved_at` while it is live and `removed_at` once removed, 
 still sees a removal for the full window; `first_seen_at` is never the age, since a source that keeps listing a job or
 a price keeps it current. The daily job (`server/jobs/retention.js`, started with the worker) deletes at most 2,000 rows
 a statement, 50 batches a category a run, and its log line carries counts only. The rules are in code because Sources
-has no `openvibe-shared/config` namespace; a new contract category without a rule fails at boot.
+has no `openvibe-shared/config` namespace. At runtime a category the contract has but the rules do not is kept (never
+pruned) and warned about once a run, and a rule for a category the contract lacks is ignored with a warning, so a
+Contracts pin bump cannot stop Sources at boot; `test/retention.test.js` keeps the strict one-to-one check so the bump
+PR fails CI and names the missing rule.
 
 ## API (service tokens, one capability per route)
 

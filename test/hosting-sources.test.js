@@ -19,7 +19,7 @@ const seed = (key) => seeds.find((s) => s.key === key);
 const endpoint = (key) => seed(key).endpoints[0];
 
 t('both hosting seeds declare an api mapping the adapter accepts', () => {
-    for (const key of ['vultr-plans', 'linode-types', 'ovhcloud-vps']) {
+    for (const key of ['vultr-plans', 'linode-types', 'ovhcloud-vps', 'ovhcloud-baremetal']) {
         const s = seed(key);
         assert.ok(s, `${key} is seeded`);
         assert.strictEqual(s.type, 'api');
@@ -108,6 +108,50 @@ t('OVHcloud domain prices: one item per ending, the first year, renewal and tran
     assert.deepStrictEqual(by.com, { currency: 'USD', register: 920000000, renew: 1649000000, transfer: 920000000 });
     assert.deepStrictEqual(by.io, { currency: 'USD', register: 6299000000, renew: 6269000000, transfer: 5069000000 }, 'never the premium sentinel');
     assert.strictEqual(by['co.uk'].transfer, 0, 'a free transfer stays 0; Host decides what 0 means per field');
+});
+
+
+t('OVHcloud dedicated servers: the bare-metal and Eco catalogs, each plan joined to its default addons and their products', () => {
+    const s = seed('ovhcloud-baremetal');
+    assert.deepStrictEqual([s.type, s.category, s.enabled, s.review_required], ['api', 'hosting', false, true]);
+    assert.strictEqual(s.endpoints.length, 2, 'one endpoint for the bare-metal catalog and one for Eco');
+    assert.deepStrictEqual(s.endpoints.map((e) => e.max_bytes), [40 * 1024 * 1024, 16 * 1024 * 1024]);
+    for (const ep of s.endpoints) assert.strictEqual(api.checkMapping(ep), null);
+    assert.strictEqual(validateSource(s).max_items, 200);
+
+    const main = api.parse(fx('ovhcloud-baremetal.json'), { url: s.endpoints[0].url, endpoint: s.endpoints[0], maxItems: 200 });
+    assert.deepStrictEqual([main.items.length, main.meta.filtered, main.skipped], [8, 2, 0]);
+    assert.deepStrictEqual(main.items.map((i) => i.identity).sort(), [
+        '20bv012-us', '20hg03-us', '22bf062-us', '23scaleamd01-v3-us', '24adv01-v3-us', '24hci-a1-v2-us', '26adv01-v7-us', '26game02-v4-us',
+    ]);
+    const by = Object.fromEntries(main.items.map((i) => [i.identity, i.fields]));
+    assert.deepStrictEqual(by['24adv01-v3-us'], {
+        product: '24adv01', currency: 'USD', range: 'advance',
+        cpu_cores: 6, cpu_sockets: 1, cpu_model: 'EPYC 4244P', cpu_brand: 'AMD', memory_gb: 32,
+        disk_capacity_gb: 960, disk_count: 2, disk_interface: 'NVMe', disk_technology: 'SSD',
+        bandwidth_mbps: 3000, bandwidth_limit: 0, price_monthly: 14700000000, setup_fee: 14700000000,
+        locations: ['vin', 'hil'],
+    });
+    // A legacy plan: no installation fee in the catalog ($0), two sockets, SATA SSDs, and a different bandwidth.
+    assert.deepStrictEqual([by['20bv012-us'].setup_fee, by['20bv012-us'].cpu_sockets, by['20bv012-us'].memory_gb, by['20bv012-us'].disk_capacity_gb, by['20bv012-us'].disk_count, by['20bv012-us'].bandwidth_mbps, by['20bv012-us'].price_monthly],
+        [0, 2, 256, 240, 2, 500, 10900000000]);
+    // HG-3's product states no socket count (the CPU model says "2x"); the adapter keeps null rather than inventing one.
+    assert.deepStrictEqual([by['20hg03-us'].cpu_cores, by['20hg03-us'].cpu_sockets, by['20hg03-us'].memory_gb, by['20hg03-us'].disk_capacity_gb, by['20hg03-us'].disk_count, by['20hg03-us'].setup_fee, by['20hg03-us'].price_monthly],
+        [28, null, 192, 6000, 2, 0, 97500000000]);
+    // A Scale plan sold with no drives: capacity 0 and count 0 are the catalog's own facts, not a missing field.
+    assert.deepStrictEqual([by['23scaleamd01-v3-us'].disk_capacity_gb, by['23scaleamd01-v3-us'].disk_count], [0, 0]);
+    assert.deepStrictEqual([by['24hci-a1-v2-us'].cpu_cores, by['24hci-a1-v2-us'].cpu_sockets, by['24hci-a1-v2-us'].disk_capacity_gb, by['24hci-a1-v2-us'].disk_count], [24, 2, 3840, 6]);
+    // The -eu copy and the legacy special edition are filtered by the -us plan-code pattern.
+    assert.ok(!main.items.some((i) => /-(?:eu|ca|se)$/.test(i.identity)));
+
+    const eco = api.parse(fx('ovhcloud-eco.json'), { url: s.endpoints[1].url, endpoint: s.endpoints[1], maxItems: 200 });
+    assert.deepStrictEqual([eco.items.length, eco.meta.filtered, eco.skipped], [5, 1, 0]);
+    const eby = Object.fromEntries(eco.items.map((i) => [i.identity, i.fields]));
+    assert.deepStrictEqual([eby['26sk50a-v1-us'].price_monthly, eby['26sk50a-v1-us'].setup_fee, eby['26sk50a-v1-us'].memory_gb, eby['26sk50a-v1-us'].disk_capacity_gb, eby['26sk50a-v1-us'].disk_count],
+        [3000000000, 3000000000, 32, 960, 2]);
+    assert.deepStrictEqual([eby['24risegame012-us'].range, eby['24risegame012-us'].cpu_cores, eby['24risegame012-us'].disk_capacity_gb, eby['24risegame012-us'].bandwidth_mbps],
+        ['rise', 6, 512, 1000]);
+    assert.ok(!eco.items.some((i) => i.identity.endsWith('-ca')));
 });
 
 t('the registry accepts category hosting and refuses an unknown category', () => {

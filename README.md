@@ -144,16 +144,19 @@ match as text.
 **Catalogs that keep plans, hardware and prices apart** (OVHcloud's public order catalog, `ovhcloud-vps`). A key may
 carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and the path steps into its
 first element whose fields equal every value, compared as text after `scalar()` (so `interval=1` matches the number 1).
-A value is literal text or `$rec.<path>`, read from the record itself. No match is null.
+A value is literal text, `$rec.<path>` (read from the record) or `$root.<path>` (read from the response), and either
+path may carry its own selectors. That reaches a plan's default addon and then that addon's own product without code
+per provider; no match is null.
 
 ```json
 "where": { "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } },
 "extra": { "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+           "memory_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size",
            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price" }
 ```
 
 `max_bytes` (an integer from 1 KiB to 64 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
-catalog is about 12 MB.
+VPS catalog is about 12 MB, its bare-metal catalog about 32 MB and its Eco catalog about 10 MB.
 
 `timeout_ms` (an integer from 1 s to 120 s) sets one endpoint's deadline instead of `SOURCES_FETCH_TIMEOUT_MS`. NYC Open
 Data computes the HPD per-building violation tally (`nyc-hpd-open-violations`) in 12 to 60 seconds.
@@ -352,7 +355,7 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 65 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
+[seeds/sources.json](seeds/sources.json) holds the 66 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
 robots.txt on every run. Production on 2026-10-22:
@@ -365,7 +368,7 @@ robots.txt on every run. Production on 2026-10-22:
 | deals | `dealnews-daily` (rss, `feed@3`: the offer's price, retailer, end date, category and editors' pick) | 1 of 1 |
 | coupons | `dealnews-coupon-codes` (rss with `extract`: only items that state a code and the shop, as kind `coupon`); `staff-coupon-codes` (manual, with the evidence URL) | 2 of 2 |
 | trade | `sec-xbrl-filings`, `ecb-euro-reference-rates` (rss); `sec-company-tickers`, `frankfurter-eur-rates` (api) | 4 of 4 |
-| hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 8: `vultr-plans` is off (its API host's robots.txt disallows every path), and LowEndTalk's and LowEndBox's feeds answer 403 to the production host |
+| hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `ovhcloud-baremetal`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 9: `vultr-plans` is off (its API host's robots.txt disallows every path), LowEndTalk's and LowEndBox's feeds answer 403 to the production host, and `ovhcloud-baremetal` is seeded disabled for review |
 | crowdfunding | `opencollective-accounts` (api) | 1 of 1 |
 | games | `steam-top-sellers`, `steam-new-releases`, `steam-specials` (api: the store's featured lists, in their order) | 3 of 3 |
 

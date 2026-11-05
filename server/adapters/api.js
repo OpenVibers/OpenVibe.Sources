@@ -41,12 +41,16 @@
  * A key may carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and
  * the path steps into its first element whose fields equal every value (compared as text after
  * `scalar()`, so `interval=1` matches the number 1). A value is literal text (letters, digits, spaces,
- * `_ : @ + -`) or `$rec.<path>`, a plain dotted path read from the record itself. No match, a missing
- * value or a non-array is undefined (the field is null). OVHcloud's catalog lists plans and their
- * hardware separately and keeps every price variant in one array:
+ * `_ : @ + -`), `$rec.<path>` (read from the record) or `$root.<path>` (read from the response), and
+ * either path may itself carry selectors. That reaches an addon named by the record and then that
+ * addon's own product, without code per provider; OVHcloud's catalog keeps plans, their default
+ * addons, and the addons' products apart:
  *
  *   "extra": { "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+ *              "memory_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size",
  *              "price": "pricings[mode=default,commitment=0,intervalUnit=month].price" }
+ *
+ * No match, a missing value or a non-array is undefined (the field is null).
  *
  * A `where` expectation may also be `{ "pattern": "<regular expression>" }` (at most 200 characters):
  * the value must be text the expression matches, e.g. `{ "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } }`.
@@ -82,13 +86,14 @@
 const { parseXml, toText, toIsoDate, epochSecondsToIso, canonicalUrl, toId, ParseError } = require('./util');
 
 const PARSER_VERSION = 'api@1';
-// A segment is `*` (the single child of an object), `{$key}` (the map key, only inside `$root.`),
-// or an ordinary key. PATH_RE is syntax only; keyPathViolation enforces where each token may sit.
-// A selector condition is `field=value`, the value literal text or `$rec.` and a plain dotted path.
-const SEL_COND = '[A-Za-z0-9_]+=(?:\\$rec(?:\\.[A-Za-z0-9_]+)+|[A-Za-z0-9_ :@+-]+)';
-const SELECTOR = `\\[${SEL_COND}(?:,${SEL_COND}){0,3}\\]`;
-const PATH_SEG = `(?:\\*|\\{\\$key\\}|[A-Za-z0-9_@:$-]+(?:${SELECTOR})?)`;
-const PATH_RE = new RegExp(`^${PATH_SEG}(?:\\.${PATH_SEG})*$`);
+// A segment is `*` (the single child of an object), `{$key}` (the map key, only inside a `$root.` path),
+// or a key, optionally with a selector. A selector condition's value is literal text or a
+// `$rec.`/`$root.` path that may itself carry selectors. The parser below enforces the syntax; the
+// walker only parses paths that already passed `pathValid()` when they came from the registry.
+const NAME_RE = /^[A-Za-z0-9_@:$-]+$/;
+const FIELD_RE = /^[A-Za-z0-9_]+$/;
+const LITERAL_RE = /^[A-Za-z0-9_ :@+-]+$/;
+const MAX_DEPTH = 8;
 
 /** A path's segments: dots split it, except inside a selector (whose `$rec.` values have dots of their own). */
 const SPLIT = new Map();
@@ -108,41 +113,110 @@ function splitPath(path) {
     return segs;
 }
 
-/** `key[a=b,c=$rec.d]` → { name, conds: [[field, value]] }, or null for a plain segment. */
-function selectorOf(seg) {
-    const m = /^([^[]+)\[(.+)\]$/.exec(seg);
-    if (!m) return null;
-    return { name: m[1], conds: m[2].split(',').map((c) => [c.slice(0, c.indexOf('=')), c.slice(c.indexOf('=') + 1)]) };
+/** Split a selector's inner text on commas outside nested brackets. */
+function selectorConds(inner) {
+    const parts = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < inner.length; i++) {
+        const ch = inner[i];
+        if (ch === '[') depth++;
+        else if (ch === ']') { depth--; if (depth < 0) return null; }
+        else if (ch === ',' && depth === 0) { parts.push(inner.slice(start, i)); start = i + 1; }
+    }
+    if (depth !== 0) return null;
+    parts.push(inner.slice(start));
+    return parts;
+}
+
+/**
+ * `key[a=b,c=$rec.d]` → { name, conds: [[field, value]] }, or { bad: true } when malformed.
+ * Parsed once per path and cached: a catalog can walk the same mapping for hundreds of plans.
+ */
+const PATHS = new Map();
+function parsePath(path) {
+    let parsed = PATHS.get(path);
+    if (parsed) return parsed;
+    const segs = splitPath(path).map((seg) => {
+        if (seg === '*') return { kind: '*' };
+        if (seg === '{$key}') return { kind: '{$key}' };
+        const open = seg.indexOf('[');
+        if (open === -1) return NAME_RE.test(seg) ? { kind: 'key', name: seg } : { kind: 'bad' };
+        if (seg[seg.length - 1] !== ']') return { kind: 'bad' };
+        const name = seg.slice(0, open);
+        if (!NAME_RE.test(name)) return { kind: 'bad' };
+        const parts = selectorConds(seg.slice(open + 1, -1));
+        if (!parts || parts.length < 1 || parts.length > 4) return { kind: 'bad' };
+        const conds = [];
+        for (const part of parts) {
+            const eq = part.indexOf('=');
+            if (eq <= 0) return { kind: 'bad' };
+            const field = part.slice(0, eq);
+            const value = part.slice(eq + 1);
+            if (!FIELD_RE.test(field) || !value) return { kind: 'bad' };
+            conds.push([field, value]);
+        }
+        return { kind: 'sel', name, conds };
+    });
+    parsed = { segs };
+    if (PATHS.size < 2000) PATHS.set(path, parsed);
+    return parsed;
+}
+
+/** Is a path syntactically valid, including every selector and every nested reference in it? */
+function pathValid(path, depth = 0, top = true) {
+    if (typeof path !== 'string' || !path || depth > MAX_DEPTH) return false;
+    const { segs } = parsePath(path);
+    if (segs.some((seg) => seg.kind === 'bad')) return false;
+    if (top && segs[0].kind === 'key' && segs[0].name === '$rec') return false;
+    for (const seg of segs) {
+        if (seg.kind !== 'sel') continue;
+        for (const [, value] of seg.conds) {
+            if (value.startsWith('$rec.')) { if (!pathValid(value.slice(5), depth + 1, false)) return false; }
+            else if (value.startsWith('$root.')) { if (!pathValid(value.slice(6), depth + 1, false)) return false; }
+            else if (!LITERAL_RE.test(value)) return false;
+        }
+    }
+    return true;
+}
+
+/** A selector condition's value: literal text, a record path, or a response path. */
+function refValue(raw, key, rec, root, depth) {
+    if (raw.startsWith('$rec.')) return scalar(walk(rec, raw.slice(5), key, rec, root, depth + 1));
+    if (raw.startsWith('$root.')) return scalar(walk(root, raw.slice(6), key, rec, root, depth + 1));
+    return raw;
 }
 
 /**
  * Walk a dot path: `*` steps into an object's single own property, `{$key}` uses the map key, and
  * `key[field=value,…]` steps into the first element of the array `key` whose fields match.
  */
-function walk(obj, path, key, rec) {
+function walk(obj, path, key, rec, root = obj, depth = 0) {
+    if (depth > MAX_DEPTH) return undefined;
+    const { segs } = parsePath(path);
     let cur = obj;
-    for (const seg of splitPath(path)) {
+    for (const seg of segs) {
         if (cur == null || typeof cur !== 'object') return undefined;
-        if (seg === '*') {
+        if (seg.kind === '*') {
             if (Array.isArray(cur)) return undefined;
             const own = Object.keys(cur);
             if (own.length !== 1) return undefined;
             cur = cur[own[0]];
-        } else if (seg === '{$key}') {
+        } else if (seg.kind === '{$key}') {
             if (key === undefined) return undefined;
             cur = cur[key];
-        } else {
-            const sel = selectorOf(seg);
-            if (!sel) { cur = cur[seg]; continue; }
-            const list = cur[sel.name];
+        } else if (seg.kind === 'key') {
+            cur = cur[seg.name];
+        } else if (seg.kind === 'sel') {
+            const list = cur[seg.name];
             if (!Array.isArray(list)) return undefined;
-            const wanted = sel.conds.map(([f, v]) => [f, v.startsWith('$rec.') ? scalar(walk(rec, v.slice('$rec.'.length), key, rec)) : v]);
+            const wanted = seg.conds.map(([f, v]) => [f, refValue(v, key, rec, root, depth)]);
             if (wanted.some(([, v]) => v == null)) return undefined;
             cur = list.find((el) => el && typeof el === 'object' && wanted.every(([f, v]) => {
                 const a = scalar(el[f]);
                 return a != null && String(a) === String(v);
             }));
-        }
+        } else return undefined;
     }
     return cur;
 }
@@ -151,13 +225,13 @@ function walk(obj, path, key, rec) {
 function getField(body, rec, key, p) {
     if (!p) return rec;
     if (p === '$key') return key;
-    if (p.startsWith('$root.')) return walk(body, p.slice('$root.'.length), key, rec);
-    return walk(rec, p, key, rec);
+    if (p.startsWith('$root.')) return walk(body, p.slice('$root.'.length), key, rec, body);
+    return walk(rec, p, key, rec, body);
 }
 
 function at(obj, path) {
     if (!path) return obj;
-    return walk(obj, path, undefined);
+    return walk(obj, path, undefined, obj, obj);
 }
 
 /** A list the API gives → up to 20 of its scalars (a lone scalar → a list of one; nothing → []). */
@@ -229,7 +303,7 @@ function checkConditions(where, label, shape) {
     if (typeof where !== 'object' || Array.isArray(where)) return `${label} must be an object of path -> expected`;
     if (Object.keys(where).length > 10) return `at most 10 ${label} conditions`;
     for (const [p, expected] of Object.entries(where)) {
-        if (!PATH_RE.test(p)) return `${label}.${p} path is malformed`;
+        if (!pathValid(p)) return `${label}.${p} path is malformed`;
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `${label}.${p}: ${kerr}`;
         if (isPattern(expected)) {
@@ -254,19 +328,19 @@ function checkMapping(ep, { bulk = false } = {}) {
     if (!bulk && ep.duplicates !== undefined && !['first', 'last'].includes(ep.duplicates)) return 'duplicates must be first or last';
     const shape = ep.items_shape || 'array';
     if (!bulk && !['array', 'map'].includes(shape)) return 'items_shape must be array or map';
-    if (!bulk && ep.items_path !== undefined && ep.items_path !== '' && !PATH_RE.test(ep.items_path)) return 'items_path is malformed';
+    if (!bulk && ep.items_path !== undefined && ep.items_path !== '' && !pathValid(ep.items_path)) return 'items_path is malformed';
     const fields = ep.fields || {};
     if (!fields.identity && !fields.url) return 'fields.identity or fields.url is required';
     for (const [k, p] of Object.entries(fields)) {
         if (!['identity', 'url', 'title', 'summary', 'author', 'published_at', 'published_at_epoch', 'updated_at', 'updated_at_epoch'].includes(k)) return `unknown field ${k}`;
-        if (typeof p !== 'string' || !PATH_RE.test(p)) return `fields.${k} path is malformed`;
+        if (typeof p !== 'string' || !pathValid(p)) return `fields.${k} path is malformed`;
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `fields.${k}: ${kerr}`;
     }
     const extra = ep.extra || {};
     if (Object.keys(extra).length > 30) return 'at most 30 extra fields';
     for (const [k, p] of Object.entries(extra)) {
-        if (!/^[a-z][a-z0-9_]{0,39}$/.test(k) || typeof p !== 'string' || !PATH_RE.test(p)) return `extra.${k} is malformed`;
+        if (!/^[a-z][a-z0-9_]{0,39}$/.test(k) || typeof p !== 'string' || !pathValid(p)) return `extra.${k} is malformed`;
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `extra.${k}: ${kerr}`;
     }
@@ -274,7 +348,7 @@ function checkMapping(ep, { bulk = false } = {}) {
     if (typeof lists !== 'object' || Array.isArray(lists)) return 'extra_lists must be an object of field -> path';
     if (Object.keys(lists).length > 10) return 'at most 10 extra_lists fields';
     for (const [k, p] of Object.entries(lists)) {
-        if (!/^[a-z][a-z0-9_]{0,39}$/.test(k) || typeof p !== 'string' || !PATH_RE.test(p)) return `extra_lists.${k} is malformed`;
+        if (!/^[a-z][a-z0-9_]{0,39}$/.test(k) || typeof p !== 'string' || !pathValid(p)) return `extra_lists.${k} is malformed`;
         if (Object.prototype.hasOwnProperty.call(extra, k)) return `extra_lists.${k} is also an extra field`;
         const kerr = keyPathViolation(p, shape);
         if (kerr) return `extra_lists.${k}: ${kerr}`;

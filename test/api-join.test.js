@@ -218,4 +218,74 @@ t('an endpoint without the new keys parses exactly as before', () => {
     assert.strictEqual(r.items[1].canonical_url, null);
 });
 
+const DEDICATED = JSON.stringify({
+    locale: { currencyCode: 'USD' },
+    plans: [
+        {
+            planCode: 'srv-1', product: 'p-1',
+            addonFamilies: [{ name: 'memory', default: 'ram-32' }, { name: 'storage', default: 'disk-2x960' }],
+            pricings: [{ mode: 'default', commitment: 0, intervalUnit: 'month', interval: 1, price: 14700000000 }],
+        },
+        {
+            planCode: 'srv-2', product: 'p-2',
+            addonFamilies: [{ name: 'memory', default: 'ram-64' }, { name: 'storage', default: 'disk-1x480' }],
+            pricings: [],
+        },
+    ],
+    addons: [
+        { planCode: 'ram-32', product: 'ram-32-prod' }, { planCode: 'ram-64', product: 'ram-64-prod' },
+        { planCode: 'disk-2x960', product: 'disk-2x960-prod' }, { planCode: 'disk-1x480', product: 'disk-1x480-prod' },
+    ],
+    products: [
+        { name: 'p-1', blobs: { technical: { server: { cpu: { cores: 6, number: 1 } } } } },
+        { name: 'p-2', blobs: { technical: { server: { cpu: { cores: 24, number: 2 } } } } },
+        { name: 'ram-32-prod', blobs: { technical: { memory: { size: 32 } } } },
+        { name: 'ram-64-prod', blobs: { technical: { memory: { size: 64 } } } },
+        { name: 'disk-2x960-prod', blobs: { technical: { storage: { disks: [{ capacity: 960, number: 2, interface: 'NVMe' }] } } } },
+        { name: 'disk-1x480-prod', blobs: { technical: { storage: { disks: [{ capacity: 480, number: 1, interface: 'SATA' }] } } } },
+    ],
+});
+
+const nestedEndpoint = {
+    format: 'json', items_path: 'plans', fields: { identity: 'planCode' },
+    extra: {
+        cores: '$root.products[name=$rec.product].blobs.technical.server.cpu.cores',
+        sockets: '$root.products[name=$rec.product].blobs.technical.server.cpu.number',
+        memory: '$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size',
+        disk: '$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.capacity',
+        disks: '$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.number',
+        price: 'pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price',
+    },
+};
+
+t('a selector value may be a $root or $rec path with its own selector, so a plan reaches its addon and that addon\'s product', () => {
+    assert.strictEqual(api.checkMapping(nestedEndpoint), null);
+    const r = api.parse(DEDICATED, { url: 'https://x.example/', endpoint: nestedEndpoint });
+    assert.deepStrictEqual(r.items.map((i) => i.identity), ['srv-1', 'srv-2']);
+    assert.deepStrictEqual(r.items[0].fields, { cores: 6, sockets: 1, memory: 32, disk: 960, disks: 2, price: 14700000000 });
+    assert.deepStrictEqual(r.items[1].fields, { cores: 24, sockets: 2, memory: 64, disk: 480, disks: 1, price: null });
+    // A named family the record does not have, and an addon code that names no addon, both give null.
+    const missing = { ...nestedEndpoint, extra: {
+        missing_family: '$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=gpu].default].product].blobs.technical.memory.size',
+        missing_addon: '$root.products[name=$root.addons[planCode=$rec.nope].product].blobs.technical.memory.size',
+    } };
+    assert.strictEqual(api.checkMapping(missing), null);
+    const m = api.parse(DEDICATED, { url: 'https://x.example/', endpoint: missing });
+    assert.deepStrictEqual(m.items.map((i) => i.fields), [{ missing_family: null, missing_addon: null }, { missing_family: null, missing_addon: null }]);
+});
+
+t('checkMapping refuses a malformed nested reference and stops at a bounded depth', () => {
+    const extra = (x) => api.checkMapping({ fields: { identity: 'id' }, extra: { x } });
+    assert.strictEqual(extra('$root.a[b=$root.c[d=$rec.e].f]'), null);
+    assert.strictEqual(extra('$root.a[b=$rec.c[name=d,e=f].g]'), null, 'a nested selector may carry two conditions');
+    assert.match(extra('$root.a[b=$rec].x'), /malformed/);
+    assert.match(extra('$root.a[b=$root].x'), /malformed/);
+    assert.match(extra('$root.a[b=$root.c[d=$rec.e].f'), /malformed/, 'the outer bracket is unclosed');
+    assert.match(extra('$root.a[b=$rec.c[name=d,e=f,g=h,i=j,j=k].x]'), /malformed/, 'a nested selector has at most four conditions');
+    assert.match(extra('$rec.a'), /malformed/, 'a top-level $rec path is not a registry path');
+    let deep = 'z';
+    for (let i = 0; i < 10; i++) deep = `y${i}[a=$rec.${deep}]`;
+    assert.match(extra('$root.' + deep), /malformed/, 'references are bounded');
+});
+
 t.run();

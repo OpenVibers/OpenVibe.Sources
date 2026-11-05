@@ -1,0 +1,4274 @@
+{
+ "catalogId": 3775,
+ "locale": {
+  "currencyCode": "USD",
+  "subsidiary": "US",
+  "taxRate": 0
+ },
+ "plans": [
+  {
+   "planCode": "19infra032-se",
+   "invoiceName": "INFRA-3-SE",
+   "addonFamilies": [
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-128g-ecc-2933-infra-us"
+     ],
+     "default": "ram-128g-ecc-2933-infra-us"
+    },
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-guaranteed-2000-ultimate-2019v1-us",
+      "bandwidth-1000-burst-2gbps-infra-us"
+     ],
+     "default": "bandwidth-1000-burst-2gbps-infra-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "softraid-2x960nvme-infra-us"
+     ],
+     "default": "softraid-2x960nvme-infra-us"
+    }
+   ],
+   "product": "19infra03-custom",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 30100000000,
+     "formattedPrice": "$301.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "united_states"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "range": "infrastructure"
+    }
+   }
+  },
+  {
+   "planCode": "20bv012-us",
+   "invoiceName": "BV-1",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-500-bv-us"
+     ],
+     "default": "bandwidth-500-bv-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-256g-bv-us"
+     ],
+     "default": "ram-256g-bv-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "hybridsoftraid-4x2000sa-2x240ssd-bv-us",
+      "softraid-2x240ssd-bv-us"
+     ],
+     "default": "softraid-2x240ssd-bv-us"
+    }
+   ],
+   "product": "20bv01",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 10900000000,
+     "formattedPrice": "$109.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "united_states"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "range": "best-value"
+    }
+   }
+  },
+  {
+   "planCode": "20hg03-us",
+   "invoiceName": "HG-3",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-guaranteed-3000-ultimate-2019v2-us",
+      "bandwidth-1000-burst-3gbps-hg-us",
+      "bandwidth-guaranteed-2000-ultimate-2019v1-us"
+     ],
+     "default": "bandwidth-1000-burst-3gbps-hg-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-192g-hg3-us"
+     ],
+     "default": "ram-192g-hg3-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "softraid-2x6000sas-hg-us"
+     ],
+     "default": "softraid-2x6000sas-hg-us"
+    }
+   ],
+   "product": "20hg03-us",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 97500000000,
+     "formattedPrice": "$975.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "united_states"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "range": "hg"
+    }
+   }
+  },
+  {
+   "planCode": "22bf062-us",
+   "invoiceName": "BFSTOR21-3",
+   "addonFamilies": [
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-48g-bf6-us"
+     ],
+     "default": "ram-48g-bf6-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "softraid-12x4000sas-bf6-us"
+     ],
+     "default": "softraid-12x4000sas-bf6-us"
+    },
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-500-included-bf-us"
+     ],
+     "default": "bandwidth-500-included-bf-us"
+    }
+   ],
+   "product": "22bf06",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 20900000000,
+     "formattedPrice": "$209.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 20900000000,
+     "formattedPrice": "$209.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "name": "BFSTOR21-3"
+    }
+   }
+  },
+  {
+   "planCode": "24adv01-v3-eu",
+   "invoiceName": "ADVANCE-1 | AMD EPYC 4244P",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-3000-adv-gen3-eu",
+      "bandwidth-4000-adv-gen3-eu",
+      "bandwidth-5000-adv-gen3-eu"
+     ],
+     "default": "bandwidth-3000-adv-gen3-eu"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x1920nvme-pcie-gen4-24adv01-v3-eu",
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x3840nvme-pcie-gen4-24adv01-v3-eu",
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x7680nvme-pcie-gen4-24adv01-v3-eu",
+      "softraid-2x960nvme-pcie-gen4-24adv01-v3-eu",
+      "softraid-4x960nvme-pcie-gen4-24adv01-v3-eu",
+      "softraid-4x1920nvme-pcie-gen4-24adv01-v3-eu",
+      "softraid-4x3840nvme-pcie-gen4-24adv01-v3-eu",
+      "softraid-4x7680nvme-pcie-gen4-24adv01-v3-eu"
+     ],
+     "default": "softraid-2x960nvme-pcie-gen4-24adv01-v3-eu"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-32g-on-die-ecc-5200-24adv01-v3-eu",
+      "ram-64g-on-die-ecc-5200-24adv01-v3-eu",
+      "ram-128g-on-die-ecc-3600-24adv01-v3-eu",
+      "ram-192g-on-die-ecc-3600-24adv01-v3-eu"
+     ],
+     "default": "ram-32g-on-die-ecc-5200-24adv01-v3-eu"
+    }
+   ],
+   "product": "24adv01",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 14700000000,
+     "formattedPrice": "$147.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 14700000000,
+     "formattedPrice": "$147.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "fra",
+      "gra",
+      "lon",
+      "rbx",
+      "waw",
+      "sbg"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "release-year",
+       "value": "2024"
+      },
+      {
+       "name": "baremetal-server-usecases",
+       "value": "hosting,bdd"
+      },
+      {
+       "name": "alternative-cpu",
+       "value": "26adv01-v7-eu"
+      },
+      {
+       "name": "last-generation",
+       "value": "false"
+      }
+     ],
+     "name": "ADVANCE-1"
+    }
+   }
+  },
+  {
+   "planCode": "24adv01-v3-us",
+   "invoiceName": "ADVANCE-1 | AMD EPYC 4244P",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-5000-adv-gen3-us",
+      "bandwidth-3000-adv-gen3-us",
+      "bandwidth-4000-adv-gen3-us"
+     ],
+     "default": "bandwidth-3000-adv-gen3-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x1920nvme-pcie-gen4-24adv01-v3-us",
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x3840nvme-pcie-gen4-24adv01-v3-us",
+      "hybridsoftraid-2x960nvme-pcie-gen4-2x7680nvme-pcie-gen4-24adv01-v3-us",
+      "softraid-2x960nvme-pcie-gen4-24adv01-v3-us",
+      "softraid-4x960nvme-pcie-gen4-24adv01-v3-us",
+      "softraid-4x1920nvme-pcie-gen4-24adv01-v3-us",
+      "softraid-4x3840nvme-pcie-gen4-24adv01-v3-us",
+      "softraid-4x7680nvme-pcie-gen4-24adv01-v3-us"
+     ],
+     "default": "softraid-2x960nvme-pcie-gen4-24adv01-v3-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-32g-on-die-ecc-5200-24adv01-v3-us",
+      "ram-64g-on-die-ecc-5200-24adv01-v3-us",
+      "ram-128g-on-die-ecc-3600-24adv01-v3-us",
+      "ram-192g-on-die-ecc-3600-24adv01-v3-us"
+     ],
+     "default": "ram-32g-on-die-ecc-5200-24adv01-v3-us"
+    }
+   ],
+   "product": "24adv01",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 14700000000,
+     "formattedPrice": "$147.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 14700000000,
+     "formattedPrice": "$147.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "release-year",
+       "value": "2024"
+      },
+      {
+       "name": "baremetal-server-usecases",
+       "value": "hosting,bdd"
+      },
+      {
+       "name": "alternative-cpu",
+       "value": "26adv01-v7-us"
+      },
+      {
+       "name": "last-generation",
+       "value": "false"
+      }
+     ],
+     "name": "ADVANCE-1"
+    }
+   }
+  },
+  {
+   "planCode": "26game02-v4-us",
+   "invoiceName": "GAME-2 | AMD RYZEN 9 9950X3D",
+   "addonFamilies": [
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-128g-on-die-ecc-3600-26game02-v4-us",
+      "ram-64g-on-die-ecc-5600-26game02-v4-us",
+      "ram-192g-on-die-ecc-3600-26game02-v4-us",
+      "ram-256g-on-die-ecc-3600-26game02-v4-us"
+     ],
+     "default": "ram-64g-on-die-ecc-5600-26game02-v4-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "softraid-2x960nvme-26game02-v4-us"
+     ],
+     "default": "softraid-2x960nvme-26game02-v4-us"
+    },
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-1000-game-gen4-us"
+     ],
+     "default": "bandwidth-1000-game-gen4-us"
+    }
+   ],
+   "product": "26game02",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 40100000000,
+     "formattedPrice": "$401.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [
+      {
+       "description": "Free setup fees for all customers",
+       "discount": {
+        "value": 40100000000,
+        "formattedValue": "$401.00 USD",
+        "tax": 0
+       },
+       "duration": null,
+       "context": "standard",
+       "customFieldValues": [],
+       "endDate": "2026-11-04T15:00:00-05:00",
+       "formattedValue": "",
+       "globalQuantity": null,
+       "isForTestingPurpose": false,
+       "isGlobalQuantityLimited": false,
+       "minimumDuration": 1,
+       "name": "2710_SpecialOffers_SetUpFee",
+       "quantity": null,
+       "startDate": "2026-10-21T14:30:50.51-04:00",
+       "tags": null,
+       "total": {
+        "value": 0,
+        "formattedValue": "$0.00 USD",
+        "tax": 0
+       },
+       "type": "percentage",
+       "value": 100
+      }
+     ],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 40100000000,
+     "formattedPrice": "$401.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "baremetal-server-usecases",
+       "value": "gaming"
+      },
+      {
+       "name": "release-year",
+       "value": "2026"
+      }
+     ],
+     "name": "GAME-2"
+    }
+   }
+  },
+  {
+   "planCode": "24hci-a1-v2-us",
+   "invoiceName": "HGR-HCI-a1",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-10000-hgr-gen2-us",
+      "bandwidth-15000-hgr-gen2-us",
+      "bandwidth-20000-hgr-gen2-us",
+      "bandwidth-25000-hgr-gen2-us"
+     ],
+     "default": "bandwidth-10000-hgr-gen2-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-256g-ecc-4800-24hci-a1-v2-us",
+      "ram-512g-ecc-4800-24hci-a1-v2-us",
+      "ram-1024g-ecc-4800-24hci-a1-v2-us",
+      "ram-1536g-ecc-4800-24hci-a1-v2-us",
+      "ram-2304g-ecc-4800-24hci-a1-v2-us"
+     ],
+     "default": "ram-256g-ecc-4800-24hci-a1-v2-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "softraid-6x3840nvme-24hci-a1-v2-us",
+      "softraid-12x3840nvme-24hci-a1-v2-us",
+      "softraid-18x3840nvme-24hci-a1-v2-us",
+      "softraid-24x3840nvme-24hci-a1-v2-us"
+     ],
+     "default": "softraid-6x3840nvme-24hci-a1-v2-us"
+    }
+   ],
+   "product": "24hci-a1",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 165500000000,
+     "formattedPrice": "$1655.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 165500000000,
+     "formattedPrice": "$1655.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "baremetal-server-usecases",
+       "value": "virtualisation-containerisation-orchestration,hyperconverged-infrastructure,confidential-computing,hpc"
+      },
+      {
+       "name": "alternative-cpu",
+       "value": "26hci-a1-v2"
+      },
+      {
+       "name": "last-generation",
+       "value": "false"
+      },
+      {
+       "name": "release-year",
+       "value": "2024"
+      }
+     ],
+     "name": "HGR-HCI-a1"
+    }
+   }
+  },
+  {
+   "planCode": "23scaleamd01-v3-us",
+   "invoiceName": "Scale-a1",
+   "addonFamilies": [
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-20000-scale-gen2-us",
+      "bandwidth-25000-scale-gen2-us",
+      "bandwidth-15000-scale-gen2-us",
+      "bandwidth-5000-scale-gen2-us",
+      "bandwidth-10000-scale-gen2-us"
+     ],
+     "default": "bandwidth-5000-scale-gen2-us"
+    },
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "noraid-0-23scaleamd01-v3-us",
+      "softraid-2x1920nvme-23scaleamd01-v3-us",
+      "softraid-2x3840nvme-23scaleamd01-v3-us",
+      "softraid-2x7680nvme-23scaleamd01-v3-us",
+      "softraid-4x1920nvme-23scaleamd01-v3-us",
+      "softraid-4x3840nvme-23scaleamd01-v3-us",
+      "softraid-4x7680nvme-23scaleamd01-v3-us",
+      "softraid-6x1920nvme-23scaleamd01-v3-us",
+      "softraid-6x3840nvme-23scaleamd01-v3-us",
+      "softraid-6x7680nvme-23scaleamd01-v3-us"
+     ],
+     "default": "noraid-0-23scaleamd01-v3-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-128g-ecc-4800-23scaleamd01-v3-us",
+      "ram-256g-ecc-4800-23scaleamd01-v3-us",
+      "ram-512g-ecc-4800-23scaleamd01-v3-us",
+      "ram-1024g-ecc-4800-23scaleamd01-v3-us"
+     ],
+     "default": "ram-128g-ecc-4800-23scaleamd01-v3-us"
+    }
+   ],
+   "product": "23scaleamd01",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 68900000000,
+     "formattedPrice": "$689.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [
+      {
+       "description": "Free setup fees for all customers",
+       "discount": {
+        "value": 68900000000,
+        "formattedValue": "$689.00 USD",
+        "tax": 0
+       },
+       "duration": null,
+       "context": "standard",
+       "customFieldValues": [],
+       "endDate": "2026-11-04T15:00:00-05:00",
+       "formattedValue": "",
+       "globalQuantity": null,
+       "isForTestingPurpose": false,
+       "isGlobalQuantityLimited": false,
+       "minimumDuration": 1,
+       "name": "2710_SpecialOffers_SetUpFee",
+       "quantity": null,
+       "startDate": "2026-10-21T14:30:50.51-04:00",
+       "tags": null,
+       "total": {
+        "value": 0,
+        "formattedValue": "$0.00 USD",
+        "tax": 0
+       },
+       "type": "percentage",
+       "value": 100
+      }
+     ],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 68900000000,
+     "formattedPrice": "$689.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "vin",
+      "hil"
+     ]
+    },
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "release-year",
+       "value": "2024"
+      },
+      {
+       "name": "alternative-cpu",
+       "value": "26scaleamd01-v4-us"
+      },
+      {
+       "name": "last-generation",
+       "value": "false"
+      },
+      {
+       "name": "baremetal-server-usecases",
+       "value": "confidential-computing,vdi,virtualisation-containerisation-orchestration,bdd"
+      }
+     ],
+     "name": "Scale-a1"
+    }
+   }
+  },
+  {
+   "planCode": "26adv01-v7-us",
+   "invoiceName": "ADVANCE-1 | AMD EPYC 4245P",
+   "addonFamilies": [
+    {
+     "name": "storage",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "hybridsoftraid-2x960nvme-pcie-gen5-2x1920nvme-pcie-gen5-26adv01-v7-us",
+      "hybridsoftraid-2x960nvme-pcie-gen5-2x3840nvme-pcie-gen5-26adv01-v7-us",
+      "hybridsoftraid-2x960nvme-pcie-gen5-2x7680nvme-pcie-gen5-26adv01-v7-us",
+      "hybridsoftraid-2x960nvme-pcie-gen5-2x15360nvme-pcie-gen5-26adv01-v7-us",
+      "softraid-2x960nvme-pcie-gen5-26adv01-v7-us",
+      "softraid-4x960nvme-pcie-gen5-26adv01-v7-us",
+      "softraid-4x1920nvme-pcie-gen5-26adv01-v7-us",
+      "softraid-4x3840nvme-pcie-gen5-26adv01-v7-us",
+      "softraid-4x7680nvme-pcie-gen5-26adv01-v7-us"
+     ],
+     "default": "softraid-2x960nvme-pcie-gen5-26adv01-v7-us"
+    },
+    {
+     "name": "memory",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "ram-32g-ddr5-on-die-ecc-5600-26adv01-v7-us",
+      "ram-64g-ddr5-on-die-ecc-3600-26adv01-v7-us",
+      "ram-128g-ddr5-on-die-ecc-3600-26adv01-v7-us",
+      "ram-192g-ddr5-on-die-ecc-3600-26adv01-v7-us",
+      "ram-256g-ddr5-on-die-ecc-3600-26adv01-v7-us"
+     ],
+     "default": "ram-32g-ddr5-on-die-ecc-5600-26adv01-v7-us"
+    },
+    {
+     "name": "bandwidth",
+     "exclusive": true,
+     "mandatory": true,
+     "addons": [
+      "bandwidth-4000-adv-gen4-us",
+      "bandwidth-5000-adv-gen4-us",
+      "bandwidth-3000-adv-gen4-us"
+     ],
+     "default": "bandwidth-3000-adv-gen4-us"
+    }
+   ],
+   "product": "26adv01",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 20400000000,
+     "formattedPrice": "$204.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": 10
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 20400000000,
+     "formattedPrice": "$204.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [
+    {
+     "name": "dedicated_os",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "none_64.en"
+     ]
+    },
+    {
+     "name": "region",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "united_states"
+     ]
+    },
+    {
+     "name": "dedicated_datacenter",
+     "isCustom": false,
+     "isMandatory": true,
+     "values": [
+      "hil",
+      "vin"
+     ]
+    },
+    {
+     "name": "enable-backup",
+     "isCustom": false,
+     "isMandatory": false,
+     "values": [
+      "true",
+      "false"
+     ]
+    }
+   ],
+   "family": null,
+   "blobs": {
+    "commercial": {
+     "features": [
+      {
+       "name": "release-year",
+       "value": "2026"
+      },
+      {
+       "name": "baremetal-server-usecases",
+       "value": "hosting,bdd"
+      },
+      {
+       "name": "alternative-cpu",
+       "value": "24adv01-v3-us"
+      },
+      {
+       "name": "last-generation",
+       "value": "true"
+      }
+     ],
+     "name": "ADVANCE-1"
+    }
+   }
+  }
+ ],
+ "products": [
+  {
+   "name": "bandwidth-500",
+   "description": "500 Mbps unmetered public bandwidth",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 0,
+      "level": 500,
+      "limit": 0,
+      "guaranteed": false
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-48g-ecc-2400",
+   "description": "48GB DDR4 ECC 2400MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": true,
+      "size": 48,
+      "ramType": "DDR4",
+      "frequency": 2400
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-12x4000sas",
+   "description": "12x HDD SAS 4TB Datacenter Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "3.5in",
+        "usage": "data",
+        "number": 12,
+        "capacity": 4000,
+        "interface": "SAS",
+        "technology": "HDD"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-256g-ecc-1600",
+   "description": "256GB DDR3 ECC 1600MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": true,
+      "size": 256,
+      "ramType": "DDR3",
+      "frequency": 1600
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-2x240ssd",
+   "description": "2x SSD SATA 240GB Datacenter Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "2.5in 7mm",
+        "usage": "data",
+        "number": 2,
+        "capacity": 240,
+        "interface": "SATA",
+        "technology": "SSD"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-2x960nvme",
+   "description": "2x SSD NVMe 960GB Datacenter Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "M.2 80",
+        "usage": "data",
+        "number": 2,
+        "capacity": 960,
+        "interface": "NVMe",
+        "technology": "SSD"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "bandwidth-1000-burst-3gbps",
+   "description": "1Gbps unmetered public bandwidth - 3Gbps burst",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 3000,
+      "level": 1000,
+      "limit": 0,
+      "guaranteed": false
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-2x6000sas",
+   "description": "2x HDD SAS 6TB Datacenter Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "3.5in",
+        "number": 2,
+        "capacity": 6000,
+        "interface": "SAS",
+        "technology": "HDD"
+       }
+      ]
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-192g-ecc-2666",
+   "description": "RAM 192GB DDR4 ECC 2666MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": true,
+      "size": 192,
+      "ramType": "DDR4",
+      "frequency": 2666
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-6x3840nvme",
+   "description": "6x SSD NVMe 3.84TB Enterprise Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "M.2 80",
+        "usage": "data",
+        "number": 6,
+        "capacity": 3840,
+        "interface": "NVMe",
+        "technology": "SSD"
+       }
+      ],
+      "hotSwap": true,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "20bv01",
+   "description": "2x Intel Xeon E5-2660",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 3,
+       "brand": "Intel",
+       "cores": 8,
+       "model": "Xeon E5-2660",
+       "score": 15000,
+       "number": 2,
+       "threads": 16,
+       "frequency": 2.2
+      },
+      "frame": {
+       "size": "1U",
+       "model": "OVH",
+       "dualPowerSupply": false
+      },
+      "range": "best-value",
+      "services": {
+       "sla": 99,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "20hg03-us",
+   "description": "2x Intel Xeon Gold 6132",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 3.7,
+       "brand": "Intel",
+       "cores": 28,
+       "model": "2x Xeon Gold 6132",
+       "score": 16000,
+       "threads": 56,
+       "frequency": 2.6
+      },
+      "frame": {
+       "size": "1U",
+       "model": "Intel"
+      },
+      "range": "hg"
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "22bf06",
+   "description": "Intel Xeon Silver 4110",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 3,
+       "brand": "Intel",
+       "cores": 8,
+       "model": "Xeon Silver 4110",
+       "score": 10232,
+       "number": 1,
+       "threads": 16,
+       "frequency": 2.1
+      },
+      "frame": {
+       "size": "1U",
+       "model": "OVH",
+       "dualPowerSupply": false
+      },
+      "range": "rise",
+      "services": {
+       "sla": 99,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "bandwidth-1000",
+   "description": "1Gbps unmetered and guaranteed public bandwidth",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 0,
+      "level": 1000,
+      "limit": 0,
+      "guaranteed": true
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "bandwidth-3000",
+   "description": "3Gbps unmetered public bandwidth",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 0,
+      "level": 3000,
+      "limit": 0,
+      "guaranteed": true
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "bandwidth-5000",
+   "description": "5Gbps unmetered and guaranteed public bandwidth",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 0,
+      "level": 5000,
+      "limit": 0,
+      "guaranteed": true
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-64g-on-die-ecc-5600",
+   "description": "64GB DDR5 On-Die ECC 5600MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": false,
+      "size": 64,
+      "ramType": "DDR5",
+      "frequency": 5600
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "bandwidth-10000",
+   "description": "10Gbps unmetered and guaranteed public bandwidth",
+   "blobs": {
+    "technical": {
+     "bandwidth": {
+      "burst": 0,
+      "level": 10000,
+      "limit": 0,
+      "guaranteed": true
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "noraid-0",
+   "description": "No storage drive",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "none",
+      "disks": [
+       {
+        "specs": "M.2 80",
+        "usage": "data",
+        "number": 0,
+        "capacity": 0,
+        "interface": "NVMe",
+        "technology": "SSD"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "none"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-128g-ecc-4800",
+   "description": "128GB DDR5 ECC 4800MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": true,
+      "size": 128,
+      "ramType": "DDR5",
+      "frequency": 4800
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-256g-ecc-4800",
+   "description": "256GB DDR5 ECC 4800MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": true,
+      "size": 256,
+      "ramType": "DDR5",
+      "frequency": 4800
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-32g-ddr5-on-die-ecc-5600",
+   "description": "32GB DDR5 On-Die ECC 5600MHz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": false,
+      "size": 32,
+      "ramType": "DDR5",
+      "frequency": 5600
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-2x960nvme-pcie-gen5",
+   "description": "2x SSD NVMe 960GB Datacenter Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "M.2 80",
+        "usage": "data",
+        "number": 2,
+        "capacity": 960,
+        "interface": "NVMe",
+        "technology": "SSD",
+        "physicalInterface": "pcie-gen5"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "ram-32g-on-die-ecc-5200",
+   "description": "32GB DDR5 On-Die ECC 5200Hz",
+   "blobs": {
+    "technical": {
+     "memory": {
+      "ecc": false,
+      "size": 32,
+      "ramType": "DDR5",
+      "frequency": 5200
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "softraid-2x960nvme-pcie-gen4",
+   "description": "2x SSD NVMe 960GB Enterprise Class Soft RAID",
+   "blobs": {
+    "technical": {
+     "storage": {
+      "raid": "Soft RAID",
+      "disks": [
+       {
+        "specs": "M.2 80",
+        "usage": "data",
+        "number": 2,
+        "capacity": 960,
+        "interface": "NVMe",
+        "technology": "SSD",
+        "physicalInterface": "pcie-gen4"
+       }
+      ],
+      "hotSwap": false,
+      "raidDetails": {
+       "type": "Soft RAID"
+      }
+     }
+    }
+   },
+   "configurations": []
+  },
+  {
+   "name": "24adv01",
+   "description": "AMD EPYC 4244P",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 5.1,
+       "brand": "AMD",
+       "cores": 6,
+       "model": "EPYC 4244P",
+       "score": 27900,
+       "number": 1,
+       "threads": 12,
+       "frequency": 3.8
+      },
+      "frame": {
+       "size": "0.5U",
+       "model": "OVH",
+       "dualPowerSupply": false
+      },
+      "range": "advance",
+      "services": {
+       "sla": 99.95,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "26game02",
+   "description": "AMD RYZEN 9 9950X3D",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 5.7,
+       "brand": "AMD",
+       "cores": 16,
+       "model": "RYZEN 9 9950X3D",
+       "score": 69700,
+       "number": 1,
+       "threads": 32,
+       "frequency": 4.3
+      },
+      "frame": {
+       "size": "0.5U",
+       "model": "OVH",
+       "dualPowerSupply": false
+      },
+      "range": "game",
+      "services": {
+       "sla": 99.95,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "24hci-a1",
+   "description": "2x AMD Epyc 9254",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 3.9,
+       "brand": "AMD",
+       "cores": 24,
+       "model": "Epyc 9254",
+       "score": 100000,
+       "number": 2,
+       "threads": 48,
+       "frequency": 2.9
+      },
+      "frame": {
+       "size": "1U",
+       "model": "OVH",
+       "dualPowerSupply": true
+      },
+      "range": "hgr",
+      "network": {
+       "capacity": 25,
+       "interfaces": 4
+      },
+      "services": {
+       "sla": 99.99,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "23scaleamd01",
+   "description": "AMD EPYC GENOA 9124",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 3.6,
+       "brand": "AMD",
+       "cores": 16,
+       "model": "EPYC GENOA 9124",
+       "score": 45900,
+       "number": 1,
+       "threads": 32,
+       "frequency": 3
+      },
+      "frame": {
+       "size": "1U",
+       "model": "OVH",
+       "dualPowerSupply": true
+      },
+      "range": "scale",
+      "services": {
+       "sla": 99.99,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  },
+  {
+   "name": "26adv01",
+   "description": "AMD EPYC 4245P",
+   "blobs": {
+    "technical": {
+     "server": {
+      "cpu": {
+       "boost": 5.4,
+       "brand": "AMD",
+       "cores": 6,
+       "model": "EPYC 4245P",
+       "score": 31075,
+       "number": 1,
+       "threads": 12,
+       "frequency": 3.9
+      },
+      "frame": {
+       "size": "0.5U",
+       "model": "OVH",
+       "dualPowerSupply": false
+      },
+      "range": "advance",
+      "services": {
+       "sla": 99.95,
+       "antiddos": "standard"
+      }
+     }
+    }
+   },
+   "configurations": [
+    {
+     "name": "extra_reservation",
+     "isCustom": true,
+     "isMandatory": false,
+     "values": null
+    }
+   ]
+  }
+ ],
+ "addons": [
+  {
+   "planCode": "bandwidth-500-included-bf-us",
+   "invoiceName": "Unlimited traffic - 500Mbps bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-500",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "ram-48g-bf6-us",
+   "invoiceName": "48GB DDR4 ECC 2400MHz",
+   "addonFamilies": [],
+   "product": "ram-48g-ecc-2400",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-12x4000sas-bf6-us",
+   "invoiceName": "12x HDD SAS 4TB Datacenter Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-12x4000sas",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-500-bv-us",
+   "invoiceName": "500Mbps unmetered public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-500",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "ram-256g-bv-us",
+   "invoiceName": "256GB DDR3 ECC 1600MHz",
+   "addonFamilies": [],
+   "product": "ram-256g-ecc-1600",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-2x240ssd-bv-us",
+   "invoiceName": "2x SSD SATA 240GB Datacenter Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-2x240ssd",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-1000-burst-3gbps-hg-us",
+   "invoiceName": "1Gbps unmetered public bandwidth - 3Gbps burst",
+   "addonFamilies": [],
+   "product": "bandwidth-1000-burst-3gbps",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-2x6000sas-hg-us",
+   "invoiceName": "2x HDD SAS 6TB Datacenter Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-2x6000sas",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "ram-192g-hg3-us",
+   "invoiceName": "192GB DDR4 ECC 2666MHz",
+   "addonFamilies": [],
+   "product": "ram-192g-ecc-2666",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "ram-64g-on-die-ecc-5600-26game02-v4-us",
+   "invoiceName": "64GB DDR5 On-Die ECC 5600MHz",
+   "addonFamilies": [],
+   "product": "ram-64g-on-die-ecc-5600",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-2x960nvme-26game02-v4-us",
+   "invoiceName": "2x SSD NVMe 960GB Enterprise Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-2x960nvme",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": null,
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-3000-adv-gen3-us",
+   "invoiceName": "3Gbps unmetered and guaranteed public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-3000",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-1000-game-gen4-us",
+   "invoiceName": "1Gbps unmetered public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-1000",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-10000-hgr-gen2-us",
+   "invoiceName": "10Gbps guaranteed unmetered public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-10000",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-5000-scale-gen2-us",
+   "invoiceName": "5Gbps guaranteed unmetered public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-5000",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  },
+  {
+   "planCode": "noraid-0-23scaleamd01-v3-us",
+   "invoiceName": "No storage drive",
+   "addonFamilies": [],
+   "product": "noraid-0",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "storage",
+   "blobs": null
+  },
+  {
+   "planCode": "ram-128g-ecc-4800-23scaleamd01-v3-us",
+   "invoiceName": "128GB DDR5 ECC 4800MHz",
+   "addonFamilies": [],
+   "product": "ram-128g-ecc-4800",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "memory",
+   "blobs": null
+  },
+  {
+   "planCode": "ram-256g-ecc-4800-24hci-a1-v2-us",
+   "invoiceName": "256GB DDR5 ECC 4800MHz",
+   "addonFamilies": [],
+   "product": "ram-256g-ecc-4800",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "memory",
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-6x3840nvme-24hci-a1-v2-us",
+   "invoiceName": "6x SSD NVMe 3.84TB Enterprise Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-6x3840nvme",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "storage",
+   "blobs": null
+  },
+  {
+   "planCode": "ram-32g-ddr5-on-die-ecc-5600-26adv01-v7-us",
+   "invoiceName": "32GB DDR5 On-Die ECC 5600MHz",
+   "addonFamilies": [],
+   "product": "ram-32g-ddr5-on-die-ecc-5600",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "memory",
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-2x960nvme-pcie-gen5-26adv01-v7-us",
+   "invoiceName": "2x SSD NVMe 960GB Datacenter Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-2x960nvme-pcie-gen5",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "storage",
+   "blobs": null
+  },
+  {
+   "planCode": "ram-32g-on-die-ecc-5200-24adv01-v3-us",
+   "invoiceName": "32GB DDR5 On-Die ECC 5200MHz",
+   "addonFamilies": [],
+   "product": "ram-32g-on-die-ecc-5200",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "memory",
+   "blobs": null
+  },
+  {
+   "planCode": "softraid-2x960nvme-pcie-gen4-24adv01-v3-us",
+   "invoiceName": "2x SSD NVMe 960GB Enterprise Class Soft RAID",
+   "addonFamilies": [],
+   "product": "softraid-2x960nvme-pcie-gen4",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "storage",
+   "blobs": null
+  },
+  {
+   "planCode": "bandwidth-3000-adv-gen4-us",
+   "invoiceName": "3Gbps unmetered and guaranteed public bandwidth",
+   "addonFamilies": [],
+   "product": "bandwidth-3000",
+   "pricingType": "rental",
+   "consumptionConfiguration": null,
+   "pricings": [
+    {
+     "phase": 0,
+     "capacities": [
+      "installation"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 0,
+     "capacities": [
+      "upgrade"
+     ],
+     "commitment": 0,
+     "description": "rental (only applicable for 1 time)",
+     "interval": 0,
+     "intervalUnit": "none",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": 1
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    },
+    {
+     "phase": 1,
+     "capacities": [
+      "renew"
+     ],
+     "commitment": 0,
+     "description": "rental for 1 month",
+     "interval": 1,
+     "intervalUnit": "month",
+     "quantity": {
+      "min": 1,
+      "max": null
+     },
+     "repeat": {
+      "min": 1,
+      "max": null
+     },
+     "price": 0,
+     "formattedPrice": "$0.00 USD",
+     "tax": 0,
+     "mode": "default",
+     "strategy": "tiered",
+     "mustBeCompleted": false,
+     "type": "rental",
+     "promotions": [],
+     "engagementConfiguration": null
+    }
+   ],
+   "configurations": [],
+   "family": "public-bandwidth",
+   "blobs": null
+  }
+ ]
+}

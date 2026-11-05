@@ -7,6 +7,7 @@
  *   node test/retention.test.js
  */
 const assert = require('assert');
+const { createDb } = require('openvibe-sdk/db');
 const { testDb } = require('./db');
 const { createRetention, RULES, DAY } = require('../server/retention');
 const { createJobs } = require('../server/jobs');
@@ -34,6 +35,9 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
 (async () => {
     const testdb = await testDb();
     db = testdb.db;
+    // With SOURCES_TEST_STORE=pg the handle is the DML-only runtime role; DDL (the keep-latest test
+    // drops a unique constraint) has to go through the owner connection, as migrations do.
+    const owner = testdb.directUrl ? createDb({ url: testdb.directUrl, service: 'retention-test-owner', max: 1, log: silent }) : null;
     try {
         // Every contract category has a rule, with a reason, in one of the two shapes.
         assert.deepStrictEqual([...CATEGORIES].sort(), Object.keys(RULES).sort(), 'one rule per source.v1 category');
@@ -104,7 +108,7 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
         const unique = await db.value(`SELECT conname FROM pg_constraint
             WHERE conrelid = 'items'::regclass AND contype = 'u' AND pg_get_constraintdef(oid) LIKE 'UNIQUE (source_key, identity)'`);
         assert.ok(unique, 'the items unique key is there');
-        await db.query(`ALTER TABLE items DROP CONSTRAINT "${unique}"`);
+        await (owner || db).query(`ALTER TABLE items DROP CONSTRAINT "${unique}"`);
         await item({ id: 'rent-old', category: 'housing', source: 'hud-fair-market-rents', identity: 'METRO1', retrieved: NOW - 2 * DAY, title: 'old value' });
         await item({ id: 'rent-new', category: 'housing', source: 'hud-fair-market-rents', identity: 'METRO1', retrieved: NOW - 1 * DAY, title: 'new value' });
         await item({ id: 'rent-other', category: 'housing', source: 'hud-fair-market-rents', identity: 'METRO2', retrieved: NOW - 400 * DAY, title: 'other area' });
@@ -126,6 +130,7 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
 
         console.log('retention: all checks passed');
     } finally {
+        if (owner) await owner.close().catch(() => {});
         await testdb.close();
     }
 })().catch((err) => { console.error(err); process.exit(1); });

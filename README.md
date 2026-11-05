@@ -247,6 +247,18 @@ consumer following `GET /api/v1/items?include_removed=1` learns that the job is 
 the endpoint's last good parse saw. At most 500 items are retired a run; the rest go on the next. Contract (released in openvibe-contracts v0.12.0):
 [`sources.item@1`](docs/contracts-proposal/).
 
+**Retention.** Items do not grow forever: `server/retention.js` declares, in one place, a window per category (news 30
+days, blog 90, reviews 180, deals 14, coupons 90, trade 365, hosting 30, crowdfunding 90, games 14, food 365, jobs 14)
+and one `keepLatest` rule for housing, where HUD's yearly Fair Market Rents must keep the latest value per source key.
+An item's age is `retrieved_at` while it is live and `removed_at` once removed, so a consumer following the change feed
+still sees a removal for the full window; `first_seen_at` is never the age, since a source that keeps listing a job or
+a price keeps it current. The daily job (`server/jobs/retention.js`, started with the worker) deletes at most 2,000 rows
+a statement, 50 batches a category a run, and its log line carries counts only. The rules are in code because Sources
+has no `openvibe-shared/config` namespace. At runtime a category the contract has but the rules do not is kept (never
+pruned) and warned about once a run, and a rule for a category the contract lacks is ignored with a warning, so a
+Contracts pin bump cannot stop Sources at boot; `test/retention.test.js` keeps the strict one-to-one check so the bump
+PR fails CI and names the missing rule.
+
 ## API (service tokens, one capability per route)
 
 Callers use an OpenVibe.Network client-credentials token for audience `openvibe.sources`. The merchant routes also

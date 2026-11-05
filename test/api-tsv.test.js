@@ -74,7 +74,7 @@ t('filter: the BLS CPI rent seed keeps one series\' rows, one item per month, by
 });
 
 t('mapping and body errors', () => {
-    assert.match(api.checkMapping({ ...blsEndpoint, format: 'csv' }), /format must be json, xml or tsv/);
+    assert.match(api.checkMapping({ ...blsEndpoint, format: 'yaml' }), /format must be json, xml, tsv or csv/);
     assert.match(api.checkMapping({ ...blsEndpoint, items_path: 'rows' }), /items_path is ""/);
     assert.match(api.checkMapping({ ...blsEndpoint, duplicates: 'newest' }), /duplicates must be first or last/);
     assert.throws(() => api.parse('', { url: 'https://x.example/', endpoint: blsEndpoint }), /no header line/);

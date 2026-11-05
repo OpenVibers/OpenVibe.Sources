@@ -1877,6 +1877,53 @@
       "sensitivity": "none",
       "default_indexability": "noindex"
     },
+    {
+      "key": "usda-ers-fruit-vegetable-prices",
+      "name": "USDA ERS average retail prices for fruits and vegetables",
+      "type": "api",
+      "category": "food",
+      "homepage_url": "https://www.ers.usda.gov/data-products/fruit-and-vegetable-prices/",
+      "endpoints": [
+        {
+          "url": "https://www.ers.usda.gov/media/6210/all-fruits-average-prices-csv-format.csv",
+          "format": "csv",
+          "items_path": "",
+          "item_kind": "price",
+          "identity_fields": ["Fruit", "Form"],
+          "fields": { "title": "Fruit" },
+          "extra": {
+            "name": "Fruit",
+            "form": "Form",
+            "price": "AverageRetailPrice",
+            "unit": "AverageRetailPriceUnitOfMeasure"
+          }
+        },
+        {
+          "url": "https://www.ers.usda.gov/media/6240/all-vegetables-average-prices-csv-format.csv",
+          "format": "csv",
+          "items_path": "",
+          "item_kind": "price",
+          "identity_fields": ["Vegetable", "Form"],
+          "fields": { "title": "Vegetable" },
+          "extra": {
+            "name": "Vegetable",
+            "form": "Form",
+            "price": "AverageRetailPrice",
+            "unit": "AverageRetailPriceUnitOfMeasure"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-05 from the production host: User-agent * Allow /, with only /core/, /profiles/, /README.md and /web.config disallowed; the two /media/ CSV paths are allowed. The fetcher re-checks it on every run. Two CSV files, about 5 KB and 7 KB, one request each a run.",
+      "terms_note": "Verified 2026-11-05 from the production host: USDA's Economic Research Service is a US federal agency, and the page says its fruit and vegetable prices are ERS's own estimates from Circana scanner data ('ERS calculated average prices at retail stores using 2013, 2016, 2020, 2022, and 2023 retail scanner data from Circana'). The documentation asks for the citation 'U.S. Department of Agriculture, Economic Research Service. (2025). Fruit and Vegetable Prices.' and the page says 'The findings in this data product or stated on this page should not be attributed to Circana.' The prices are annual national averages, updated 'each year, subject to data availability' (files last updated 2025-12-09), and the page says twice that the data 'should not be used for making inferences about price changes over time'. Kept: every row of the two published all-fruits and all-vegetables tables (product, form, average retail price per pound or pint, unit), one item per product and form. Food shows it as an annual national average with its 2023 data year, cites ERS and repeats the no-trend rule; nothing is compared over time. Re-verify before enabling.",
+      "license_note": "US federal government work (Economic Research Service, U.S. Department of Agriculture), public domain in the US; ERS is cited as its documentation asks, and no finding is attributed to Circana.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 604800,
+      "max_items": 250,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
 {
       "key": "sec-press",
       "name": "US Securities and Exchange Commission",

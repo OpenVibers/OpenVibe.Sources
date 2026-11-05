@@ -75,6 +75,15 @@
  * value). A line with a different number of values than the header is skipped; a file without a header is a parse
  * error.
  *
+ * `"format": "csv"` reads a comma-separated file the same way, with RFC 4180 quoting (a quoted field may hold
+ * commas, doubled quotes and line breaks); the header line names the columns. The USDA Economic Research Service
+ * publishes its fruit and vegetable prices this way (ers.usda.gov). A row with a different number of values than the
+ * header, or a body that ends inside a quoted field, is a parse error or a skipped row, never invented text.
+ *
+ * An endpoint may name its identity as several columns instead of one: `"identity_fields": ["Fruit", "Form"]`
+ * joins their values in order with " | " (a row missing any of them is skipped). This is what a table needs when
+ * no single column is unique — the USDA table has Apples in four forms. `fields.identity` cannot be given with it.
+ *
  * Two records with the same identity keep the first (`"duplicates": "first"`, the default). `"duplicates": "last"`
  * keeps the last instead, in the first one's place: a file that lists each series oldest to newest then yields its
  * newest value.
@@ -248,15 +257,26 @@ function checkConditions(where, label, shape) {
 
 /** Validate an endpoint mapping (registry side). `bulk` is the streaming dataset download's own schema. */
 function checkMapping(ep, { bulk = false } = {}) {
-    const formats = bulk ? ['csv', 'jsonl', 'tsv'] : ['json', 'xml', 'tsv'];
-    if (!formats.includes(ep.format || (bulk ? 'csv' : 'json'))) return bulk ? 'format must be csv, jsonl or tsv' : 'format must be json, xml or tsv';
+    const formats = bulk ? ['csv', 'jsonl', 'tsv'] : ['json', 'xml', 'tsv', 'csv'];
+    if (!formats.includes(ep.format || (bulk ? 'csv' : 'json'))) return bulk ? 'format must be csv, jsonl or tsv' : 'format must be json, xml, tsv or csv';
     if (['tsv', 'csv', 'jsonl'].includes(ep.format) && ep.items_path) return `a ${ep.format} body is the array itself: items_path is ""`;
     if (!bulk && ep.duplicates !== undefined && !['first', 'last'].includes(ep.duplicates)) return 'duplicates must be first or last';
     const shape = ep.items_shape || 'array';
     if (!bulk && !['array', 'map'].includes(shape)) return 'items_shape must be array or map';
     if (!bulk && ep.items_path !== undefined && ep.items_path !== '' && !PATH_RE.test(ep.items_path)) return 'items_path is malformed';
     const fields = ep.fields || {};
-    if (!fields.identity && !fields.url) return 'fields.identity or fields.url is required';
+    const identityFields = ep.identity_fields;
+    if (identityFields !== undefined) {
+        if (!Array.isArray(identityFields) || identityFields.length < 2 || identityFields.length > 8) return 'identity_fields must be an array of 2 to 8 paths';
+        if (shape !== 'array') return 'identity_fields requires items_shape "array"';
+        if (fields.identity) return 'identity_fields and fields.identity cannot both be given';
+        for (const p of identityFields) {
+            if (typeof p !== 'string' || !PATH_RE.test(p)) return 'identity_fields paths must be paths';
+            const kerr = keyPathViolation(p, shape);
+            if (kerr) return `identity_fields: ${kerr}`;
+        }
+    }
+    if (!fields.identity && !fields.url && !identityFields) return 'fields.identity, fields.url or identity_fields is required';
     for (const [k, p] of Object.entries(fields)) {
         if (!['identity', 'url', 'title', 'summary', 'author', 'published_at', 'published_at_epoch', 'updated_at', 'updated_at_epoch'].includes(k)) return `unknown field ${k}`;
         if (typeof p !== 'string' || !PATH_RE.test(p)) return `fields.${k} path is malformed`;
@@ -313,12 +333,56 @@ function parseTsv(text) {
     return { records, bad };
 }
 
+/** A comma-separated body as records keyed by its header line's names (RFC 4180 quoting); malformed rows are counted. */
+function parseCsv(text) {
+    const src = String(text).replace(/^\uFEFF/, '');
+    const rows = [];
+    let row = [];
+    let field = '';
+    let quoted = false;
+    for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (quoted) {
+            if (ch === '"') {
+                if (src[i + 1] === '"') { field += '"'; i++; }
+                else quoted = false;
+            } else field += ch;
+            continue;
+        }
+        if (ch === '"' && field === '') { quoted = true; continue; }
+        if (ch === ',') { row.push(field); field = ''; continue; }
+        if (ch === '\r') continue;
+        if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; continue; }
+        field += ch;
+    }
+    if (quoted) throw new ParseError('csv body ends inside a quoted field');
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    const lines = rows.filter((r) => !(r.length === 1 && String(r[0]).trim() === ''));
+    if (!lines.length) throw new ParseError('csv body has no header line');
+    const names = lines[0].map((s) => String(s).trim());
+    if (names.some((n) => !n) || new Set(names).size !== names.length) throw new ParseError('csv header names must be present and distinct');
+    const records = [];
+    let bad = 0;
+    for (const values of lines.slice(1)) {
+        if (values.length !== names.length) { bad++; continue; }
+        const rec = {};
+        names.forEach((n, i) => { rec[n] = String(values[i]).trim(); });
+        records.push(rec);
+    }
+    return { records, bad };
+}
+
 /** One record → the item every api-shaped adapter stores, or null when it states no identity. */
 function mapRecord(body, rec, key, index, endpoint, url, summaryMax = 1000) {
     const f = endpoint.fields || {};
     const get = (p) => (p === '$index' ? index : getField(body, rec, key, p));
     const link = f.url ? canonicalUrl(scalar(get(f.url)), url) : null;
-    const identity = (f.identity ? toId(scalar(get(f.identity))) : null) || link;
+    let identity = null;
+    if (Array.isArray(endpoint.identity_fields)) {
+        const parts = endpoint.identity_fields.map((p) => scalar(get(p)));
+        if (parts.every((v) => v != null && v !== '')) identity = toId(parts.join(' | '));
+    } else if (f.identity) identity = toId(scalar(get(f.identity)));
+    identity = identity || link;
     if (!identity) return null;
     const extra = {};
     for (const [k, p] of Object.entries(endpoint.extra || {})) extra[k] = scalar(get(p));
@@ -342,6 +406,7 @@ function parse(text, { url, endpoint = {}, summaryMax = 1000, maxItems = 500 } =
     let malformed = 0;
     if (format === 'xml') body = parseXml(text);
     else if (format === 'tsv') ({ records: body, bad: malformed } = parseTsv(text));
+    else if (format === 'csv') ({ records: body, bad: malformed } = parseCsv(text));
     else {
         try { body = JSON.parse(text); } catch { throw new ParseError('body is not valid JSON'); }
     }

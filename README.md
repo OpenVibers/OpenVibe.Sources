@@ -105,7 +105,7 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 | `rss`, `atom` (`feed@3`) | RSS 2.0, RSS 1.0/RDF, Atom 1.0 | guid/id identity, else link; text-only summary capped at 1000 chars; a deal feed's own offer elements (DealNews' `dealnews:price` with its currency, `dealnews:retailer`, `dealnews:expires`) become `fields.price`, `currency`, `seller` and `valid_until` exactly as stated (the item stays an article; nothing is read out of the headline); its `dealnews:category` fills `fields.categories` when the item has no `<category>`, and `dealnews:staffPick` is `fields.staff_pick` (true/false, absent when not stated) |
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
 | `jsonld` (`jsonld@2`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error`; `list_price` from a ListPrice/StrikethroughPrice/MSRP/SRP `priceSpecification`, as stated |
-| `api` (`api@1`) | JSON or XML official APIs via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`, `where`/`filter`; epoch fields only where mapped as such; `resolver: "hn-whoishiring"` walks the Hacker News thread's JSON documents instead |
+| `api` (`api@1`) | JSON, XML, TSV or CSV official files via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`, `where`/`filter`; epoch fields only where mapped as such; `resolver: "hn-whoishiring"` walks the Hacker News thread's JSON documents instead |
 | `bulk` (`bulk@1`) | one dataset file, streamed (CSV, JSONL or TSV) | `max_bytes` is the size cap, `max_rows` the per-run row limit; the stream stops at the limit, so a multi-GB file is never held in memory. `resolver: "off-delta"` reads a text index and only the gzipped JSONL delta parts it lists, keeping the last finished part and the current part's row offset in `source_state` (Open Food Facts) |
 | `crawl` (`jsonld@2`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
@@ -121,6 +121,13 @@ value is not an object is skipped, and an `items_path` of the wrong shape is a p
 an empty success. With the default `items_shape: "array"`, `$index` is a record's 0-based position in
 the array (as a whole path, e.g. `"extra": { "position": "$index" }`), so a ranked list keeps its
 order (Steam's top sellers).
+
+A CSV or TSV body likewise names its columns on the first line: each further line is a record of
+trimmed text, and `items_path` must be "". CSV follows RFC 4180 quoting (a quoted field may
+hold commas, doubled quotes and line breaks); a row whose value count differs from the header is
+skipped, and a body that ends inside a quoted field is a parse error. When no single column is unique,
+`identity_fields` names two to eight paths whose values, joined with " | ", are the record's identity
+(the USDA ERS table prices Apples in four forms); `fields.identity` cannot be given with it.
 
 ```json
 { "url": "https://api.porkbun.com/api/json/v3/pricing/get", "format": "json",

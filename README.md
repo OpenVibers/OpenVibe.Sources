@@ -25,7 +25,7 @@ decide — under their own review and indexability rules — what, if anything, 
 ```bash
 npm install
 cp .env.example .env
-npm run seed           # the 65 sources in seeds/sources.json, created disabled
+npm run seed           # the 67 sources in seeds/sources.json, created disabled
 npm run dev            # http://127.0.0.1:4720
 npm test               # every test/*.test.js against local stub sites; no internet
 ```
@@ -362,10 +362,10 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 66 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
+[seeds/sources.json](seeds/sources.json) holds the 67 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
-robots.txt on every run. Production on 2026-10-22:
+robots.txt on every run. Production on 2026-10-22 (the food row checked 2026-11-06):
 
 | Category | Sources (type) | Enabled in production |
 |---|---|---|
@@ -378,6 +378,7 @@ robots.txt on every run. Production on 2026-10-22:
 | hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `ovhcloud-baremetal`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 9: `vultr-plans` is off (its API host's robots.txt disallows every path), LowEndTalk's and LowEndBox's feeds answer 403 to the production host, and `ovhcloud-baremetal` is seeded disabled for review |
 | crowdfunding | `opencollective-accounts` (api) | 1 of 1 |
 | games | `steam-top-sellers`, `steam-new-releases`, `steam-specials` (api: the store's featured lists, in their order) | 3 of 3 |
+| food | `open-food-facts`, `openfda-food-enforcement`, `bls-average-prices`, `usda-ers-fruit-vegetable-prices` (api); `themealdb` | 4 of 5: `themealdb` is off (it needs a key, which is the owner's call); `usda-ers-fruit-vegetable-prices` was enabled on 2026-11-06 after its terms review, and its 155 prices are recorded in `test/fixtures/` |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its
 robots.txt) and EDGAR's `getcurrent` Atom feed (`/cgi-bin` disallowed). The seeded feeds were
@@ -492,7 +493,7 @@ through Events.
 - conditional GET with ETag and Last-Modified (`test/ingest.test.js`)
 - loopback/private/metadata addresses, DNS answers and redirects into them refused (`test/robots-ssrf.test.js`)
 - credentials by variable name, never stored, not forwarded cross-origin (`test/ingest.test.js`)
-- parsers against fixtures (`test/adapters.test.js`); API, registry rules, paging, manual items,
+- parsers against fixtures (`test/adapters.test.js`, and ERS's two published CSVs in `test/usda-ers.test.js`); API, registry rules, paging, manual items,
   removal (`test/api.test.js`); scheduler, backoff, relay to Events (`test/scheduler-events.test.js`);
   proposals and seeds (`test/proposals.test.js`)
 - the public host shows only an honest "internal service" page and the merchant opt-in pages, and the vhost keeps the

@@ -1,0 +1,2 @@
+# Recorded HTTP bodies: committed byte-for-byte, BOM, CRLF and all (git would otherwise normalize the line endings).
+test/fixtures/usda-ers-*.csv -text

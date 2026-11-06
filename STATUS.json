@@ -8,8 +8,8 @@
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, the merchant opt-in pages, health and JSON 404s; the JSON API is loopback-only; README \"Public host\")",
   "contracts": "openvibe-contracts v0.295.0",
-  "sdk": "openvibe-sdk v0.82.0",
-  "shared": "openvibe-shared v4.114.0",
+  "sdk": "openvibe-sdk v0.91.0",
+  "shared": "openvibe-shared v4.115.1",
   "capabilities": [
     "sources.source.read",
     "sources.item.read",

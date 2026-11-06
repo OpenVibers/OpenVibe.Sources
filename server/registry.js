@@ -135,6 +135,7 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
             if (e.filter) out.filter = e.filter;
             // and `extra_lists` (tags, job types) the same way.
             if (e.extra_lists) out.extra_lists = e.extra_lists;
+            if (e.identity_fields !== undefined) out.identity_fields = e.identity_fields;
             if (e.duplicates !== undefined) out.duplicates = e.duplicates;
             if (e.max_bytes !== undefined) out.max_bytes = e.max_bytes;
             if (e.timeout_ms !== undefined) out.timeout_ms = e.timeout_ms;

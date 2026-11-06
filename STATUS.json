@@ -7,7 +7,7 @@
   "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, the merchant opt-in pages, health and JSON 404s; the JSON API is loopback-only; README \"Public host\")",
-  "contracts": "openvibe-contracts v0.289.1",
+  "contracts": "openvibe-contracts v0.290.0",
   "sdk": "openvibe-sdk v0.82.0",
   "shared": "openvibe-shared v4.109.2",
   "capabilities": [
@@ -51,5 +51,5 @@
     "staff-only index documents for Search",
     "per-actor limits (openvibe-sdk/limits)"
   ],
-  "updated": "2026-11-05"
+  "updated": "2026-11-06"
 }

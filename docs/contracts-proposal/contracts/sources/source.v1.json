@@ -89,7 +89,16 @@
               "csv",
               "jsonl"
             ],
-            "description": "json (default), xml, tsv (a tab-separated file whose first line names the columns; BLS series files, Sources 2026-10-24), or, for a bulk source, csv, jsonl or tsv: one dataset file read as a stream, row by row (Sources, 2026-10-31)."
+            "description": "json (default), xml, tsv (a tab-separated file whose first line names the columns; BLS series files, Sources 2026-10-24), csv (a comma-separated file with RFC 4180 quoting; USDA ERS fruit and vegetable prices, Sources 2026-11-05), or, for a bulk source, csv, jsonl or tsv: one dataset file read as a stream, row by row (Sources, 2026-10-31)."
+          },
+          "identity_fields": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 8,
+            "items": {
+              "type": "string"
+            },
+            "description": "A record's identity from several columns, joined in order with \" | \", for a table where no single column is unique (USDA ERS prices a product in several forms; Sources 2026-11-05). Requires items_shape array and cannot be given with fields.identity."
           },
           "duplicates": {
             "enum": [

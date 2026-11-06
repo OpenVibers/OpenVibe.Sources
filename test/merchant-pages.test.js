@@ -132,7 +132,25 @@ t('sign-in redirects to the Network OAuth client with the merchant callback', as
     assert.strictEqual(location.searchParams.get('client_id'), 'sources');
     assert.strictEqual(location.searchParams.get('redirect_uri'), 'https://sources.test/merchant/callback');
     assert.ok(location.searchParams.get('state'));
+    assert.strictEqual(location.searchParams.get('code_challenge_method'), 'S256', 'PKCE from openvibe-sdk/sso');
+    assert.match(location.searchParams.get('code_challenge'), /^[0-9A-Za-z_-]{43}$/);
     assert.match(r.headers.get('set-cookie') || '', /ov_merchant_state=/);
+    assert.match(r.headers.get('set-cookie') || '', /ov_merchant_verifier=/);
+});
+
+t('GET /auth/health answers whether the Network accepts the sources client', async () => {
+    const { createMerchantAuth } = require('../server/merchant-auth');
+    const config = {
+        baseUrl: 'https://sources.test', networkUrl: 'https://network.test', networkInternalUrl: 'https://network.test',
+        issuer: 'https://network.test', cookies: { secure: true }, merchant: { sessionSecret: 's' },
+        oauth: { clientId: 'sources', clientSecret: '', redirectUri: 'https://sources.test/merchant/callback', scope: 'profile' },
+    };
+    const answer = (status, body) => createMerchantAuth({
+        config, auth: { verifyUser: async () => null },
+        fetchImpl: async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }),
+    });
+    assert.strictEqual(await answer(400, { error: 'invalid_grant' }).checkClient(), 'ok', 'a code that never existed: the client is fine');
+    assert.strictEqual(await answer(401, { error: 'invalid_client' }).checkClient(), 'invalid', 'the Network refuses the client');
 });
 
 t('done', async () => { await svc.stop(); });

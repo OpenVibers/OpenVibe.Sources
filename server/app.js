@@ -93,6 +93,16 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     app.use(sourcesRouter({ db, registry, ingest, auth, limits }));
     app.use(itemsRouter({ db, registry, items, auth, outbox, now, limits }));
 
+    // GET /auth/health: does the Network accept this site's OAuth client? 503 only when it refuses it. Sources has
+    // no site-wide sign-in; the merchant flow is the one OAuth client, so it is the one this checks.
+    if (merchantAuth) {
+        app.get('/auth/health', async (_req, res) => {
+            const client = await merchantAuth.checkClient();
+            res.setHeader('Cache-Control', 'no-store');
+            return res.status(client === 'invalid' ? 503 : 200).json({ ok: client !== 'invalid', client });
+        });
+    }
+
     // Merchant opt-in (plan §4.4 channel 1): the JSON read/write API, and the signed-in pages that are its front door.
     // /shared carries this release's own kit.css/kit-web.js/theme-loader.js, so the pages do not depend on another host.
     app.use('/shared', require('openvibe-shared/serve').handler());

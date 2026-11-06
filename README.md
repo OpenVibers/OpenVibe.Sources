@@ -600,5 +600,5 @@ Part of the [OpenVibe network](https://openvibe.network). Built in the open by [
 <!-- versions:start -->
 - openvibe-contracts: v0.290.0
 - openvibe-sdk: v0.82.0
-- openvibe-shared: v4.112.1
+- openvibe-shared: v4.113.0
 <!-- versions:end -->

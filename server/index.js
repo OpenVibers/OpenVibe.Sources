@@ -17,6 +17,7 @@ const { createSpacer } = require('./spacer');
 const { createRobots } = require('./robots');
 const { createIngest } = require('./ingest');
 const { createScheduler } = require('./scheduler');
+const { createJobs } = require('./jobs');
 const { createServiceOutbox } = require('openvibe-sdk/events');
 const { validate } = require('openvibe-contracts');
 const { createEnvelope } = require('./events/envelope');
@@ -56,6 +57,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     });
     const ingest = createIngest({ db, config, registry, items, robots, fetcher, spacer, emitEvent, now, log, outbox });
     const scheduler = createScheduler({ db, ingest, config, now, log });
+    const jobs = createJobs({ db, now, log });
     const keys = jwksClient(config.jwksUrl, { fetch: fetchImpl, log });
     const auth = createAuth({ config, log, jwks: keys });
     const merchant = createMerchant({ db, config, registry, fetcher, resolver: merchantResolver, now, log });
@@ -68,7 +70,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     keys.start();
     const keyLoaded = keys.keys().catch(() => null);
     outbox.start();
-    if (config.worker.enabled) scheduler.start();
+    if (config.worker.enabled) { scheduler.start(); jobs.start(); }
     // Pending merchant proofs are checked again on a slow cadence (the merchant can always press "Check now"). A claim
     // that never verifies fails after merchant.pendingDays. 0 turns the worker pass off (tests).
     let merchantTimer = null;
@@ -107,6 +109,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         if (merchantKick) clearTimeout(merchantKick);
         keys.stop();
         if (accountSubscription) accountSubscription.stop();
+        await jobs.stop();
         await scheduler.stop();
         await outbox.stop();
         if (server) {
@@ -116,7 +119,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         if (!givenDb) await db.close();
     }
 
-    return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, outbox, keys, keyLoaded, auth, merchant, merchantAuth, app, server, close };
+    return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, jobs, outbox, keys, keyLoaded, auth, merchant, merchantAuth, app, server, close };
 }
 
 if (require.main === module) {

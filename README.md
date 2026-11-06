@@ -151,16 +151,19 @@ match as text.
 **Catalogs that keep plans, hardware and prices apart** (OVHcloud's public order catalog, `ovhcloud-vps`). A key may
 carry a selector, `key[field=value,…]` (one to four conditions): `key` must be an array, and the path steps into its
 first element whose fields equal every value, compared as text after `scalar()` (so `interval=1` matches the number 1).
-A value is literal text or `$rec.<path>`, read from the record itself. No match is null.
+A value is literal text, `$rec.<path>` (read from the record) or `$root.<path>` (read from the response), and either
+path may carry its own selectors. That reaches a plan's default addon and then that addon's own product without code
+per provider; no match is null.
 
 ```json
 "where": { "planCode": { "pattern": "^vps-[0-9]{4}-model[0-9]+$" } },
 "extra": { "vcpu": "$root.products[name=$rec.product].blobs.technical.cpu.cores",
+           "memory_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size",
            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price" }
 ```
 
 `max_bytes` (an integer from 1 KiB to 64 MiB) sets one endpoint's body cap instead of `SOURCES_MAX_BYTES`. OVHcloud's
-catalog is about 12 MB.
+VPS catalog is about 12 MB, its bare-metal catalog about 32 MB and its Eco catalog about 10 MB.
 
 `timeout_ms` (an integer from 1 s to 120 s) sets one endpoint's deadline instead of `SOURCES_FETCH_TIMEOUT_MS`. NYC Open
 Data computes the HPD per-building violation tally (`nyc-hpd-open-violations`) in 12 to 60 seconds.
@@ -253,6 +256,18 @@ the feed has not shown for that long is removed with reason `gone_from_source`. 
 consumer following `GET /api/v1/items?include_removed=1` learns that the job is gone. A 304 counts as seeing again what
 the endpoint's last good parse saw. At most 500 items are retired a run; the rest go on the next. Contract (released in openvibe-contracts v0.12.0):
 [`sources.item@1`](docs/contracts-proposal/).
+
+**Retention.** Items do not grow forever: `server/retention.js` declares, in one place, a window per category (news 30
+days, blog 90, reviews 180, deals 14, coupons 90, trade 365, hosting 30, crowdfunding 90, games 14, food 365, jobs 14)
+and one `keepLatest` rule for housing, where HUD's yearly Fair Market Rents must keep the latest value per source key.
+An item's age is `retrieved_at` while it is live and `removed_at` once removed, so a consumer following the change feed
+still sees a removal for the full window; `first_seen_at` is never the age, since a source that keeps listing a job or
+a price keeps it current. The daily job (`server/jobs/retention.js`, started with the worker) deletes at most 2,000 rows
+a statement, 50 batches a category a run, and its log line carries counts only. The rules are in code because Sources
+has no `openvibe-shared/config` namespace. At runtime a category the contract has but the rules do not is kept (never
+pruned) and warned about once a run, and a rule for a category the contract lacks is ignored with a warning, so a
+Contracts pin bump cannot stop Sources at boot; `test/retention.test.js` keeps the strict one-to-one check so the bump
+PR fails CI and names the missing rule.
 
 ## API (service tokens, one capability per route)
 
@@ -347,7 +362,7 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 65 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
+[seeds/sources.json](seeds/sources.json) holds the 66 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
 robots.txt on every run. Production on 2026-10-22:
@@ -360,7 +375,7 @@ robots.txt on every run. Production on 2026-10-22:
 | deals | `dealnews-daily` (rss, `feed@3`: the offer's price, retailer, end date, category and editors' pick) | 1 of 1 |
 | coupons | `dealnews-coupon-codes` (rss with `extract`: only items that state a code and the shop, as kind `coupon`); `staff-coupon-codes` (manual, with the evidence URL) | 2 of 2 |
 | trade | `sec-xbrl-filings`, `ecb-euro-reference-rates` (rss); `sec-company-tickers`, `frankfurter-eur-rates` (api) | 4 of 4 |
-| hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 8: `vultr-plans` is off (its API host's robots.txt disallows every path), and LowEndTalk's and LowEndBox's feeds answer 403 to the production host |
+| hosting | `porkbun-tld-pricing`, `ovhcloud-vps`, `ovhcloud-baremetal`, `linode-types`, `aws-lightsail-bundles`, `vultr-plans` (api); `lowendspirit-offers`, `lowendtalk-offers`, `lowendbox-posts` (rss) | 5 of 9: `vultr-plans` is off (its API host's robots.txt disallows every path), LowEndTalk's and LowEndBox's feeds answer 403 to the production host, and `ovhcloud-baremetal` is seeded disabled for review |
 | crowdfunding | `opencollective-accounts` (api) | 1 of 1 |
 | games | `steam-top-sellers`, `steam-new-releases`, `steam-specials` (api: the store's featured lists, in their order) | 3 of 3 |
 

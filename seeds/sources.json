@@ -1181,6 +1181,101 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "ovhcloud-baremetal",
+      "name": "OVHcloud dedicated servers (US bare-metal and Eco catalogs)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://us.ovhcloud.com/bare-metal/",
+      "endpoints": [
+        {
+          "url": "https://api.us.ovhcloud.com/1.0/order/catalog/public/baremetalServers?ovhSubsidiary=US",
+          "format": "json",
+          "items_path": "plans",
+          "item_kind": "plan",
+          "max_bytes": 41943040,
+          "timeout_ms": 120000,
+          "where": {
+            "planCode": {
+              "pattern": "-us$"
+            }
+          },
+          "fields": {
+            "identity": "planCode",
+            "title": "invoiceName"
+          },
+          "extra_lists": {
+            "locations": "configurations[name=dedicated_datacenter].values"
+          },
+          "extra": {
+            "product": "product",
+            "currency": "$root.locale.currencyCode",
+            "range": "$root.products[name=$rec.product].blobs.technical.server.range",
+            "cpu_cores": "$root.products[name=$rec.product].blobs.technical.server.cpu.cores",
+            "cpu_sockets": "$root.products[name=$rec.product].blobs.technical.server.cpu.number",
+            "cpu_model": "$root.products[name=$rec.product].blobs.technical.server.cpu.model",
+            "cpu_brand": "$root.products[name=$rec.product].blobs.technical.server.cpu.brand",
+            "memory_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size",
+            "disk_capacity_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.capacity",
+            "disk_count": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.number",
+            "disk_interface": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.interface",
+            "disk_technology": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.technology",
+            "bandwidth_mbps": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=bandwidth].default].product].blobs.technical.bandwidth.level",
+            "bandwidth_limit": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=bandwidth].default].product].blobs.technical.bandwidth.limit",
+            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price",
+            "setup_fee": "pricings[mode=default,commitment=0,intervalUnit=none,interval=0].price"
+          }
+        },
+        {
+          "url": "https://api.us.ovhcloud.com/1.0/order/catalog/public/eco?ovhSubsidiary=US",
+          "format": "json",
+          "items_path": "plans",
+          "item_kind": "plan",
+          "max_bytes": 16777216,
+          "timeout_ms": 60000,
+          "where": {
+            "planCode": {
+              "pattern": "-us$"
+            }
+          },
+          "fields": {
+            "identity": "planCode",
+            "title": "invoiceName"
+          },
+          "extra_lists": {
+            "locations": "configurations[name=dedicated_datacenter].values"
+          },
+          "extra": {
+            "product": "product",
+            "currency": "$root.locale.currencyCode",
+            "range": "$root.products[name=$rec.product].blobs.technical.server.range",
+            "cpu_cores": "$root.products[name=$rec.product].blobs.technical.server.cpu.cores",
+            "cpu_sockets": "$root.products[name=$rec.product].blobs.technical.server.cpu.number",
+            "cpu_model": "$root.products[name=$rec.product].blobs.technical.server.cpu.model",
+            "cpu_brand": "$root.products[name=$rec.product].blobs.technical.server.cpu.brand",
+            "memory_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=memory].default].product].blobs.technical.memory.size",
+            "disk_capacity_gb": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.capacity",
+            "disk_count": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.number",
+            "disk_interface": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.interface",
+            "disk_technology": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=storage].default].product].blobs.technical.storage.disks.0.technology",
+            "bandwidth_mbps": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=bandwidth].default].product].blobs.technical.bandwidth.level",
+            "bandwidth_limit": "$root.products[name=$root.addons[planCode=$rec.addonFamilies[name=bandwidth].default].product].blobs.technical.bandwidth.limit",
+            "price_monthly": "pricings[mode=default,commitment=0,intervalUnit=month,interval=1].price",
+            "setup_fee": "pricings[mode=default,commitment=0,intervalUnit=none,interval=0].price"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-05 from the production host: https://api.us.ovhcloud.com/robots.txt answers 404 (nginx), and https://api.ovh.com/robots.txt redirects to https://api.eu.ovhcloud.com/robots.txt, also 404, so the API hosts publish no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run. (us.ovhcloud.com and www.ovhcloud.com, the marketing sites, are different hosts and are not fetched.)",
+      "terms_note": "OVHcloud's API schema (https://api.us.ovhcloud.com/1.0/order.json, read 2026-11-05) marks GET /order/catalog/public/baremetalServers noAuthentication true with apiStatus 'Beta version', and GET /order/catalog/public/eco noAuthentication true with apiStatus 'Stable production version'; both answered keylessly. The US Terms of Service (effective 15 May 2025, https://us.ovhcloud.com/legal/terms-of-service/, read 2026-11-05) say 'Except as expressly authorized in this Agreement, You will not make any copies or duplicates of any OVHcloud Services without the prior written permission of OVHcloud' (the rented Services); no clause found bans reading the public catalog or automated API access. The Service Specific Terms, section 2 Dedicated Servers (https://us.ovhcloud.com/legal/service-specific-terms/, read 2026-11-05) say 'The fees, features, and basic hardware and software configurations are described and accessible online via the OVHcloud website'. The website terms (https://www.ovhcloud.com/en/terms-and-conditions/, read 2026-11-05) say 'Any partial or full reproduction or representation of the website or its components by any process whatsoever, for any purposes whatsoever, is prohibited without the express consent of OVH': we never fetch that website, and keep only facts (plan codes, names, specifications, prices, currency) from the API, each linked to OVHcloud as a dated observation, never its text or images. Two files a day, about 32 MB (bare metal) and 10 MB (Eco). Prices are the catalog's integers in hundred-millionths of a dollar (14700000000 is $147.00): default-mode phase 1, month 1 is the monthly price; default-mode phase 0, intervalUnit none is the installation fee (the site's Advance-1 2026 shows $204/month and $204 installation). Only plan codes ending -us are kept (US datacenters; -ca/-eu copies filtered). Re-verify before enabling; disable on any request from OVHcloud.",
+      "license_note": "Plan specifications and prices are OVHcloud's data (https://us.ovhcloud.com/bare-metal/prices/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link the dedicated-server price page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 200,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "porkbun-tld-pricing",
       "name": "Porkbun domain prices (every TLD it sells)",
       "type": "api",

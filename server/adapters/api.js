@@ -345,7 +345,7 @@ function checkMapping(ep, { bulk = false } = {}) {
         if (shape !== 'array') return 'identity_fields requires items_shape "array"';
         if (fields.identity) return 'identity_fields and fields.identity cannot both be given';
         for (const p of identityFields) {
-            if (typeof p !== 'string' || !PATH_RE.test(p)) return 'identity_fields paths must be paths';
+            if (typeof p !== 'string' || !pathValid(p)) return 'identity_fields paths must be paths';
             const kerr = keyPathViolation(p, shape);
             if (kerr) return `identity_fields: ${kerr}`;
         }

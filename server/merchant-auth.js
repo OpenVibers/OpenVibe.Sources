@@ -13,13 +13,19 @@
  * The OAuth client (`OV_OAUTH_CLIENT_ID`, default `sources`) must be registered at OpenVibe.Network with
  * `<BASE_URL>/merchant/callback` as a redirect URI. Forms carry an HMAC CSRF token bound to the merchant subject;
  * cookies are httpOnly, SameSite=Lax, Secure in production.
+ *
+ * The handshake itself (authorize URL with state and PKCE S256, the code exchange, GET /auth/health) is
+ * openvibe-sdk/sso's. The merchant's own session (`ov_token`, held by the pages, no refresh token) and its
+ * CSRF token stay here: a merchant session is not a site-wide staff sign-in and must not share either.
  */
 const crypto = require('crypto');
 const { http, ids } = require('openvibe-contracts');
+const { createSsoClient } = require('openvibe-sdk/sso');
 const { checkCapability } = require('./auth');
 
 const ACCESS_COOKIE = 'ov_token';
 const STATE_COOKIE = 'ov_merchant_state';
+const VERIFIER_COOKIE = 'ov_merchant_verifier';
 const NEXT_COOKIE = 'ov_merchant_next';
 const FLOW_MAX_AGE = 10 * 60 * 1000;
 const SESSION_MAX_AGE = 24 * 3600 * 1000;
@@ -50,22 +56,26 @@ function safeNext(value) {
     return n;
 }
 
-/** `/oauth/authorize` on the public Network, with the state the callback checks. */
-function authorizeUrl(config, state) {
-    const u = new URL('/oauth/authorize', config.networkUrl);
-    u.searchParams.set('client_id', config.oauth.clientId);
-    u.searchParams.set('redirect_uri', config.oauth.redirectUri);
-    u.searchParams.set('response_type', 'code');
-    u.searchParams.set('scope', config.oauth.scope || 'profile');
-    u.searchParams.set('state', state);
-    return u.toString();
-}
-
 function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThis.fetch }) {
     const secret = config.merchant.sessionSecret;
     const secure = Boolean(config.cookies && config.cookies.secure);
     const baseCookie = { sameSite: 'lax', secure, httpOnly: true, path: '/' };
     const flowCookie = { sameSite: 'lax', secure, httpOnly: true, path: '/merchant', maxAge: FLOW_MAX_AGE };
+    const sso = createSsoClient({
+        site: 'sources',
+        siteName: 'OpenVibe.Sources',
+        baseUrl: config.baseUrl,
+        clientId: config.oauth.clientId,
+        clientSecret: config.oauth.clientSecret,
+        networkUrl: config.networkUrl,
+        networkInternalUrl: config.networkInternalUrl,
+        issuer: config.issuer,
+        redirectUri: config.oauth.redirectUri,
+        scope: config.oauth.scope || 'profile',
+        secureCookies: secure,
+        fetch: fetchImpl,
+        log,
+    });
 
     const csrfFor = (subject) => crypto.createHmac('sha256', secret).update(`sources-merchant:${subject}`).digest('base64url').slice(0, 32);
 
@@ -154,52 +164,35 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
         const next = safeNext(req.query.next);
         const existing = await resolvePage(req);
         if (existing) return res.redirect(303, next);
-        const state = crypto.randomBytes(16).toString('hex');
-        res.cookie(STATE_COOKIE, state, flowCookie);
+        // openvibe-sdk/sso: state + PKCE S256. The verifier rides the same /merchant flow cookie.
+        const started = sso.authorizeUrl();
+        res.cookie(STATE_COOKIE, started.state, flowCookie);
+        res.cookie(VERIFIER_COOKIE, started.verifier, flowCookie);
         res.cookie(NEXT_COOKIE, next, flowCookie);
-        return res.redirect(authorizeUrl(config, state));
-    }
-
-    async function tokenGrant(body) {
-        let lastErr = null;
-        for (const base of [config.networkInternalUrl, config.networkUrl]) {
-            if (!base) continue;
-            try {
-                const res = await fetchImpl(`${base}/oauth/token`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ client_id: config.oauth.clientId, client_secret: config.oauth.clientSecret, ...body }),
-                    signal: AbortSignal.timeout(10_000),
-                });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    const err = new Error(data.error_description || data.error || `token grant failed (${res.status})`);
-                    err.status = res.status;
-                    err.error = data.error || 'invalid_grant';
-                    throw err;
-                }
-                return data;
-            } catch (err) {
-                lastErr = err;
-                if (err.status && err.status < 500) throw err;
-            }
-        }
-        throw lastErr || new Error('Network unreachable');
+        return res.redirect(started.url);
     }
 
     async function callback(req, res) {
         const { code, state, error } = req.query;
         const next = safeNext(cookie(req, NEXT_COOKIE));
         const expected = cookie(req, STATE_COOKIE);
+        const verifier = cookie(req, VERIFIER_COOKIE);
         res.clearCookie(STATE_COOKIE, { ...flowCookie, maxAge: undefined });
+        res.clearCookie(VERIFIER_COOKIE, { ...flowCookie, maxAge: undefined });
         res.clearCookie(NEXT_COOKIE, { ...flowCookie, maxAge: undefined });
         if (error) return res.redirect(303, `/merchant?auth_error=${encodeURIComponent(String(error).slice(0, 80))}`);
-        if (!code || !state || !expected || String(state).length !== String(expected).length
+        // The state (constant time) and the PKCE verifier must both come from this browser.
+        if (!code || !state || !expected || !verifier || String(state).length !== String(expected).length
             || !crypto.timingSafeEqual(Buffer.from(String(state)), Buffer.from(String(expected)))) {
             return res.status(400).type('html').send('<!doctype html><meta charset="utf-8"><title>Sign-in failed</title><p>The sign-in response did not match this browser. <a href="/merchant/login">Try again</a>.</p>');
         }
         try {
-            const data = await tokenGrant({ grant_type: 'authorization_code', redirect_uri: config.oauth.redirectUri, code });
+            const data = await sso.tokenGrant({
+                grant_type: 'authorization_code',
+                redirect_uri: config.oauth.redirectUri,
+                code: String(code),
+                code_verifier: verifier,
+            });
             const u = await auth.verifyUser(data.access_token);
             if (!u) throw Object.assign(new Error('the Network returned a token without a person subject'), { status: 401 });
             setSession(res, data.access_token);
@@ -215,11 +208,16 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
         return res.redirect(303, '/merchant');
     }
 
+    /** 'ok' | 'invalid' | 'unknown': does the Network accept this site's OAuth client? (GET /auth/health) */
+    function checkClient() {
+        return sso.checkClient();
+    }
+
     return {
-        api, page, requirePage, login, callback, logout,
+        api, page, requirePage, login, callback, logout, checkClient,
         resolvePage, checkCsrf, csrfFor, setSession, clearSession,
-        ACCESS_COOKIE, STATE_COOKIE, NEXT_COOKIE, safeNext, authorizeUrl,
+        ACCESS_COOKIE, STATE_COOKIE, NEXT_COOKIE, safeNext,
     };
 }
 
-module.exports = { createMerchantAuth, authorizeUrl, safeNext, decodePayload, cookie, bearer };
+module.exports = { createMerchantAuth, safeNext, decodePayload, cookie, bearer };

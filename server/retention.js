@@ -51,7 +51,9 @@
  * check lives in test/retention.test.js instead, so the pin bump PR fails CI and names the rule to
  * add while production keeps serving in the meantime.
  */
-const { CATEGORIES } = require('./registry');
+const CATEGORY_CONTRACT = require('openvibe-contracts/contracts/sources/category.v1.json');
+/** The categories `sources.category@1` names: the contract this table implements. */
+const CATEGORY_KEYS = Object.freeze([...CATEGORY_CONTRACT.properties.key.enum]);
 
 const DAY = 86_400_000;
 /** Rows per DELETE; a few thousand is fast on PostgreSQL and stays well under the parameter limit. */
@@ -74,7 +76,7 @@ const RULES = Object.freeze({
     jobs: { days: 14, reason: 'boards retire unseen jobs after 7 days and Work pulls hourly' },
 });
 
-// The rules are the contract's categories in review; the module deliberately does not throw when
+// The rules are the contract's categories in review; the runtime deliberately does not throw when
 // they disagree (a pin bump must not stop Sources at boot; test/retention.test.js is strict).
 
 /** The age expression shared by the prune statements: last current, not first seen. */
@@ -123,12 +125,12 @@ function createRetention({ db, rules = RULES, now = () => Date.now(), log = cons
         const counts = { pruned: 0, revisions: 0, batches: 0, categories: {}, capped: [] };
         // A pin bump may reach production before this table does: keep an unruled category, ignore a
         // rule the contract no longer has, and say so once per run. The strict check is in the test.
-        const known = new Set(CATEGORIES);
-        for (const category of CATEGORIES) {
+        const known = new Set(CATEGORY_KEYS);
+        for (const category of CATEGORY_KEYS) {
             if (!rules[category]) log.warn(`[retention] no rule for category ${category}: items kept`);
         }
         for (const category of Object.keys(rules)) {
-            if (!known.has(category)) log.warn(`[retention] rule for ${category} ignored: not a sources.source@1 category`);
+            if (!known.has(category)) log.warn(`[retention] rule for ${category} ignored: not a sources.category@1 category`);
         }
         for (const [category, rule] of Object.entries(rules)) {
             if (!known.has(category)) continue;
@@ -151,4 +153,4 @@ function createRetention({ db, rules = RULES, now = () => Date.now(), log = cons
     return { run, runOnce, rules };
 }
 
-module.exports = { createRetention, RULES, AGE_SQL, OLDER_THAN_SQL, BATCH_SIZE, MAX_BATCHES, DAY };
+module.exports = { createRetention, RULES, CATEGORY_KEYS, AGE_SQL, OLDER_THAN_SQL, BATCH_SIZE, MAX_BATCHES, DAY };

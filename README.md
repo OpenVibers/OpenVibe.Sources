@@ -264,10 +264,12 @@ An item's age is `retrieved_at` while it is live and `removed_at` once removed, 
 still sees a removal for the full window; `first_seen_at` is never the age, since a source that keeps listing a job or
 a price keeps it current. The daily job (`server/jobs/retention.js`, started with the worker) deletes at most 2,000 rows
 a statement, 50 batches a category a run, and its log line carries counts only. The rules are in code because Sources
-has no `openvibe-shared/config` namespace. At runtime a category the contract has but the rules do not is kept (never
-pruned) and warned about once a run, and a rule for a category the contract lacks is ignored with a warning, so a
-Contracts pin bump cannot stop Sources at boot; `test/retention.test.js` keeps the strict one-to-one check so the bump
-PR fails CI and names the missing rule.
+has no `openvibe-shared/config` namespace, and each one is the `sources.category@1` document for its category:
+`test/retention.test.js` validates every `{ key, retention }` against the contract (openvibe-contracts v0.295.0) and
+holds the strict one-to-one check between `sources.source@1`'s category list, `sources.category@1`'s keys and the rule
+table, so a pin bump fails CI and names the missing rule. At runtime a category the contract has but the rules do not is
+kept (never pruned) and warned about once a run, and a rule for a category the contract lacks is ignored with a warning,
+so a Contracts pin bump cannot stop Sources at boot.
 
 ## API (service tokens, one capability per route)
 
@@ -598,7 +600,7 @@ in [OpenVibers/OpenVibe.Sites](https://github.com/OpenVibers/OpenVibe.Sites); th
 Part of the [OpenVibe network](https://openvibe.network). Built in the open by [OpenVibers](https://github.com/OpenVibers).
 
 <!-- versions:start -->
-- openvibe-contracts: v0.290.0
+- openvibe-contracts: v0.295.0
 - openvibe-sdk: v0.82.0
 - openvibe-shared: v4.114.0
 <!-- versions:end -->

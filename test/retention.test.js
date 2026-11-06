@@ -1,16 +1,17 @@
 'use strict';
 /**
- * Item retention (server/retention.js, server/jobs/): the category windows, the age of a removed item,
- * keep-latest per source key, batching, idempotence, and the runtime grace for a category a pin bump
- * added before the rule table did. A real migrated database (PGlite, or the containers with
- * SOURCES_TEST_STORE=pg), no network.
+ * Item retention (server/retention.js, server/jobs/): the category windows as sources.category@1
+ * documents, the age of a removed item, keep-latest per source key, batching, idempotence, and the
+ * runtime grace for a category a pin bump added before the rule table did. A real migrated database
+ * (PGlite, or the containers with SOURCES_TEST_STORE=pg), no network.
  *
  *   node test/retention.test.js
  */
 const assert = require('assert');
 const { createDb } = require('openvibe-sdk/db');
 const { testDb } = require('./db');
-const { createRetention, RULES, DAY } = require('../server/retention');
+const { validate } = require('openvibe-contracts');
+const { createRetention, RULES, CATEGORY_KEYS, DAY } = require('../server/retention');
 const { createJobs } = require('../server/jobs');
 const { CATEGORIES } = require('../server/registry');
 
@@ -42,13 +43,20 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
     try {
         // STRICT BY DESIGN, TEST-ONLY: a Contracts pin that adds a category must fail here, on the
         // bump PR, naming the missing rule. server/retention.js itself keeps + warns at runtime.
-        assert.deepStrictEqual([...CATEGORIES].sort(), Object.keys(RULES).sort(), 'one rule per source.v1 category');
+        assert.deepStrictEqual([...CATEGORIES].sort(), [...CATEGORY_KEYS].sort(), 'sources.source@1 and sources.category@1 name the same categories');
+        assert.deepStrictEqual([...CATEGORY_KEYS].sort(), Object.keys(RULES).sort(), 'one rule per sources.category@1 key');
         for (const [category, rule] of Object.entries(RULES)) {
             assert.strictEqual(typeof rule.reason, 'string');
             assert.ok(rule.reason.length > 10, `${category} says why`);
             assert.ok((Number.isInteger(rule.days) && rule.days >= 1) || rule.keepLatest === true, `${category} has a day window or keep-latest`);
             assert.ok(!(rule.days && rule.keepLatest), `${category} is one shape`);
+            // The rule is the contract's document for its category, so a field the schema does not
+            // have (or a window outside 1..3650 days) fails here rather than in production.
+            const document = { key: category, retention: rule.keepLatest ? 'keep' : { days: rule.days, reason: rule.reason } };
+            const result = validate('sources.category@1', document);
+            assert.ok(result.valid, `${category} is a sources.category@1 document: ${JSON.stringify(result.errors)}`);
         }
+        assert.strictEqual(validate('sources.category@1', { key: 'news', retention: { days: 0 } }).valid, false, 'a zero-day window is refused by sources.category@1');
         assert.strictEqual(RULES.deals.days, 14);
         assert.strictEqual(RULES.news.days, 30);
         assert.strictEqual(RULES.housing.keepLatest, true);
@@ -120,7 +128,7 @@ const revisions = async (id) => Number(await db.value('SELECT count(*) FROM item
         assert.deepStrictEqual(injectedOut.categories, { deals: 1 });
         assert.deepStrictEqual(await ids("WHERE id IN ('news-unruled', 'deals-injected')"), ['news-unruled'], 'unruled news kept');
         assert.strictEqual(injectedLogs.filter((m) => m === '[retention] no rule for category news: items kept').length, 1);
-        assert.strictEqual(injectedLogs.filter((m) => m === '[retention] rule for weather ignored: not a sources.source@1 category').length, 1);
+        assert.strictEqual(injectedLogs.filter((m) => m === '[retention] rule for weather ignored: not a sources.category@1 category').length, 1);
         await injected.runOnce();
         assert.strictEqual(injectedLogs.filter((m) => m === '[retention] no rule for category news: items kept').length, 2, 'one warning per run');
         assert.deepStrictEqual(await ids("WHERE id = 'news-unruled'"), ['news-unruled']);

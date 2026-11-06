@@ -7,7 +7,7 @@
   "runtime": "node 22, express, PostgreSQL 18 (openvibe-sdk/db, async) + Valkey 9, fast-xml-parser",
   "port": 4720,
   "domain": "sources.openvibe.network (vhost in deploy/nginx: an internal-service page, the merchant opt-in pages, health and JSON 404s; the JSON API is loopback-only; README \"Public host\")",
-  "contracts": "openvibe-contracts v0.290.0",
+  "contracts": "openvibe-contracts v0.295.0",
   "sdk": "openvibe-sdk v0.82.0",
   "shared": "openvibe-shared v4.114.0",
   "capabilities": [
@@ -18,7 +18,8 @@
   "capabilitiesRegistered": true,
   "contractsProposed": [
     "sources.source@1 (released in openvibe-contracts v0.12.0)",
-    "sources.item@1 (released in openvibe-contracts v0.12.0)"
+    "sources.item@1 (released in openvibe-contracts v0.12.0)",
+    "sources.category@1 (released in openvibe-contracts v0.295.0)"
   ],
   "adapters": [
     "rss",
@@ -46,6 +47,7 @@
     "failed fetches recorded, never fabricated",
     "item revisions and sticky removals with provenance",
     "retire_after_sec: items a feed stopped showing are removed as gone_from_source (jobs, listings)",
+    "per-category item retention: one sources.category@1 window per category, pruned daily",
     "cursor item API by capability",
     "openvibe-sdk transactional outbox to Events (service_outbox)",
     "staff-only index documents for Search",

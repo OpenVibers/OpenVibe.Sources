@@ -98,7 +98,9 @@ function createSettings({ db, env = process.env, log = console, fetchImpl = glob
             requireFresh: (req) => String(req.get('x-ov-fresh') || '') === '1',
             log: appLog,
         });
-        app.use(routes.handle);
+        // The owner's test route is mounted in front of the store's dispatcher: openvibe-shared 4.125.0 gave
+        // adminRoutes a test route of its own, and the dispatcher answers it first (it wants an acting subject,
+        // this one the service-token capability). 2026-11-07, the openvibe-shared v4.126.0 pin round.
         app.post(`${BASE_PATH}/:namespace/test/:key`, guard, async (req, res) => {
             if (req.params.namespace !== NAMESPACE) return res.status(404).json({ error: 'no such configuration namespace' });
             let key = String(req.params.key || '');
@@ -112,6 +114,7 @@ function createSettings({ db, env = process.env, log = console, fetchImpl = glob
                 return res.status(200).json({ ok: false, detail: 'failed — the test did not finish. The service log has the reason.' });
             }
         });
+        app.use(routes.handle);
         return routes;
     }
 

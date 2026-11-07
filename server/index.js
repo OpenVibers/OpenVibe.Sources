@@ -29,6 +29,7 @@ const { createAuth } = require('./auth');
 const { createMerchant } = require('./merchant');
 const { createMerchantAuth } = require('./merchant-auth');
 const { createApp } = require('./app');
+const settingsLib = require('./settings');
 const accountDataLib = require('./account-data');
 const { createNetworkSender, startSubscriptions } = require('openvibe-sdk/account-data');
 
@@ -64,7 +65,17 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
     const merchantAuth = createMerchantAuth({ config, auth, log, fetchImpl });
     const accountData = accountDataLib.create({ db, log });
     const accountSend = config.oauth.clientSecret ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl }) : null;
-    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth, accountData, accountSend });
+    // D11 owner settings (sources.data_sources): created before the app mounts /internal/config. A failure
+    // leaves Sources serving (the GitHub token falls back to the environment) and says why in the log.
+    let settings = null;
+    try {
+        const made = settingsLib.createSettings({ db, env: process.env, log });
+        await made.ready;
+        settings = settingsLib.activate(made);
+    } catch (err) {
+        log.warn('[OpenVibe.Sources] owner settings unavailable, the data-source keys fall back to the environment:', err && err.message);
+    }
+    const app = createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log, limitsNow, merchant, merchantAuth, accountData, accountSend, settings });
     // One JWKS client for the process (the SDK shares it with verifyUserToken): refresh in the background
     // on an unref'd timer, keeping the last good keys through a Network outage.
     keys.start();
@@ -119,7 +130,7 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         if (!givenDb) await db.close();
     }
 
-    return { config, db, registry, items, guard, fetcher, robots, ingest, scheduler, jobs, outbox, keys, keyLoaded, auth, merchant, merchantAuth, app, server, close };
+    return { config, db, settings, registry, items, guard, fetcher, robots, ingest, scheduler, jobs, outbox, keys, keyLoaded, auth, merchant, merchantAuth, app, server, close };
 }
 
 if (require.main === module) {

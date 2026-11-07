@@ -13,6 +13,7 @@ const { merchantRouter } = require('./api/merchant');
 const { merchantPages } = require('./merchant-pages');
 const { createActorLimits } = require('./api/actor-limits');
 const pkg = require('../package.json');
+const CONFIG_CAPABILITY = CONFIG_CAPABILITY;
 
 const TEXT_INDEX = [
     'OpenVibe.Sources: the source registry and ingestion workers for the network\'s publication products.',
@@ -88,8 +89,8 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
             if (!header.startsWith('Bearer ')) return res.status(401).json({ code: 'token.missing', error: 'a service token is required' });
             const r = await auth.verifyService(header.slice(7).trim());
             if (!r.ok) return res.status(r.code === 'token.unavailable' ? 503 : 401).json({ code: r.code, error: r.reason || 'the token does not verify' });
-            const decision = capabilities.check(r.claims, 'sources.config.manage');
-            const granted = decision.allowed || capabilities.grants(r.claims.cap, 'sources.config.manage');
+            const decision = capabilities.check(r.claims, CONFIG_CAPABILITY);
+            const granted = decision.allowed || capabilities.grants(r.claims.cap, CONFIG_CAPABILITY);
             if (!granted) return res.status(403).json({ code: 'capability.denied', error: 'sources.config.manage is not granted' });
             req.principal = { sub: r.claims.sub, cap: r.claims.cap, jti: r.claims.jti };
             return next();

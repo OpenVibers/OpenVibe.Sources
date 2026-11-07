@@ -29,7 +29,7 @@ const SCHEMA = Object.freeze({
             type: 'string', title: 'GitHub read-only token', 'x-group': GROUP,
             description: 'A GitHub token with read-only access to public repositories. It raises GitHub\'s rate limit for Sources\' reads and lets it read files from private repositories it was given access to; without it those reads are anonymous and limited.',
             'x-owner-input': {
-                group: GROUP,
+                group: 'data-sources',
                 unlocks: 'GitHub reads for Sources run with the token\'s higher rate limit and can see the private repositories it is allowed to read.',
                 get_it_at: 'https://github.com/settings/tokens',
                 get_it_how: 'Create a fine-grained token with only read access to public repositories (or the repositories Sources may read), then paste it here.',

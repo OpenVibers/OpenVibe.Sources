@@ -13,7 +13,7 @@ const { merchantRouter } = require('./api/merchant');
 const { merchantPages } = require('./merchant-pages');
 const { createActorLimits } = require('./api/actor-limits');
 const pkg = require('../package.json');
-const CONFIG_CAPABILITY = CONFIG_CAPABILITY;
+const CONFIG_CAPABILITY = 'sources.config.manage';
 
 const TEXT_INDEX = [
     'OpenVibe.Sources: the source registry and ingestion workers for the network\'s publication products.',

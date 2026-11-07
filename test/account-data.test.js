@@ -19,7 +19,7 @@ const B = 'usr_01JZ0000000000000000000BBB';
         const accountData = create({ db: d.db });
         const missing = await uncovered(d.db, {
             tables: [...TABLES, 'merchant_sources'], // the merchant's claim: exported and erased by this module
-            exempt: { account_data_events: 'the ledger of requests itself: which export and deletion Sources applied' },
+            exempt: { "config_snapshots":"D11 owner settings: created_by/activated_by is the acting administrator (usr_...) for the config audit trail; the values are network configuration, not the person's account data, and are kept for rollback/history", account_data_events: 'the ledger of requests itself: which export and deletion Sources applied' },
         });
         assert.deepStrictEqual(missing, [], `a table with a person column is neither covered nor exempted: ${missing.join(', ')}`);
 

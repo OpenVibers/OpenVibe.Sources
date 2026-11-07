@@ -3,7 +3,7 @@
 const path = require('path');
 const express = require('express');
 const { homePage } = require('./views/home');
-const { http } = require('openvibe-contracts');
+const { http, capabilities } = require('openvibe-contracts');
 const { instrument } = require('openvibe-shared/metrics');
 const { createRelease } = require('openvibe-shared/release');
 const { createSourcesReadiness, registerSourcesGauges } = require('./observability');
@@ -13,6 +13,7 @@ const { merchantRouter } = require('./api/merchant');
 const { merchantPages } = require('./merchant-pages');
 const { createActorLimits } = require('./api/actor-limits');
 const pkg = require('../package.json');
+const CONFIG_CAPABILITY = 'sources.config.manage';
 
 const TEXT_INDEX = [
     'OpenVibe.Sources: the source registry and ingestion workers for the network\'s publication products.',
@@ -34,7 +35,7 @@ const TEXT_INDEX = [
 ].join('\n');
 
 
-function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null, accountData = null, accountSend = null }) {
+function createApp({ config, db, registry, items, ingest, scheduler, auth, outbox, now, log = console, limitsNow = null, merchant = null, merchantAuth = null, accountData = null, accountSend = null, settings = null }) {
     const app = express();
     // GET /openapi.json (SEO-3): this service's public API as OpenAPI 3.1, generated from the contracts
     // (openvibe-contracts); the operations they mark internal-only are left out.
@@ -75,6 +76,28 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
         next();
     });
     app.use('/api', express.json({ limit: '256kb', type: ['application/json', 'application/*+json'] }));
+
+    // ── D11 owner settings (openvibe-shared/config): Network's admin proxy, acting for the owner, reads and
+    // writes sources.data_sources (the read-only GitHub token). Loopback only, guarded by
+    // sources.config.manage; a secret change needs X-OV-Fresh: 1.
+    if (settings) {
+        const configGuard = async (req, res, next) => {
+            if (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.headers['cf-connecting-ip']) {
+                return res.status(404).json({ code: 'sources.not_found', error: 'no such route' });
+            }
+            const header = String(req.headers.authorization || '');
+            if (!header.startsWith('Bearer ')) return res.status(401).json({ code: 'token.missing', error: 'a service token is required' });
+            const r = await auth.verifyService(header.slice(7).trim());
+            if (!r.ok) return res.status(r.code === 'token.unavailable' ? 503 : 401).json({ code: r.code, error: r.reason || 'the token does not verify' });
+            const decision = capabilities.check(r.claims, CONFIG_CAPABILITY);
+            const granted = decision.allowed || capabilities.grants(r.claims.cap, CONFIG_CAPABILITY);
+            if (!granted) return res.status(403).json({ code: 'capability.denied', error: 'sources.config.manage is not granted' });
+            req.principal = { sub: r.claims.sub, cap: r.claims.cap, jti: r.claims.jti };
+            return next();
+        };
+        app.use('/internal/config', express.json({ limit: '64kb' }));
+        settings.mount(app, { guard: configGuard, log });
+    }
 
     app.get('/api/health', (_req, res) => {
         res.json({ status: 'ok', service: 'openvibe-sources', version: pkg.version });

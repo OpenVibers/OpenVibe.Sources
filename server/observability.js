@@ -22,10 +22,11 @@ const STATUSES = ['healthy', 'stale', 'failing', 'never_fetched', 'disabled', 'm
 
 /**
  * A read kept for keepMs and shared by callers at the same moment. The item count walks every item (47 ms, asked on each
- * scrape and readiness probe: 151k calls and 118 minutes of database time from 09-28 to 11-02). 30 s in production,
- * every call elsewhere (tests read their own writes).
+ * scrape and readiness probe: 151k calls and 118 minutes of database time from 09-28 to 11-02). A 30 s keep was shorter
+ * than the ~38 s between scrapes, so on 2026-11-08 it still ran 2,111 times (213 ms mean, 463 ms cold): 120 s in
+ * production, every call elsewhere (tests read their own writes).
  */
-const COUNTS_MS = process.env.NODE_ENV === 'production' ? 30_000 : 0;
+const COUNTS_MS = process.env.NODE_ENV === 'production' ? 120_000 : 0;
 function kept(read, keepMs = COUNTS_MS, now = () => Date.now()) {
     if (!(keepMs > 0)) return read;
     let hold = null;

@@ -4,6 +4,9 @@
 > carries where it came from, when it was retrieved and on what terms, and a failed fetch is a
 > recorded failure — never replaced by invented content.
 
+**Docs:** https://openvibe.services · **For AI:** https://openvibe.services/llms.txt
+**Run it:** `npm ci && npm run dev` (Node 22 or newer) · **Tests:** `npm test`
+
 **Status:** alpha (roadmap Wave 14). Deployed internally: the API runs on the production host (127.0.0.1:4720 only,
 since 2026-09-23). On 2026-10-22, 43 of its 47 sources were enabled and it held 55,683 items from 4,762 fetch runs
 (the first on 2026-10-07; 431 in the last 24 hours), and none of the enabled sources was failing. The counts by category

@@ -118,6 +118,12 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     // GET /auth/health: does the Network accept this site's OAuth client? 503 only when it refuses it. Sources has
     // no site-wide sign-in; the merchant flow is the one OAuth client, so it is the one this checks.
     if (merchantAuth) {
+        app.get('/auth/me', async (req, res, next) => {
+            try {
+                const person = await merchantAuth.resolvePage(req);
+                return res.set('Cache-Control', 'no-store').json({ user: person ? { id: person.subject, username: person.name } : null });
+            } catch (err) { return next(err); }
+        });
         app.get('/auth/health', async (_req, res) => {
             const client = await merchantAuth.checkClient();
             res.setHeader('Cache-Control', 'no-store');
@@ -133,7 +139,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
         const networkOrigin = (() => { try { return new URL(config.networkUrl).origin; } catch { return 'https://openvibe.network'; } })();
         app.use('/merchant', (req, res, next) => {
             res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-            res.setHeader('Content-Security-Policy', `default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; connect-src 'self' ${networkOrigin}; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`);
+            res.setHeader('Content-Security-Policy', `default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:; connect-src 'self' ${networkOrigin}; frame-src ${networkOrigin}; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`);
             next();
         }, express.urlencoded({ extended: false, limit: '32kb' }), merchantAuth.page, merchantPages({
             db, merchant, registry, ingest, merchantAuth, limits, log,
@@ -147,11 +153,9 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         res.setHeader('Vary', 'Accept');
         if (/\btext\/html\b/.test(String(req.get('accept') || ''))) {
-            // The page runs no script of its own. Cloudflare Web Analytics: Cloudflare injects its beacon at the
-            // edge and the privacy text says it may measure performance; script-src loads it, connect-src is
-            // where it reports.
+            // The arrival script checks this host's merchant session and Network's silent SSO frame.
             // The page is the kit's (views/home.js): the theme loader and kit-web from this host's /shared.
-            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; img-src 'self' data:; connect-src 'self' https://openvibe.network https://cloudflareinsights.com; base-uri 'none'; frame-ancestors 'none'");
+            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; img-src 'self' data:; connect-src 'self' https://openvibe.network https://cloudflareinsights.com; frame-src https://openvibe.network; base-uri 'none'; frame-ancestors 'none'");
             return res.type('html').send(homePage());
         }
         return res.type('text/plain').send(TEXT_INDEX);

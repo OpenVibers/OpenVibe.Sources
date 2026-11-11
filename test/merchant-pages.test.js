@@ -40,9 +40,24 @@ t('a guest sees the pitch and a sign-in link, not the form', async () => {
     assert.strictEqual(r.status, 200);
     assert.match(r.text, /List your store on OpenVibe/);
     assert.match(r.text, /Sign in with OpenVibe/);
+    assert.match(r.text, /src="\/merchant\/arrival\.js"/);
     assert.match(r.text, /DNS TXT record or a meta tag/);
     assert.doesNotMatch(r.text, /name="listing_url"/);
     assert.strictEqual((await page('POST', '/merchant/sources', null, { redirect: 'manual', form: {} })).status, 303);
+});
+
+t('silent arrival uses prompt none and accepts only the site home or merchant paths', async () => {
+    const r = await page('GET', '/merchant/login?silent=1&next=%2F', null, { redirect: 'manual' });
+    assert.strictEqual(r.status, 302);
+    const target = new URL(r.headers.get('location'));
+    assert.strictEqual(target.searchParams.get('prompt'), 'none');
+    const { safeNext } = require('../server/merchant-auth');
+    assert.strictEqual(safeNext('/'), '/');
+    assert.strictEqual(safeNext('//evil.example'), '/merchant');
+    assert.strictEqual(safeNext('https://evil.example'), '/merchant');
+    const me = await page('GET', '/auth/me', ALICE_TOKEN);
+    assert.strictEqual(me.status, 200);
+    assert.strictEqual(JSON.parse(me.text).user.username, 'alice');
 });
 
 t('a signed-in merchant adds a domain and sees the DNS instructions', async () => {

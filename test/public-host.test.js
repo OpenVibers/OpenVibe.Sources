@@ -28,11 +28,17 @@ t('browsers get a short honest HTML page in the network\'s kit: internal service
     // The kit's theme loader and kit-web from this host, and Cloudflare Web Analytics (injected at the edge); no inline script.
     assert.match(r.headers.get('content-security-policy'), /script-src 'self' https:\/\/static\.cloudflareinsights\.com;[^]*connect-src 'self' https:\/\/openvibe\.network https:\/\/cloudflareinsights\.com;/, 'the theme fetch from openvibe.network, and Cloudflare\'s report path on this host');
     assert.match(r.text, /<link rel="icon"[^>]*data-ov-icon="sources"/, 'the network\'s icon for Sources (no /favicon.ico 404)');
-    for (const m of r.text.matchAll(/<script\b([^>]*)>/gi)) assert.match(m[1], /src="\/shared\//, 'every script is the kit\'s own file');
+    for (const m of r.text.matchAll(/<script\b([^>]*)>/gi)) assert.match(m[1], /src="\/(?:shared\/|merchant\/arrival\.js)/, 'every script is served by this host');
+    assert.match(r.headers.get('content-security-policy'), /frame-src https:\/\/openvibe\.network;/);
+    assert.match(r.text, /src="\/merchant\/arrival\.js"/);
+    assert.strictEqual((await request(svc.base, 'GET', '/merchant/arrival.js')).status, 200);
     assert.match(r.text, /<link rel="stylesheet" href="\/shared\/kit\.css">/, 'the network\'s kit');
     assert.match(r.text, /href="\/merchant"/, 'the merchant opt-in is one tap away');
     // The kit's files are served whether or not the merchant pages are on.
     assert.strictEqual((await request(svc.base, 'GET', '/shared/kit.css')).status, 200);
+    const guest = await request(svc.base, 'GET', '/auth/me');
+    assert.strictEqual(guest.status, 200);
+    assert.deepStrictEqual(JSON.parse(guest.text), { user: null });
     assert.ok(!/admin/i.test(r.text));
 });
 

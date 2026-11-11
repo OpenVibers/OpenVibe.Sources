@@ -52,6 +52,7 @@ function bearer(req) {
 function safeNext(value) {
     const n = String(value == null ? '' : value);
     if (!n || /[\u0000-\u001f\u007f\\]/.test(n)) return '/merchant';
+    if (n === '/') return '/';
     if (!/^\/merchant(?:\/|$|\?|#)/.test(n)) return '/merchant';
     return n;
 }
@@ -165,7 +166,7 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
         const existing = await resolvePage(req);
         if (existing) return res.redirect(303, next);
         // openvibe-sdk/sso: state + PKCE S256. The verifier rides the same /merchant flow cookie.
-        const started = sso.authorizeUrl();
+        const started = sso.authorizeUrl({ silent: req.query.silent === '1' });
         res.cookie(STATE_COOKIE, started.state, flowCookie);
         res.cookie(VERIFIER_COOKIE, started.verifier, flowCookie);
         res.cookie(NEXT_COOKIE, next, flowCookie);
@@ -180,7 +181,7 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
         res.clearCookie(STATE_COOKIE, { ...flowCookie, maxAge: undefined });
         res.clearCookie(VERIFIER_COOKIE, { ...flowCookie, maxAge: undefined });
         res.clearCookie(NEXT_COOKIE, { ...flowCookie, maxAge: undefined });
-        if (error) return res.redirect(303, `/merchant?auth_error=${encodeURIComponent(String(error).slice(0, 80))}`);
+        if (error) return res.redirect(303, `/merchant?auth_error=${encodeURIComponent(String(error).slice(0, 80))}&sso=none`);
         // The state (constant time) and the PKCE verifier must both come from this browser.
         if (!code || !state || !expected || !verifier || String(state).length !== String(expected).length
             || !crypto.timingSafeEqual(Buffer.from(String(state)), Buffer.from(String(expected)))) {
@@ -196,6 +197,7 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
             const u = await auth.verifyUser(data.access_token);
             if (!u) throw Object.assign(new Error('the Network returned a token without a person subject'), { status: 401 });
             setSession(res, data.access_token);
+            res.cookie('ov_sso_hint', 'account', { sameSite: 'lax', secure, httpOnly: false, path: '/', maxAge: SESSION_MAX_AGE });
             return res.redirect(303, next);
         } catch (err) {
             log.error(`[merchant] sign-in failed: ${err.message}`);
@@ -205,6 +207,7 @@ function createMerchantAuth({ config, auth, log = console, fetchImpl = globalThi
 
     function logout(req, res) {
         clearSession(res);
+        res.cookie('ov_sso_hint', 'guest', { sameSite: 'lax', secure, httpOnly: false, path: '/', maxAge: SESSION_MAX_AGE });
         return res.redirect(303, '/merchant');
     }
 

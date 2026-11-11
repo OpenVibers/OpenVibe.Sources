@@ -27,7 +27,7 @@ const when = (iso) => {
 
 const csrfInput = (csrf) => `<input type="hidden" name="csrf" value="${esc(csrf)}">`;
 
-function layout({ title = 'List your store on OpenVibe', body = '', description = '' }) {
+function layout({ title = 'List your store on OpenVibe', body = '', description = '', arrival = false }) {
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -48,6 +48,7 @@ ${description ? `<meta name="description" content="${esc(description)}">` : ''}
 ${body}
 </main>
 <script src="/shared/kit-web.js" defer></script>
+${arrival ? '<script src="/merchant/arrival.js" defer></script>' : ''}
 </body>
 </html>`;
 }
@@ -74,7 +75,7 @@ ${kit.section({
         body: `<p class="ovk-note">A merchant signs in with an OpenVibe.Network account. The claim belongs to that account.</p>
 <p>${kit.button({ href: '/merchant/login?next=%2Fmerchant', label: 'Sign in with OpenVibe', icon: 'user' })}</p>`,
     })}`;
-    return layout({ body });
+    return layout({ body, arrival: true });
 }
 
 function claimRow(claim) {

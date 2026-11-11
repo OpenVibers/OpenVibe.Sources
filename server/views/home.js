@@ -41,7 +41,7 @@ ${kit.section({
             door('Source code', 'https://github.com/OpenVibers/OpenVibe.Sources', 'OpenVibers/OpenVibe.Sources on GitHub (AGPL-3.0)'),
         ])),
     })}`;
-    return layout({ title: 'OpenVibe.Sources', description: 'The registry of outside sources the OpenVibe network reads, and where merchants list their store.', body })
+    return layout({ title: 'OpenVibe.Sources', description: 'The registry of outside sources the OpenVibe network reads, and where merchants list their store.', body, arrival: true })
         // The layout titles its pages "… · OpenVibe.Sources"; the home is the site itself.
         .replace('<title>OpenVibe.Sources · OpenVibe.Sources</title>', '<title>OpenVibe.Sources</title>');
 }

@@ -11,6 +11,7 @@
  *   GET  /merchant/login|callback|logout
  */
 const express = require('express');
+const path = require('path');
 const { MerchantError } = require('./merchant');
 const views = require('./views/merchant');
 const { createMerchantView } = require('./api/merchant');
@@ -24,6 +25,8 @@ const NOTICES = {
 
 function merchantPages({ db, merchant, registry, ingest, merchantAuth, limits, log = console }) {
     const router = express.Router();
+    router.get('/arrival.js', (_req, res) => res.type('application/javascript').set('Cache-Control', 'public, max-age=300')
+        .sendFile(path.join(__dirname, '..', 'public', 'merchant-arrival.js')));
     const decorate = createMerchantView({ db, merchant, registry, ingest });
     const readLimit = limits.budget('sources.merchant.read');
     const manageLimit = limits.budget('sources.merchant.manage');

@@ -3,13 +3,13 @@
     'use strict';
     if (new URLSearchParams(location.search).get('sso') === 'none') return;
     if (/bot|crawl|spider|slurp|headless/i.test(navigator.userAgent || '')) return;
+    const hint = (document.cookie.match(/(?:^|;\s*)ov_sso_hint=([^;]*)/) || [])[1];
+    if (hint === 'guest') return;
     try {
         const r = await fetch('/auth/me', { credentials: 'same-origin', cache: 'no-store' });
         if (r.ok && (await r.json()).user) return;
     } catch { /* A failed check cannot grant a session. */ }
 
-    const hint = (document.cookie.match(/(?:^|;\s*)ov_sso_hint=([^;]*)/) || [])[1];
-    if (hint === 'guest') return;
     try {
         if (Date.now() - Number(sessionStorage.getItem('ov_sources_silent_at') || 0) < 10 * 60 * 1000) return;
     } catch { return; }

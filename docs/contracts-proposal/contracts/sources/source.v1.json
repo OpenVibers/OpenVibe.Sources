@@ -56,7 +56,8 @@
         "games",
         "housing",
         "food",
-        "jobs"
+        "jobs",
+        "code"
       ]
     },
     "homepage_url": {
@@ -166,9 +167,10 @@
           "resolver": {
             "enum": [
               "hn-whoishiring",
-              "off-delta"
+              "off-delta",
+              "github"
             ],
-            "description": "An api endpoint whose records are walked from several JSON URLs instead of one items_path, or a bulk endpoint whose rows come from the gzipped JSONL parts a text index lists. hn-whoishiring reads user/whoishiring.json, the latest \"Who is hiring\" story's top-level kids, and each item/<id>.json; it stores one job per comment, a short excerpt with emails and phones removed, and links the comment (Sources, 2026-10-31). off-delta reads index.txt and then only the delta parts not finished yet, resuming a part at its stored row offset (Open Food Facts; Sources, 2026-10-31). The endpoint URL is a .json URL for hn-whoishiring and the index's .txt URL for off-delta."
+            "description": "An api endpoint whose records are walked from several JSON URLs instead of one items_path, or a bulk endpoint whose rows come from the gzipped JSONL parts a text index lists. hn-whoishiring reads user/whoishiring.json, the latest \"Who is hiring\" story's top-level kids, and each item/<id>.json; it stores one job per comment, a short excerpt with emails and phones removed, and links the comment (Sources, 2026-10-31). off-delta reads index.txt and then only the delta parts not finished yet, resuming a part at its stored row offset (Open Food Facts; Sources, 2026-10-31). The endpoint URL is a .json URL for hn-whoishiring and the index's .txt URL for off-delta. github walks a share of a search plan on api.github.com/search/repositories per run (new repositories today, this week and this month by stars, recently pushed, all-time top, and twelve languages), keeps a star count per repository per day, and returns repository items; its endpoint URL is an api.github.com URL and never a github.com page (Sources, 2026-11-12)."
           },
           "item_kind": {
             "type": "string",

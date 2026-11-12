@@ -57,10 +57,12 @@ start and flushes on stop.
 ## The registry
 
 A source records: `key`, `name`, `type` (`rss|atom|sitemap|jsonld|api|bulk|crawl|manual`), `category`
-(`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding|games|housing|food|jobs`, read from `sources.source@1`; housing, food and jobs since contracts 0.210.0), `endpoints` (for `api`: a field mapping, no code per
+(`news|blog|reviews|deals|coupons|trade|hosting|crowdfunding|games|housing|food|jobs|code`, read from `sources.source@1`; housing, food and jobs since contracts 0.210.0, code since 0.411.1), `endpoints` (for `api`: a field mapping, no code per
 provider; for `bulk`: one dataset file with a format, a byte cap and a row limit), `auth` (`none|header|bearer|query` with the **name** of an environment variable —
 names must start with `SOURCES_CRED_`, so an entry can never point at this service's own
-secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`),
+secrets), `robots_note`, `terms_note`, `license_note`, the rate limit (`min_interval_ms`) — the GitHub read uses
+`GITHUB_TOKEN` (or `SOURCES_GITHUB_TOKEN`, or the owner's D11 setting) by name when set, and is anonymous within
+GitHub's 10-a-minute search limit otherwise —
 `poll_interval_sec`, `stale_after_sec`, `max_items`, `enabled`, `review_required`,
 `sensitivity`, `default_indexability`, `search_visibility` and `retire_after_sec` (since contracts 0.211.0).
 
@@ -108,7 +110,7 @@ succeeded. Health status: `healthy | stale | failing | never_fetched | disabled 
 | `rss`, `atom` (`feed@3`) | RSS 2.0, RSS 1.0/RDF, Atom 1.0 | guid/id identity, else link; text-only summary capped at 1000 chars; a deal feed's own offer elements (DealNews' `dealnews:price` with its currency, `dealnews:retailer`, `dealnews:expires`) become `fields.price`, `currency`, `seller` and `valid_until` exactly as stated (the item stays an article; nothing is read out of the headline); its `dealnews:category` fills `fields.categories` when the item has no `<category>`, and `dealnews:staffPick` is `fields.staff_pick` (true/false, absent when not stated) |
 | `sitemap` (`sitemap@1`) | `<urlset>` (+ Google News extension), `<sitemapindex>` | index children are listed, not followed |
 | `jsonld` (`jsonld@2`) | schema.org Product, Offer/AggregateOffer, Review, NewsArticle, BlogPosting (+ Article) | prices, ratings and availability exactly as the page states; missing = null; embedded review text not kept; a page without JSON-LD is a `parse_error`; `list_price` from a ListPrice/StrikethroughPrice/MSRP/SRP `priceSpecification`, as stated |
-| `api` (`api@1`) | JSON, XML, TSV or CSV official files via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`, `where`/`filter`; epoch fields only where mapped as such; `resolver: "hn-whoishiring"` walks the Hacker News thread's JSON documents instead |
+| `api` (`api@1`) | JSON, XML, TSV or CSV official files via a registry mapping | `items_path`, `items_shape` (`array` default, `map` for records keyed by id), `fields`, `extra`, `where`/`filter`; epoch fields only where mapped as such; `resolver: "hn-whoishiring"` walks the Hacker News thread's JSON documents instead; `resolver: "github"` walks GitHub's repository search plan (server/github.js) |
 | `bulk` (`bulk@1`) | one dataset file, streamed (CSV, JSONL or TSV) | `max_bytes` is the size cap, `max_rows` the per-run row limit; the stream stops at the limit, so a multi-GB file is never held in memory. `resolver: "off-delta"` reads a text index and only the gzipped JSONL delta parts it lists, keeping the last finished part and the current part's row offset in `source_state` (Open Food Facts) |
 | `crawl` (`jsonld@2`, `page@1`) | a whole site from its seeds: its sitemaps and, if asked, its links (see below) | only pages that publish JSON-LD are kept, unless `require_structured: false` keeps a `page` item from the page's own search metadata |
 | `manual` (`manual@1`) | items entered through the API with an evidence URL | no fetcher |
@@ -261,7 +263,7 @@ the endpoint's last good parse saw. At most 500 items are retired a run; the res
 [`sources.item@1`](docs/contracts-proposal/).
 
 **Retention.** Items do not grow forever: `server/retention.js` declares, in one place, a window per category (news 30
-days, blog 90, reviews 180, deals 14, coupons 90, trade 365, hosting 30, crowdfunding 90, games 14, food 365, jobs 14)
+days, blog 90, reviews 180, deals 14, coupons 90, trade 365, hosting 30, crowdfunding 90, games 14, food 365, jobs 14, code 30)
 and one `keepLatest` rule for housing, where HUD's yearly Fair Market Rents must keep the latest value per source key.
 An item's age is `retrieved_at` while it is live and `removed_at` once removed, so a consumer following the change feed
 still sees a removal for the full window; `first_seen_at` is never the age, since a source that keeps listing a job or
@@ -283,7 +285,7 @@ service calls them with its service token and `X-OV-Subject: usr_…`.
 | Capability | Routes |
 |---|---|
 | `sources.source.read` | `GET /api/v1/sources`, `/api/v1/sources/:key`, `/api/v1/sources/:key/runs?before=`, `/api/v1/runs?state=failed&after=`, `/api/v1/health`; `GET /api/v1/merchant/sources[/:id]` |
-| `sources.item.read` | `GET /api/v1/items?source=&category=&after=<change_seq>&include_removed=1`, `GET /api/v1/items/:id?revisions=1` |
+| `sources.item.read` | `GET /api/v1/items?source=&category=&after=<change_seq>&include_removed=1`, `GET /api/v1/items/:id?revisions=1`; `GET /api/v1/code/repos?list=trending\|week\|month\|hot\|new\|top&lang=&topic=&limit=`, `GET /api/v1/code/search?q=&lang=&sort=stars\|updated\|best&page=` |
 | `sources.source.manage` | `POST /api/v1/sources`, `PATCH`/`DELETE /api/v1/sources/:key`, `POST /api/v1/sources/:key/fetch`, `POST /api/v1/sources/:key/items` (manual), `DELETE /api/v1/items/:id` `{reason}`; `POST /api/v1/merchant/sources`, `/:id/verify`, `/:id/withdraw` |
 
 `GET /api/v1/items` pages in change order (creations, revisions and — with `include_removed=1` —
@@ -367,7 +369,7 @@ for the N-1 rollback window.
 
 ## Seeds
 
-[seeds/sources.json](seeds/sources.json) holds the 67 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
+[seeds/sources.json](seeds/sources.json) holds the 69 registered sources, each with its robots, terms and licence notes (the production rows are the record; the terms notes match them as of the 2026-10-23 review).
 `npm run seed` creates the ones that do not exist yet, **all disabled**, and never changes an existing one; a person
 enables a source after reading its terms (`PATCH /api/v1/sources/:key {"enabled": true}`), and the fetcher re-checks
 robots.txt on every run. Production on 2026-10-22 (the food row checked 2026-11-06):
@@ -384,6 +386,7 @@ robots.txt on every run. Production on 2026-10-22 (the food row checked 2026-11-
 | crowdfunding | `opencollective-accounts` (api) | 1 of 1 |
 | games | `steam-top-sellers`, `steam-new-releases`, `steam-specials` (api: the store's featured lists, in their order) | 3 of 3 |
 | food | `open-food-facts`, `openfda-food-enforcement`, `bls-average-prices`, `usda-ers-fruit-vegetable-prices` (api); `themealdb` | 4 of 5: `themealdb` is off (it needs a key, which is the owner's call); `usda-ers-fruit-vegetable-prices` was enabled on 2026-11-06 after its terms review, and its 155 prices are recorded in `test/fixtures/` |
+| code | `github` (api, `resolver: "github"`: REST search only, star history per day) | seeded disabled: enable after the terms review |
 
 Candidates rejected on 2026-09-22: CheapShark's API (`/api/1.0/` is disallowed in its
 robots.txt) and EDGAR's `getcurrent` Atom feed (`/cgi-bin` disallowed). The seeded feeds were

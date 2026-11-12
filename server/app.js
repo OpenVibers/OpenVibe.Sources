@@ -9,6 +9,7 @@ const { createRelease } = require('openvibe-shared/release');
 const { createSourcesReadiness, registerSourcesGauges } = require('./observability');
 const { sourcesRouter } = require('./api/sources');
 const { itemsRouter } = require('./api/items');
+const { createCodeRouter } = require('./api/code');
 const { merchantRouter } = require('./api/merchant');
 const { merchantPages } = require('./merchant-pages');
 const { createActorLimits } = require('./api/actor-limits');
@@ -25,6 +26,7 @@ const TEXT_INDEX = [
     '',
     'GET  /api/v1/sources, /api/v1/sources/:key, /api/v1/sources/:key/runs, /api/v1/runs, /api/v1/health   (sources.source.read)',
     'GET  /api/v1/items?source=&category=&after=, /api/v1/items/:id                                          (sources.item.read)',
+    'GET  /api/v1/code/repos?list=&lang=&topic=&limit=, /api/v1/code/search?q=&lang=&sort=&page=             (sources.item.read)',
     'POST/PATCH/DELETE /api/v1/sources[/:key], POST /api/v1/sources/:key/fetch, /items, DELETE /api/v1/items/:id (sources.source.manage)',
     'GET/POST /api/v1/merchant/sources[/:id[/verify|/withdraw]]                                              (sources.source.read/manage, or a merchant session)',
     'GET  /api/health, /api/ready, /release.json',
@@ -114,6 +116,7 @@ function createApp({ config, db, registry, items, ingest, scheduler, auth, outbo
     const limits = createActorLimits({ config, now: limitsNow || (() => Date.now()), registry: metrics.registry, log });
     app.use(sourcesRouter({ db, registry, ingest, auth, limits }));
     app.use(itemsRouter({ db, registry, items, auth, outbox, now, limits }));
+    app.use(createCodeRouter({ db, registry, auth, limits, github: ingest.github }));
 
     // GET /auth/health: does the Network accept this site's OAuth client? 503 only when it refuses it. Sources has
     // no site-wide sign-in; the merchant flow is the one OAuth client, so it is the one this checks.

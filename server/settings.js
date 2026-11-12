@@ -61,7 +61,7 @@ function createSettings({ db, env = process.env, log = console, fetchImpl = glob
     }
 
     /** The read-only GitHub token, read when a GitHub read is made. */
-    function githubToken() { return valueOf('github_read_only_token', 'SOURCES_GITHUB_TOKEN', ''); }
+    function githubToken() { return valueOf('github_read_only_token', 'SOURCES_GITHUB_TOKEN', '') || valueOf('github_read_only_token', 'GITHUB_TOKEN', ''); }
 
     async function test(key) {
         if (key !== 'github_read_only_token') return { ok: false, detail: 'That setting has no test.' };
@@ -124,7 +124,7 @@ function createSettings({ db, env = process.env, log = console, fetchImpl = glob
 function activate(settings) { ACTIVE.settings = settings; return settings; }
 function githubToken() {
     if (ACTIVE.settings) return ACTIVE.settings.githubToken();
-    return process.env.SOURCES_GITHUB_TOKEN || '';
+    return process.env.SOURCES_GITHUB_TOKEN || process.env.GITHUB_TOKEN || '';
 }
 
 module.exports = { SERVICE, NAMESPACE, SCHEMA, SECRETS, createSettings, activate, githubToken };

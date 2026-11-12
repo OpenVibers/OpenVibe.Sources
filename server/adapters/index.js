@@ -10,6 +10,7 @@ const jsonld = require('./jsonld');
 const api = require('./api');
 const bulk = require('./bulk');
 const hn = require('./hn');
+const github = require('./github');
 
 const ADAPTERS = {
     rss: { parse: feed.parse, version: feed.PARSER_VERSION, accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1' },
@@ -24,7 +25,12 @@ const ADAPTERS = {
 };
 
 // A resolver reads several URLs of one API and returns the same { items, skipped, meta } an adapter's parse does.
-const RESOLVERS = { 'hn-whoishiring': { resolve: hn.resolve, version: hn.PARSER_VERSION } };
+const RESOLVERS = {
+    'hn-whoishiring': { resolve: hn.resolve, version: hn.PARSER_VERSION },
+    // GitHub is walked by the client in server/github.js (a share of the search plan per run, rate-limit
+    // aware); the resolver entry names its parser version for every item it produces.
+    github: { resolve: null, version: github.PARSER_VERSION },
+};
 
 const MANUAL_VERSION = 'manual@1';
 

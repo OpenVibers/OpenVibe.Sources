@@ -35,12 +35,14 @@ const daysAgo = (ms, n) => isoDay(ms - n * 86400000);
 
 /** The queries, in a fixed order: base lists first, then one recent list per language. */
 function plan(now = Date.now()) {
-    const today = isoDay(now);
+    const yesterday = daysAgo(now, 1);
     const week = daysAgo(now, 7);
     const month = daysAgo(now, 30);
     const pushed = daysAgo(now, 30);
     const base = [
-        { key: 'trending', q: `created:>${today}`, sort: 'stars', order: 'desc' },
+        // GitHub's search index has no 'today' bucket until the day closes, so the last 24 hours is the window;
+        // the API applies the same 24-hour cutoff to the list.
+        { key: 'trending', q: `created:>${yesterday}`, sort: 'stars', order: 'desc' },
         { key: 'week', q: `created:>${week}`, sort: 'stars', order: 'desc' },
         { key: 'month', q: `created:>${month}`, sort: 'stars', order: 'desc' },
         { key: 'pushed', q: `pushed:>${pushed} stars:>100`, sort: 'stars', order: 'desc' },

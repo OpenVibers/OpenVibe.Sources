@@ -29,7 +29,7 @@ function fakeFetcher(handler) {
 t('the plan is today, this week, this month, recently pushed, all-time top, new, and twelve languages', () => {
     const plan = github.plan(Date.parse('2026-11-12T12:00:00Z'));
     assert.deepStrictEqual(plan.slice(0, 6).map((q) => q.key), ['trending', 'week', 'month', 'pushed', 'top', 'new']);
-    assert.strictEqual(plan[0].q, 'created:>2026-11-12');
+    assert.strictEqual(plan[0].q, 'created:>2026-11-11');
     assert.strictEqual(plan[1].q, 'created:>2026-11-05');
     assert.strictEqual(plan[2].q, 'created:>2026-10-13');
     assert.strictEqual(plan[3].q, 'pushed:>2026-10-13 stars:>100');

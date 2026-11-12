@@ -112,13 +112,17 @@ function validateSource(input, { maxItemsCap = 12000 } = {}) {
                     // (only as their defaults) is what lets PATCH { enabled: true } validate a stored resolver.
                     if (!['url', 'format', 'resolver', 'item_kind', 'max_bytes', 'timeout_ms', 'items_shape', 'items_path', 'fields', 'extra'].includes(k)) throw new RegistryError(`endpoints[${i}].${k} is not a resolver field`);
                 }
-                if (e.resolver !== 'hn-whoishiring') throw new RegistryError(`endpoints[${i}].resolver must be hn-whoishiring`);
+                if (!['hn-whoishiring', 'github'].includes(e.resolver)) throw new RegistryError(`endpoints[${i}].resolver must be hn-whoishiring or github`);
                 if (e.format !== undefined && e.format !== 'json') throw new RegistryError(`endpoints[${i}].format must be json for a resolver`);
                 if (e.items_shape !== undefined && e.items_shape !== 'array') throw new RegistryError(`endpoints[${i}].items_shape must be array for a resolver`);
                 if (e.items_path !== undefined && e.items_path !== '') throw new RegistryError(`endpoints[${i}].items_path must be "" for a resolver`);
                 if (e.fields !== undefined && (!e.fields || typeof e.fields !== 'object' || Array.isArray(e.fields) || Object.keys(e.fields).length)) throw new RegistryError(`endpoints[${i}].fields must be empty for a resolver`);
                 if (e.extra !== undefined && (!e.extra || typeof e.extra !== 'object' || Array.isArray(e.extra) || Object.keys(e.extra).length)) throw new RegistryError(`endpoints[${i}].extra must be empty for a resolver`);
-                if (!/\.json(\?|$)/.test(out.url)) throw new RegistryError(`endpoints[${i}].resolver needs a .json endpoint`);
+                // GitHub's search answer is one of several queries the resolver plans itself; the endpoint is the
+                // API origin, not a fixed .json document. The host is pinned so the token can only go to GitHub.
+                if (e.resolver === 'github') {
+                    if (new URL(out.url).origin !== 'https://api.github.com') throw new RegistryError(`endpoints[${i}].resolver github must be on https://api.github.com`);
+                } else if (!/\.json(\?|$)/.test(out.url)) throw new RegistryError(`endpoints[${i}].resolver needs a .json endpoint`);
                 if (e.item_kind !== undefined && !/^[a-z][a-z0-9_]{1,39}$/.test(e.item_kind)) throw new RegistryError(`endpoints[${i}].item_kind is malformed`);
                 if (e.max_bytes !== undefined && (!Number.isInteger(e.max_bytes) || e.max_bytes < 1024 || e.max_bytes > 32 * 1024 * 1024)) throw new RegistryError(`endpoints[${i}].max_bytes must be an integer from 1024 to 33554432`);
                 if (e.timeout_ms !== undefined && (!Number.isInteger(e.timeout_ms) || e.timeout_ms < 1000 || e.timeout_ms > 120000)) throw new RegistryError(`endpoints[${i}].timeout_ms must be an integer from 1000 to 120000`);

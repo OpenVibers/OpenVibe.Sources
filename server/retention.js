@@ -41,6 +41,8 @@
  *     year for a rebuild and the Open Food Facts bulk snapshot, which is regenerated.
  *   - jobs 14 days: Arbeitnow and We Work Remotely retire what the board stopped showing after 7
  *     days; Work copies each listing, so a fortnight keeps every tombstone it may pull.
+ *   - code 30 days: the GitHub rankings are a current list; a month keeps a repository through a failed
+ *     pull, and the star history is what says whether it is still hot.
  *
  * Sources has no openvibe-shared/config namespace, so the rules stay in code (the brief's
  * alternative); a day count this consequential should change in review, not in a database row.
@@ -74,6 +76,7 @@ const RULES = Object.freeze({
     housing: { keepLatest: true, reason: 'HUD rents change yearly: the latest value per area is what Rent shows' },
     food: { days: 365, reason: 'Food keeps the recall history it shows; a year covers a rebuild' },
     jobs: { days: 14, reason: 'boards retire unseen jobs after 7 days and Work pulls hourly' },
+    code: { days: 30, reason: 'GitHub rankings are current; a month keeps the tracked set through a failed pull' },
 });
 
 // The rules are the contract's categories in review; the runtime deliberately does not throw when

@@ -29,6 +29,8 @@ const crypto = require('crypto');
 const { ids } = require('openvibe-contracts');
 const { ADAPTERS, RESOLVERS } = require('./adapters');
 const offDelta = require('./adapters/off-delta');
+const githubAdapter = require('./adapters/github');
+const { createGithub } = require('./github');
 const extract = require('./adapters/extract');
 const { createCrawler } = require('./crawl');
 const { sha256, decodeBody, ParseError } = require('./adapters/util');
@@ -46,6 +48,7 @@ function retryAfterMs(value, now) {
 function createIngest({ db, config, registry, items, robots, fetcher, spacer, emitEvent, now = () => Date.now(), log = console, outbox = null }) {
     const inflight = new Set();
     const { space, setCrawlDelay } = spacer;
+    const github = createGithub({ config, fetcher, robots, spacer, now, log });
     let stopping = false;
 
     const st = {
@@ -417,6 +420,54 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
     }
 
     /**
+     * A GitHub source: one share of the search plan per run through server/github.js. The cursor is kept
+     * in source_state, so a run with no token (10 searches a minute) never tries the whole plan at once.
+     * Star counts go to github_stars in the same transaction as the items and the run row.
+     */
+    async function fetchGithubEndpoint(source, endpoint, trigger) {
+        const startedAt = now();
+        const run = baseRun(source, endpoint.url, trigger, startedAt);
+        let cursor = {};
+        try {
+            const saved = await st.stateGet.get(source.key, githubAdapter.STATE_NAME);
+            if (saved && saved.value) cursor = JSON.parse(saved.value);
+        } catch { cursor = {}; }
+        const budget = github.hasToken() ? 20 : 8;
+        let out;
+        try {
+            out = await github.fetchQueries({
+                source, cursor, budget,
+                beforeRequest: async () => { await st.requested.run(now(), source.key); },
+            });
+        } catch (err) {
+            const state = err.code === 'rate_limited' ? 'rate_limited'
+                : err.code === 'robots_denied' ? 'robots_denied'
+                : err.code === 'parse_error' ? 'parse_error'
+                : err.code === 'timeout' ? 'timeout' : 'http_error';
+            Object.assign(run, { state, error_code: err.code || 'network', detail: String(err.message).slice(0, 500), finished_at: now() });
+            return { run, failed: true, notBefore: err.code === 'rate_limited' ? now() + (err.retryAfterMs || 60000) : null };
+        }
+        Object.assign(run, {
+            http_status: out.lastStatus, bytes: out.bytes, finished_at: now(),
+            raw_body_hash: out.rawBodyHash, parser_version: githubAdapter.PARSER_VERSION,
+        });
+        await db.tx(async () => {
+            const counts = await items.ingest(source, out.items, {
+                runId: run.id, rawBodyHash: run.raw_body_hash, parserVersion: githubAdapter.PARSER_VERSION, retrievedAt: run.finished_at,
+            });
+            Object.assign(run, {
+                state: 'ok', items_seen: out.items.length, items_created: counts.created, items_updated: counts.updated,
+                items_unchanged: counts.unchanged, items_skipped: counts.skipped,
+            });
+            await githubAdapter.recordStars(db, source.key, out.stars, run.finished_at);
+            await st.insertRun.run(run);
+            await st.stateSet.run({ k: source.key, n: githubAdapter.STATE_NAME, v: JSON.stringify({ next: out.next, queries: out.queries, at: run.finished_at }), at: run.finished_at });
+            await st.saveValidators.run({ k: source.key, u: endpoint.url, etag: null, lm: null, status: out.lastStatus, at: run.finished_at });
+        });
+        return { run, failed: false, success: true, recorded: true, notBefore: out.notBefore };
+    }
+
+    /**
      * A bulk source with `resolver: "off-delta"`: read a text index, then only the delta parts not finished yet.
      * The full export is one gzip stream and cannot be resumed, so the first run starts at the oldest part in the
      * index. A run reads up to its row limit across parts; a part stopped by the limit keeps its row offset in
@@ -595,9 +646,11 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
                     ? endpoint.resolver === 'off-delta'
                         ? await fetchOffDeltaEndpoint(source, endpoint, trigger)
                         : await fetchBulkEndpoint(source, endpoint, trigger)
-                    : endpoint.resolver
-                        ? await fetchResolverEndpoint(source, endpoint, trigger)
-                        : await fetchEndpoint(source, endpoint, trigger);
+                    : endpoint.resolver === 'github'
+                        ? await fetchGithubEndpoint(source, endpoint, trigger)
+                        : endpoint.resolver
+                            ? await fetchResolverEndpoint(source, endpoint, trigger)
+                            : await fetchEndpoint(source, endpoint, trigger);
             } catch (err) {
                 // Anything unexpected is still a recorded failure, never a silent gap.
                 const r = baseRun(source, endpoint.url, trigger, t);
@@ -700,7 +753,7 @@ function createIngest({ db, config, registry, items, robots, fetcher, spacer, em
     /** Shutting down: a crawl ends after the page in flight instead of working through its budget. */
     function stop() { stopping = true; }
 
-    return { run, crawlStatus, stop, inflight: () => [...inflight] };
+    return { run, crawlStatus, stop, inflight: () => [...inflight], github };
 }
 
 module.exports = { createIngest, FAILURE_STATES, retryAfterMs };

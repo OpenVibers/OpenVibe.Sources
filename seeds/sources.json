@@ -1919,6 +1919,49 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "remoteok-job-board",
+      "name": "RemoteOK job board API",
+      "type": "api",
+      "category": "jobs",
+      "homepage_url": "https://remoteok.com/",
+      "endpoints": [
+        {
+          "url": "https://remoteok.com/api",
+          "format": "json",
+          "items_path": "",
+          "item_kind": "job",
+          "where": { "position": { "pattern": "[A-Za-z]" } },
+          "fields": {
+            "identity": "id",
+            "url": "url",
+            "title": "position",
+            "summary": "description",
+            "published_at": "date"
+          },
+          "extra": {
+            "company": "company",
+            "location": "location",
+            "job_type": "job_type",
+            "salary_min": "salary_min",
+            "salary_max": "salary_max"
+          },
+          "extra_lists": { "tags": "tags" }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-12 from the production host: User-agent * allows /, with Content-Signal search=yes, ai-train=no, use=reference; the named AI training crawlers are disallowed in their own groups, which this source is not. The fetcher re-checks it on every run.",
+      "terms_note": "RemoteOK's API response opens with its Terms of Service: link back (follow, not nofollow) to the URL on Remote OK and mention Remote OK as the source; do not use its logo without written permission. OpenVibe.Work keeps a short plain-text excerpt, names RemoteOK and links every listing back to its RemoteOK page. Read every 6 hours, the interval Work already used. The first element is the legal notice, not a listing: the mapping filters it out by requiring a position. Reviewed 2026-11-12 (plan F, the move of Work's own fetch into Sources): keep as noted.",
+      "license_note": null,
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 21600,
+      "stale_after_sec": 43200,
+      "max_items": 500,
+      "retire_after_sec": 2592000,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "bls-average-prices",
       "name": "BLS average retail food prices (US city average)",
       "type": "api",

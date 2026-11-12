@@ -86,7 +86,7 @@ function createCodeRouter({ db, registry, auth, limits, github: client }) {
         const topic = text(req.query.topic, 50);
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 30, 1), 100);
         const t = Date.now();
-        const dayStart = Date.parse(github.isoDay(t));
+        const lastDay = t - DAY;
         // Ordering by stars happens in JS: the tracked set is bounded by the source's max_items (3,000) and
         // the gains need the snapshots anyway. A filter narrows it before the sort.
         const rows = (await db.query("SELECT * FROM items WHERE category = 'code' AND removed_at IS NULL ORDER BY retrieved_at DESC LIMIT 5000")).rows;
@@ -96,7 +96,7 @@ function createCodeRouter({ db, registry, auth, limits, github: client }) {
             if (lang && String(f.language || '').toLowerCase() !== lang.toLowerCase()) return false;
             if (topic && !(Array.isArray(f.topics) ? f.topics : []).some((x) => String(x).toLowerCase() === topic.toLowerCase())) return false;
             const created = Date.parse(f.created || '');
-            if (list === 'trending' && (!Number.isFinite(created) || created < dayStart)) return false;
+            if (list === 'trending' && (!Number.isFinite(created) || created < lastDay)) return false;
             if (list === 'week' && (!Number.isFinite(created) || created < t - 7 * DAY)) return false;
             if (list === 'month' && (!Number.isFinite(created) || created < t - 30 * DAY)) return false;
             if (list === 'new' && (!Number.isFinite(created) || created < t - 7 * DAY)) return false;

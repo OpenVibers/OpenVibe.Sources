@@ -2632,6 +2632,33 @@
         "review_required": true,
         "sensitivity": "none",
         "default_indexability": "noindex"
+    },
+    {
+      "key": "exchange-new-models",
+      "name": "OpenVibe.Exchange: new AI models, the hour they are spotted",
+      "type": "api",
+      "category": "news",
+      "homepage_url": "https://openvibe.exchange/models?status=spotted",
+      "endpoints": [
+        {
+          "url": "https://openvibe.exchange/api/v1/models?status=spotted&sort=new&since_days=7&limit=60&provider=openai,anthropic,gemini,openrouter,arena,deepseek,mistral,xai,meta",
+          "format": "json",
+          "items_path": "models",
+          "item_kind": "article",
+          "fields": {"identity": "id", "url": "url", "title": "headline", "published_at": "first_seen_at", "updated_at": "updated_at"},
+          "extra": {"provider": "provider", "model": "model", "status": "status", "source_url": "source"}
+        }
+      ],
+      "robots_note": "OpenVibe's own service (OpenVibe.Exchange's public directory API, /api/v1/models); no robots rule applies to its API. Checked 2026-11-14.",
+      "terms_note": "Verified 2026-11-14: OpenVibe's own data. OpenVibe.AI spots a model the first time a provider's notes, SDK, OpenRouter or LMArena name it (hourly, OpenVibe.AI #568) and OpenVibe.Exchange lists it; each item links to the model's Exchange page and keeps the provider's own page as source_url. Names and dates only (plan AB.37: News announces new models).",
+      "license_note": "OpenVibe's own directory data; model names are their makers'.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 900,
+      "max_items": 60,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
     }
   ]
 }

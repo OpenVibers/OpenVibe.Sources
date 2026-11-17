@@ -1276,6 +1276,157 @@
       "default_indexability": "noindex"
     },
     {
+      "key": "ovhcloud-public-cloud",
+      "name": "OVHcloud Public Cloud instances (US catalog)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://us.ovhcloud.com/public-cloud/prices/",
+      "endpoints": [
+        {
+          "url": "https://api.us.ovhcloud.com/1.0/order/catalog/public/cloud?ovhSubsidiary=US",
+          "format": "json",
+          "items_path": "addons",
+          "item_kind": "plan",
+          "max_bytes": 16777216,
+          "timeout_ms": 60000,
+          "where": {
+            "product": "publiccloud-instance",
+            "planCode": {
+              "pattern": "^(?!win-)[a-z0-9-]+\\.(consumption|monthly\\.postpaid)$"
+            }
+          },
+          "fields": {
+            "identity": "planCode",
+            "title": "invoiceName"
+          },
+          "extra_lists": {
+            "tags": "blobs.tags"
+          },
+          "extra": {
+            "currency": "$root.locale.currencyCode",
+            "flavor": "blobs.technical.name",
+            "family": "blobs.commercial.brickSubtype",
+            "vcpu": "blobs.technical.cpu.cores",
+            "cpu_ghz": "blobs.technical.cpu.frequency",
+            "memory_gb": "blobs.technical.memory.size",
+            "disk_capacity_gb": "blobs.technical.storage.disks.0.capacity",
+            "disk_count": "blobs.technical.storage.disks.0.number",
+            "disk_interface": "blobs.technical.storage.disks.0.interface",
+            "disk_technology": "blobs.technical.storage.disks.0.technology",
+            "bandwidth_mbps": "blobs.technical.bandwidth.level",
+            "bandwidth_unlimited": "blobs.technical.bandwidth.unlimited",
+            "gpu_count": "blobs.technical.gpu.number",
+            "gpu_model": "blobs.technical.gpu.model",
+            "price": "pricings[mode=default].price",
+            "interval_unit": "pricings[mode=default].intervalUnit"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-17: https://api.us.ovhcloud.com/robots.txt answers 404 (nginx), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
+      "terms_note": "OVHcloud's own API schema (https://api.us.ovhcloud.com/1.0/order.json) marks GET /order/catalog/public/cloud 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve Public Cloud catalog'): the public catalog is meant to be read without an account. OVHcloud's general terms (https://us.ovhcloud.com/legal/) govern its services; no page found states a right to, or a ban on, republishing catalog prices, so a person reads them before enabling. One file (about 2 MB) a day. Prices are the catalog's integers in hundred-millionths of the currency (6050000 is $0.0605); show each as an observation 'checked on <date>' with a link to OVHcloud's page.",
+      "license_note": "Instance specifications and prices are OVHcloud's data (https://us.ovhcloud.com/public-cloud/prices/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link the prices page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 300,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "ovhcloud-managed-postgresql",
+      "name": "OVHcloud managed PostgreSQL (Public Cloud Databases, US catalog)",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://us.ovhcloud.com/public-cloud/postgresql/",
+      "endpoints": [
+        {
+          "url": "https://api.us.ovhcloud.com/1.0/order/catalog/public/cloud?ovhSubsidiary=US",
+          "format": "json",
+          "items_path": "addons",
+          "item_kind": "plan",
+          "max_bytes": 16777216,
+          "timeout_ms": 60000,
+          "where": {
+            "product": {
+              "pattern": "^publiccloud-databases-postgresql-(essential|business|enterprise)-db[0-9]+-[0-9]+$"
+            },
+            "planCode": {
+              "pattern": "\\.month\\.consumption$"
+            }
+          },
+          "fields": {
+            "identity": "planCode",
+            "title": "blobs.commercial.name"
+          },
+          "extra": {
+            "currency": "$root.locale.currencyCode",
+            "engine": "blobs.commercial.brick",
+            "tier": "blobs.commercial.brickSubtype",
+            "price_unit": "blobs.commercial.price.unit",
+            "vcpu": "blobs.technical.cpu.cores",
+            "memory_gb": "blobs.technical.memory.size",
+            "nodes": "blobs.technical.nodes.number",
+            "storage_gb": "blobs.technical.storage.disks.0.capacity",
+            "storage_max_gb": "blobs.technical.storage.disks.0.maximumCapacity",
+            "bandwidth_mbps": "blobs.technical.bandwidth.level",
+            "price": "pricings[mode=default].price"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-17: https://api.us.ovhcloud.com/robots.txt answers 404 (nginx), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
+      "terms_note": "OVHcloud's own API schema (https://api.us.ovhcloud.com/1.0/order.json) marks GET /order/catalog/public/cloud 'noAuthentication': true with apiStatus 'Stable production version' ('Retrieve Public Cloud catalog'): the public catalog is meant to be read without an account. OVHcloud's general terms (https://us.ovhcloud.com/legal/) govern its services; no page found states a right to, or a ban on, republishing catalog prices, so a person reads them before enabling. One file (about 2 MB) a day. Prices are the catalog's integers in hundred-millionths of the currency (32711000000 is $327.11 a node a month); show each as an observation 'checked on <date>' with a link to OVHcloud's page.",
+      "license_note": "Service sizes and prices are OVHcloud's data (https://us.ovhcloud.com/public-cloud/postgresql/). No licence to republish them was found beyond the public catalog being offered without authentication. Attribute OVHcloud and link the PostgreSQL page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
+      "key": "linode-managed-postgresql",
+      "name": "Akamai Cloud (Linode) managed PostgreSQL",
+      "type": "api",
+      "category": "hosting",
+      "homepage_url": "https://www.linode.com/pricing/#databases",
+      "endpoints": [
+        {
+          "url": "https://api.linode.com/v4/databases/types?page_size=500",
+          "format": "json",
+          "items_path": "data",
+          "item_kind": "plan",
+          "where": {
+            "engines.postgresql[quantity=1].quantity": 1
+          },
+          "fields": {
+            "identity": "id",
+            "title": "label"
+          },
+          "extra": {
+            "class": "class",
+            "vcpus": "vcpus",
+            "memory": "memory",
+            "disk": "disk",
+            "price_monthly": "engines.postgresql[quantity=1].price.monthly",
+            "price_hourly": "engines.postgresql[quantity=1].price.hourly",
+            "price_monthly_3_nodes": "engines.postgresql[quantity=3].price.monthly"
+          }
+        }
+      ],
+      "robots_note": "robots.txt checked 2026-11-17: https://api.linode.com/robots.txt answers 301 to https://api.linode.com/v4/, which answers 404 (a JSON 'Not found'), so the API host publishes no robots.txt rules; a 404 is treated as no restrictions (never guessed as a disallow). The fetcher re-checks robots.txt on every run.",
+      "terms_note": "GET /v4/databases/types is a public endpoint in Linode's API reference (no token: 'List Managed Database types'); it answered our keyless fetcher. Akamai's terms hub is https://www.akamai.com/legal; no page found states a right to, or a ban on, republishing the prices, so a person reads them before enabling. One small file a day.",
+      "license_note": "Database sizes and prices are Akamai/Linode's data (https://www.linode.com/pricing/). No licence to republish them was found. Attribute Akamai/Linode and link the pricing page; no endorsement implied.",
+      "min_interval_ms": 60000,
+      "poll_interval_sec": 86400,
+      "max_items": 100,
+      "enabled": false,
+      "review_required": true,
+      "sensitivity": "none",
+      "default_indexability": "noindex"
+    },
+    {
       "key": "porkbun-tld-pricing",
       "name": "Porkbun domain prices (every TLD it sells)",
       "type": "api",

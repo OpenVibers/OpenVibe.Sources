@@ -19,7 +19,7 @@ const seed = (key) => seeds.find((s) => s.key === key);
 const endpoint = (key) => seed(key).endpoints[0];
 
 t('both hosting seeds declare an api mapping the adapter accepts', () => {
-    for (const key of ['vultr-plans', 'linode-types', 'ovhcloud-vps', 'ovhcloud-baremetal']) {
+    for (const key of ['vultr-plans', 'linode-types', 'ovhcloud-vps', 'ovhcloud-baremetal', 'ovhcloud-public-cloud', 'ovhcloud-managed-postgresql', 'linode-managed-postgresql']) {
         const s = seed(key);
         assert.ok(s, `${key} is seeded`);
         assert.strictEqual(s.type, 'api');
@@ -152,6 +152,43 @@ t('OVHcloud dedicated servers: the bare-metal and Eco catalogs, each plan joined
     assert.deepStrictEqual([eby['24risegame012-us'].range, eby['24risegame012-us'].cpu_cores, eby['24risegame012-us'].disk_capacity_gb, eby['24risegame012-us'].bandwidth_mbps],
         ['rise', 6, 512, 1000]);
     assert.ok(!eco.items.some((i) => i.identity.endsWith('-ca')));
+});
+
+t('OVHcloud Public Cloud: Linux instance flavors at their hourly and monthly prices, each with its hardware', () => {
+    const s = seed('ovhcloud-public-cloud');
+    assert.deepStrictEqual([s.enabled, s.review_required], [false, true], 'seeded disabled, for a person to enable');
+    const ep = endpoint('ovhcloud-public-cloud');
+    const r = api.parse(fx('ovhcloud-public-cloud.json'), { url: ep.url, endpoint: ep, maxItems: 300 });
+    // The Local Zone copy, Windows, archive storage and the four database add-ons are filtered.
+    assert.deepStrictEqual([r.items.map((i) => i.identity), r.meta.filtered, r.skipped],
+        [['b3-8.consumption', 'd2-4.consumption', 'd2-4.monthly.postpaid', 'b2-15.monthly.postpaid', 'l4-360.monthly.postpaid'], 7, 0]);
+    const by = Object.fromEntries(r.items.map((i) => [i.identity, i.fields]));
+    assert.deepStrictEqual([by['d2-4.consumption'].price, by['d2-4.monthly.postpaid'].price], [2560000, 1418000000], '$0.0256 an hour, $14.18 a month');
+    assert.deepStrictEqual([by['d2-4.monthly.postpaid'].interval_unit, by['d2-4.consumption'].interval_unit], ['month', 'none']);
+    assert.deepStrictEqual([by['d2-4.monthly.postpaid'].vcpu, by['d2-4.monthly.postpaid'].memory_gb, by['d2-4.monthly.postpaid'].disk_capacity_gb,
+        by['d2-4.monthly.postpaid'].disk_interface, by['d2-4.monthly.postpaid'].bandwidth_mbps, by['d2-4.monthly.postpaid'].currency], [2, 4, 50, 'NVMe', 250, 'USD']);
+    assert.deepStrictEqual(r.items[0].fields.tags, ['coming_soon', 'is_new', 'active'], 'the tags travel: Host holds a coming-soon flavor back');
+    assert.ok(by['l4-360.monthly.postpaid'].gpu_count >= 1, 'a GPU flavor names its GPUs');
+});
+
+t('OVHcloud managed PostgreSQL: one record per size and tier at its monthly price a node', () => {
+    const ep = endpoint('ovhcloud-managed-postgresql');
+    const r = api.parse(fx('ovhcloud-public-cloud.json'), { url: ep.url, endpoint: ep, maxItems: 100 });
+    assert.deepStrictEqual([r.items.map((i) => i.identity), r.skipped],
+        [['databases.postgresql-business-db1-15.month.consumption', 'databases.postgresql-essential-db1-4.month.consumption'], 0]);
+    assert.strictEqual(r.items[0].title, 'Business DB1-15');
+    assert.deepStrictEqual(r.items[0].fields, {
+        currency: 'USD', engine: 'PostgreSQL', tier: 'PostgreSQL Business', price_unit: 'M/node', vcpu: 4, memory_gb: 15, nodes: 2,
+        storage_gb: 320, storage_max_gb: 960, bandwidth_mbps: 250, price: 32711000000,
+    });
+});
+
+t('Linode managed PostgreSQL: sizes that offer PostgreSQL, one node and three', () => {
+    const ep = endpoint('linode-managed-postgresql');
+    const r = api.parse(fx('linode-database-types.json'), { url: ep.url, endpoint: ep, maxItems: 100 });
+    assert.deepStrictEqual([r.items.map((i) => i.identity), r.meta.filtered], [['g6-nanode-1', 'g6-dedicated-2', 'g6-dedicated-8'], 1], 'a Valkey-only size is left out');
+    assert.deepStrictEqual(r.items[0].fields, { class: 'nanode', vcpus: 1, memory: 1024, disk: 9216, price_monthly: 16, price_hourly: 0.024, price_monthly_3_nodes: 37 });
+    assert.strictEqual(r.items[0].title, 'DBaaS - Nanode 1GB');
 });
 
 t('the registry accepts category hosting and refuses an unknown category', () => {

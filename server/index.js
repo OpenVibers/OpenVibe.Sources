@@ -41,6 +41,10 @@ async function start({ config, db: givenDb = null, now = () => Date.now(), fetch
         db, source: config.serviceId, eventsUrl: config.events.url, networkInternalUrl: config.networkInternalUrl,
         clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret,
         intervalMs: config.events.relayIntervalMs, log, table: 'service_outbox', eventTypes: manifest.eventsProduced,
+        // Sent rows are kept a day, not the SDK's week (2026-11-17): Sources sends about 80,000 events a day (items made
+        // and changed, which Events itself keeps only 7 days as bulk), so a week of sent copies was 563,000 rows and
+        // 694 MB on a host down to 5 GB free. A day still answers "did it go out" for anything recent.
+        pruneAfterMs: 24 * 60 * 60 * 1000,
         validate: (env) => validate('events.event-envelope@1', env), now, fetch: fetchImpl,
     });
     const emitEvent = (args) => {
